@@ -1,12 +1,12 @@
 # 🤖 BudgetIQ - AI-Powered Personal Finance & Budget Planner
 
-BudgetIQ is an open-source, intelligent personal finance manager. It features Google & Discord authentication, interactive financial tracking (Salary, Expenses, Assets), daily motivational quotes, and a built-in AI chatbot powered by the Google Gemini Free API that can naturally parse user conversation and automatically suggest adding transactions directly to your dashboard.
+BudgetIQ is an open-source, intelligent personal finance manager. It features Google sign-in & email authentication, interactive financial tracking (Salary, Expenses, Assets), daily motivational quotes, and a built-in AI chatbot powered by the Google Gemini Free API that can naturally parse user conversation and automatically suggest adding transactions directly to your dashboard.
 
 > 🗂️ See [`docs/taskflow.md`](docs/taskflow.md) for the project task flow (GitHub Project board + 14 implementation-ready issues).
 
 ## 🌟 Features
 
-- 🔐 **Authentication**: Single-click OAuth Login with Google & Discord via Supabase Auth.
+- 🔐 **Authentication**: One-click sign-in with Google (OAuth) or email & password, both via Supabase Auth.
 - 📊 **Comprehensive Dashboard**:
   - Track Salary / Income, Expenses, and Assets.
   - Real-time financial summary cards (Net Balance, Monthly Spending, Total Assets).
@@ -128,10 +128,11 @@ USING (auth.uid() = user_id);
 
 1. Navigate to Supabase Dashboard ➔ Authentication ➔ Providers.
 2. **Google Setup**: Enable Google and paste your Client ID & Client Secret from Google Cloud Console.
-3. **Discord Setup**: Enable Discord and paste your Client ID & Client Secret from Discord Developer Portal.
-4. Add Callback URL in both Google & Discord:
+3. Add Callback URL in Google:
    `https://<YOUR_SUPABASE_PROJECT_REF>.supabase.co/auth/v1/callback`
-5. Navigate to Authentication ➔ URL Configuration and add `http://localhost:3000/auth/callback` to **Redirect URLs** so Supabase can send users back to the app after sign-in.
+4. Navigate to Authentication ➔ URL Configuration and add `http://localhost:3000/auth/callback` to **Redirect URLs** so Supabase can send users back to the app after sign-in.
+
+Email & password sign-in is built into Supabase Auth — just make sure the **Email** provider is enabled (default). Email confirmations can be toggled under Authentication ➔ Providers ➔ Email in the **Confirm email** setting.
 
 ### 6. Run Locally
 
