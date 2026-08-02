@@ -2,6 +2,7 @@ import Image from "next/image";
 import { LogOut } from "lucide-react";
 import { getProfile } from "@/lib/profiles";
 import { signOut } from "@/app/actions/auth";
+import ThemeAwareImage from "@/components/ThemeAwareImage";
 
 export default async function Home() {
   const profile = await getProfile();
@@ -51,15 +52,15 @@ export default async function Home() {
       <div className="hero min-h-screen bg-base-200">
         <div className="hero-content text-center">
           <div className="max-w-md">
-            <Image
-              src="/nobg-logo.png"
+            <ThemeAwareImage
+              lightSrc="/logo-vertical-light.png"
+              darkSrc="/logo-vertical-dark.png"
               alt="BudgetIQ logo"
-              width={480}
-              height={237}
+              width={320}
+              height={320}
               priority
-              className="mx-auto mb-6 h-auto w-full max-w-md rounded-3xl"
+              className="mx-auto mb-6 h-auto w-full max-w-xs"
             />
-            <h1 className="text-5xl font-bold text-base-content">BudgetIQ</h1>
             <p className="py-6 text-base-content/70">
               Your AI-powered personal finance and budget planner. Track
               income, expenses, and assets — coming soon.
