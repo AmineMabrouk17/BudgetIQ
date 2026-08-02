@@ -10,6 +10,8 @@ type Mode = "signin" | "signup";
 
 export default function LoginPage() {
   const [mode, setMode] = useState<Mode>("signin");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +47,10 @@ export default function LoginPage() {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+        options: {
+          data: { full_name: `${firstName.trim()} ${lastName.trim()}`.trim() },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
       });
       if (error) {
         setError(error.message);
@@ -118,6 +123,32 @@ export default function LoginPage() {
         </div>
 
         <form className="mt-4 flex flex-col gap-3" onSubmit={handleSubmit}>
+          {mode === "signup" && (
+            <div className="flex gap-3">
+              <label className="form-control w-full">
+                <span className="label-text mb-1">First name</span>
+                <input
+                  className="input input-bordered w-full"
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                  autoComplete="given-name"
+                />
+              </label>
+              <label className="form-control w-full">
+                <span className="label-text mb-1">Last name</span>
+                <input
+                  className="input input-bordered w-full"
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required
+                  autoComplete="family-name"
+                />
+              </label>
+            </div>
+          )}
           <label className="form-control w-full">
             <span className="label-text mb-1">Email</span>
             <input
