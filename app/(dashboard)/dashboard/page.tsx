@@ -1,12 +1,14 @@
 import { getUser } from "@/lib/supabase/server";
 import { getTransactions } from "@/lib/transactions";
-import { computeSummary } from "@/lib/summary";
+import { computeSummary, groupExpensesByCategory } from "@/lib/summary";
 import SummaryCards from "@/components/dashboard/SummaryCards";
+import CategoryChart from "@/components/dashboard/CategoryChart";
 
 export default async function DashboardPage() {
   const user = await getUser();
   const transactions = await getTransactions();
   const summary = computeSummary(transactions);
+  const categories = groupExpensesByCategory(transactions);
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 p-6">
@@ -17,6 +19,7 @@ export default async function DashboardPage() {
         </p>
       </header>
       <SummaryCards summary={summary} hasTransactions={transactions.length > 0} />
+      <CategoryChart categories={categories} />
     </main>
   );
 }
