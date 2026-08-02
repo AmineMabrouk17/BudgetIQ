@@ -4,9 +4,56 @@ import type { FormEvent } from "react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useSearchParams } from "next/navigation";
-import { Loader2, Globe, Mail } from "lucide-react";
+import { Loader2, Globe, Mail, Send } from "lucide-react";
 
 type Mode = "signin" | "signup";
+type ErrorAction = "switchToSignIn" | "switchToSignUp" | "resend" | null;
+
+type AuthError = { code?: string; message?: string } | null;
+
+function friendlyError(
+  error: AuthError
+): { message: string; action: ErrorAction } {
+  const code = error?.code ?? "";
+  const message = error?.message ?? "";
+  const lower = message.toLowerCase();
+
+  if (code === "user_already_exists" || lower.includes("already registered")) {
+    return {
+      message: "An account with this email already exists. Sign in instead.",
+      action: "switchToSignIn",
+    };
+  }
+  if (code === "invalid_credentials") {
+    return { message: "Incorrect email or password.", action: null };
+  }
+  if (code === "email_not_confirmed") {
+    return {
+      message:
+        "Your email isn't confirmed yet. Check your inbox (and spam) for the confirmation link.",
+      action: "resend",
+    };
+  }
+  if (code === "weak_password") {
+    return {
+      message: "Password is too weak — use at least 6 characters.",
+      action: null,
+    };
+  }
+  if (code === "over_email_send_rate_limit") {
+    return {
+      message: "Too many confirmation emails sent. Please wait a moment and try again.",
+      action: null,
+    };
+  }
+  if (lower.includes("invalid email")) {
+    return { message: "Please enter a valid email address.", action: null };
+  }
+  return {
+    message: message || "Something went wrong. Please try again.",
+    action: null,
+  };
+}
 
 export default function LoginPage() {
   const [mode, setMode] = useState<Mode>("signin");
@@ -15,6 +62,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [errorAction, setErrorAction] = useState<ErrorAction>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [pendingOAuth, setPendingOAuth] = useState(false);
   const [pendingEmail, setPendingEmail] = useState(false);
@@ -22,6 +70,23 @@ export default function LoginPage() {
   const callbackError = searchParams.get("error");
 
   const supabase = createClient();
+
+  function switchMode(next: Mode) {
+    setMode(next);
+    setError(null);
+    setErrorAction(null);
+    setMessage(null);
+  }
+
+  function applyError(error: AuthError) {
+    const { message, action } = friendlyError(error);
+    setError(message);
+    setErrorAction(action);
+    if (action === "switchToSignIn") {
+      setMode("signin");
+      setPassword("");
+    }
+  }
 
   async function signInWithGoogle() {
     setError(null);
@@ -32,14 +97,35 @@ export default function LoginPage() {
       options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
     if (error) {
-      setError(error.message);
+      applyError(error);
       setPendingOAuth(false);
+    }
+  }
+
+  async function resendConfirmation() {
+    setError(null);
+    setMessage(null);
+    setPendingEmail(true);
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email,
+      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+    });
+    setPendingEmail(false);
+    if (error) {
+      applyError(error);
+    } else {
+      setErrorAction(null);
+      setMessage(
+        "Confirmation email sent. Check your inbox (and spam) to verify your account."
+      );
     }
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+    setErrorAction(null);
     setMessage(null);
     setPendingEmail(true);
 
@@ -53,12 +139,13 @@ export default function LoginPage() {
         },
       });
       if (error) {
-        setError(error.message);
+        applyError(error);
       } else if (data.session) {
         window.location.href = "/";
       } else {
+        setErrorAction("resend");
         setMessage(
-          "Check your inbox for a verification email to confirm your account."
+          `We sent a confirmation link to ${email}. Check your inbox (and spam) to verify your account.`
         );
       }
     } else {
@@ -67,7 +154,7 @@ export default function LoginPage() {
         password,
       });
       if (error) {
-        setError(error.message);
+        applyError(error);
       } else {
         window.location.href = "/";
       }
@@ -101,22 +188,14 @@ export default function LoginPage() {
           <button
             role="tab"
             className={`tab ${mode === "signin" ? "tab-active" : ""}`}
-            onClick={() => {
-              setMode("signin");
-              setError(null);
-              setMessage(null);
-            }}
+            onClick={() => switchMode("signin")}
           >
             Sign in
           </button>
           <button
             role="tab"
             className={`tab ${mode === "signup" ? "tab-active" : ""}`}
-            onClick={() => {
-              setMode("signup");
-              setError(null);
-              setMessage(null);
-            }}
+            onClick={() => switchMode("signup")}
           >
             Create account
           </button>
@@ -190,6 +269,16 @@ export default function LoginPage() {
           <div className="alert alert-error mt-4">
             <span>{error}</span>
           </div>
+        )}
+        {errorAction === "resend" && (
+          <button
+            className="btn btn-ghost btn-sm mt-2"
+            onClick={resendConfirmation}
+            disabled={pendingEmail}
+          >
+            {pendingEmail ? <Loader2 className="animate-spin" /> : <Send />}
+            Resend confirmation email
+          </button>
         )}
         {message && (
           <div className="alert alert-success mt-4">
