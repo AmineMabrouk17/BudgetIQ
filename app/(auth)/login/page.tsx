@@ -142,6 +142,15 @@ export default function LoginPage() {
         applyError(error);
       } else if (data.session) {
         window.location.href = "/";
+      } else if (
+        data.user &&
+        Array.isArray(data.user.identities) &&
+        data.user.identities.length === 0
+      ) {
+        applyError({
+          code: "user_already_exists",
+          message: "User already registered",
+        });
       } else {
         setErrorAction("resend");
         setMessage(
