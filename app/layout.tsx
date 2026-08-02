@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Script from "next/script";
+import { cookies } from "next/headers";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 
@@ -19,26 +19,23 @@ export const metadata: Metadata = {
   description: "AI-powered personal finance and budget planner",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const storedTheme = cookieStore.get("theme")?.value;
+  const dataTheme =
+    storedTheme === "dark" || storedTheme === "light" ? storedTheme : undefined;
+
   return (
     <html
       lang="en"
+      data-theme={dataTheme}
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
-      <head>
-        <Script
-          id="theme-init"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem("theme");if(t==="dark"||(!t&&window.matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.setAttribute("data-theme","dark")}}catch(e){}})();`,
-          }}
-        />
-      </head>
       <body>
         <Navbar />
         {children}

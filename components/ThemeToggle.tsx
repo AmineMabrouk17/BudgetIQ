@@ -1,28 +1,51 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { Moon, Sun } from "lucide-react";
 
 type Theme = "light" | "dark";
 
-function readStoredTheme(): Theme {
-  if (typeof window === "undefined") return "light";
-  const stored = localStorage.getItem("theme");
-  if (stored === "light" || stored === "dark") return stored;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
+const listeners = new Set<() => void>();
+
+function storedTheme(): Theme | null {
+  const match = document.cookie.match(/(?:^|;\s*)theme=(light|dark)/);
+  return match ? (match[1] as Theme) : null;
+}
+
+function systemPrefersDark(): boolean {
+  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+}
+
+function effectiveTheme(): Theme {
+  return storedTheme() ?? (systemPrefersDark() ? "dark" : "light");
+}
+
+function subscribe(callback: () => void): () => void {
+  listeners.add(callback);
+  return () => {
+    listeners.delete(callback);
+  };
+}
+
+function getSnapshot(): Theme {
+  return effectiveTheme();
+}
+
+function getServerSnapshot(): Theme {
+  return "light";
+}
+
+function setTheme(theme: Theme) {
+  document.documentElement.dataset.theme = theme;
+  document.cookie = `theme=${theme}; path=/; max-age=31536000; samesite=lax`;
+  listeners.forEach((listener) => listener());
 }
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>(readStoredTheme);
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-  }, [theme]);
+  const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   function toggle() {
-    setTheme((current) => (current === "light" ? "dark" : "light"));
+    setTheme(theme === "light" ? "dark" : "light");
   }
 
   const isDark = theme === "dark";
@@ -32,7 +55,6 @@ export default function ThemeToggle() {
       type="button"
       className="btn btn-ghost btn-circle"
       onClick={toggle}
-      suppressHydrationWarning
       aria-label={`Switch to ${isDark ? "light" : "dark"} theme`}
     >
       {isDark ? <Sun /> : <Moon />}
