@@ -2,7 +2,6 @@ import Image from "next/image";
 import { LogOut } from "lucide-react";
 import { getProfile } from "@/lib/profiles";
 import { signOut } from "@/app/actions/auth";
-import ThemeAwareImage from "@/components/ThemeAwareImage";
 
 export default async function Home() {
   const profile = await getProfile();
@@ -52,9 +51,8 @@ export default async function Home() {
       <div className="hero min-h-screen bg-base-200">
         <div className="hero-content text-center">
           <div className="max-w-md">
-            <ThemeAwareImage
-              lightSrc="/logo-vertical-light.png"
-              darkSrc="/logo-vertical-dark.png"
+            <Image
+              src="/logo-vertical-light.png"
               alt="BudgetIQ logo"
               width={320}
               height={320}
