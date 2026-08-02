@@ -126,6 +126,26 @@ USING (auth.uid() = user_id);
 
 > User profiles are handled by `supabase/migrations/0002_profiles.sql` — run it from the SQL Editor to create the `profiles` table, its RLS policies, and a trigger that auto-creates a profile on signup (name & avatar are pulled from the Google provider, or from the signup form for email accounts).
 
+### Transaction Data Layer
+
+Transactions are managed through Server Actions in `app/actions/transactions.ts`, backed by the data layer in `lib/transactions.ts`. Shared types live in `types/transaction.ts`. Every operation runs as the signed-in user; RLS on the `transactions` table is the final backstop, so a user can only ever read, create, or delete their own rows.
+
+```ts
+// Create a transaction (income | expense | asset). Returns
+// { ok: true, transaction } or { ok: false, error }.
+await createTransaction({ type: "expense", title: "Coffee", amount: 5 });
+
+// Optional: pass a client-generated UUID as `id` so retrying the action
+// (e.g. a double-click) does not insert a duplicate row.
+
+// Delete one of the caller's transactions. Returns
+// { ok: true } or { ok: false, error } (error if not found or not owned).
+await deleteTransaction(transactionId);
+
+// Server-side validation rejects invalid types, empty titles,
+// non-positive or non-numeric amounts, and out-of-range categories.
+```
+
 ### 5. Configure OAuth Providers in Supabase
 
 1. Navigate to Supabase Dashboard ➔ Authentication ➔ Providers.
