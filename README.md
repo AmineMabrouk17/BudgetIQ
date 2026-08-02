@@ -131,6 +131,7 @@ USING (auth.uid() = user_id);
 3. **Discord Setup**: Enable Discord and paste your Client ID & Client Secret from Discord Developer Portal.
 4. Add Callback URL in both Google & Discord:
    `https://<YOUR_SUPABASE_PROJECT_REF>.supabase.co/auth/v1/callback`
+5. Navigate to Authentication ➔ URL Configuration and add `http://localhost:3000/auth/callback` to **Redirect URLs** so Supabase can send users back to the app after sign-in.
 
 ### 6. Run Locally
 
