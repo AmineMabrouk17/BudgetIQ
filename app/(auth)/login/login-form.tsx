@@ -9,14 +9,22 @@ import { Loader2, Globe, Mail, Send } from "lucide-react";
 type Mode = "signin" | "signup";
 type ErrorAction = "switchToSignIn" | "switchToSignUp" | "resend" | null;
 
-type AuthError = { code?: string; message?: string } | null;
+type AuthError = { code?: string; message?: string; status?: number } | null;
 
 function friendlyError(
   error: AuthError
 ): { message: string; action: ErrorAction } {
   const code = error?.code ?? "";
   const message = error?.message ?? "";
+  const status = error?.status ?? 0;
   const lower = message.toLowerCase();
+
+  if (status >= 500 || message === "{}" || message.trim() === "") {
+    return {
+      message: "Something went wrong on our end. Please try again in a moment.",
+      action: null,
+    };
+  }
 
   if (code === "user_already_exists" || lower.includes("already registered")) {
     return {
