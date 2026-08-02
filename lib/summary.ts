@@ -6,6 +6,26 @@ export type Summary = {
   totalAssets: number;
 };
 
+export type CategoryTotal = {
+  category: string;
+  amount: number;
+};
+
+export function groupExpensesByCategory(
+  transactions: Transaction[]
+): CategoryTotal[] {
+  const totals = new Map<string, number>();
+
+  for (const t of transactions) {
+    if (t.type !== "expense") continue;
+    totals.set(t.category, (totals.get(t.category) ?? 0) + t.amount);
+  }
+
+  return [...totals.entries()]
+    .map(([category, amount]) => ({ category, amount }))
+    .sort((a, b) => b.amount - a.amount);
+}
+
 export function computeSummary(
   transactions: Transaction[],
   now: Date = new Date()
