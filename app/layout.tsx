@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { cookies } from "next/headers";
 import "./globals.css";
+import Navbar from "@/components/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,18 +19,27 @@ export const metadata: Metadata = {
   description: "AI-powered personal finance and budget planner",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const storedTheme = cookieStore.get("theme")?.value;
+  const dataTheme =
+    storedTheme === "dark" || storedTheme === "light" ? storedTheme : undefined;
+
   return (
     <html
       lang="en"
-      data-theme="light"
+      data-theme={dataTheme}
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        <Navbar />
+        {children}
+      </body>
     </html>
   );
 }
