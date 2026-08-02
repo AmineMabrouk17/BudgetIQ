@@ -2,6 +2,8 @@
 
 BudgetIQ is an open-source, intelligent personal finance manager. It features Google & Discord authentication, interactive financial tracking (Salary, Expenses, Assets), daily motivational quotes, and a built-in AI chatbot powered by the Google Gemini Free API that can naturally parse user conversation and automatically suggest adding transactions directly to your dashboard.
 
+> 🗂️ See [`docs/taskflow.md`](docs/taskflow.md) for the project task flow (GitHub Project board + 14 implementation-ready issues).
+
 ## 🌟 Features
 
 - 🔐 **Authentication**: Single-click OAuth Login with Google & Discord via Supabase Auth.
