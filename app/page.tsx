@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Wallet, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { getProfile } from "@/lib/profiles";
 import { signOut } from "@/app/actions/auth";
 
@@ -51,7 +51,14 @@ export default async function Home() {
       <div className="hero min-h-screen bg-base-200">
         <div className="hero-content text-center">
           <div className="max-w-md">
-            <Wallet className="mx-auto mb-6 h-16 w-16 text-primary" />
+            <Image
+              src="/budgetiq-logo.png"
+              alt="BudgetIQ logo"
+              width={480}
+              height={262}
+              priority
+              className="mx-auto mb-6 rounded-3xl shadow-lg"
+            />
             <h1 className="text-5xl font-bold text-base-content">BudgetIQ</h1>
             <p className="py-6 text-base-content/70">
               Your AI-powered personal finance and budget planner. Track
