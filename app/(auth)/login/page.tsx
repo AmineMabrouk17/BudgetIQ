@@ -1,24 +1,26 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useSearchParams } from "next/navigation";
-import { Loader2, MessageCircle, Chrome } from "lucide-react";
+import { Loader2, MessageCircle, Globe } from "lucide-react";
 
 type Provider = "google" | "discord";
 
-const providers: { id: Provider; label: string; icon: typeof Chrome }[] = [
-  { id: "google", label: "Continue with Google", icon: Chrome },
+const providers: { id: Provider; label: string; icon: typeof Globe }[] = [
+  { id: "google", label: "Continue with Google", icon: Globe },
   { id: "discord", label: "Continue with Discord", icon: MessageCircle },
 ];
 
 export default function LoginPage() {
-  const [pendingProvider, startTransition] = useTransition();
+  const [pendingProvider, setPendingProvider] = useState<Provider | null>(null);
+  const [, startTransition] = useTransition();
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
 
   function signIn(provider: Provider) {
     const supabase = createClient();
+    setPendingProvider(provider);
     startTransition(async () => {
       await supabase.auth.signInWithOAuth({
         provider,
@@ -26,6 +28,7 @@ export default function LoginPage() {
           redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
+      setPendingProvider(null);
     });
   }
 
