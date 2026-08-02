@@ -202,6 +202,10 @@ The frontend renders a DaisyUI Alert/Card with a "➕ Add Expense" button inside
 
 Distributed under the MIT License. See `LICENSE` for more information.
 
+## 🧠 AI Skill Credits
+
+- The **TaskFlow** agent skill (`.opencode/skills/taskflow`) was created by **invictusdhahri** — [github.com/invictusdhahri/taskflow](https://github.com/invictusdhahri/taskflow).
+
 ## 🤝 Contributing
 
 Contributions are welcome! Feel free to open an Issue or submit a Pull Request.
