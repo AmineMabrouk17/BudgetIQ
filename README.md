@@ -124,6 +124,8 @@ FOR ALL
 USING (auth.uid() = user_id);
 ```
 
+> User profiles are handled by `supabase/migrations/0002_profiles.sql` — run it from the SQL Editor to create the `profiles` table, its RLS policies, and a trigger that auto-creates a profile on signup (name & avatar are pulled from the Google provider, or from the signup form for email accounts).
+
 ### 5. Configure OAuth Providers in Supabase
 
 1. Navigate to Supabase Dashboard ➔ Authentication ➔ Providers.
