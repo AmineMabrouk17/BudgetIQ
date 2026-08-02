@@ -22,7 +22,7 @@ export default async function Navbar() {
       <div className="navbar-start">
         <Link href="/" className="flex items-center gap-2 px-4 text-xl font-bold">
           <Image
-            src="/logo-icon.png"
+            src="/logo-icon-light.png"
             alt="BudgetIQ logo"
             width={32}
             height={32}
