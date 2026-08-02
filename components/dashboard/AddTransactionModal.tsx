@@ -1,0 +1,127 @@
+"use client";
+
+import { useRef, useState, useTransition } from "react";
+import { Loader2, Plus } from "lucide-react";
+import { createTransaction } from "@/app/actions/transactions";
+import type { TransactionType } from "@/types/transaction";
+
+const TYPES: { value: TransactionType; label: string }[] = [
+  { value: "income", label: "Income" },
+  { value: "expense", label: "Expense" },
+  { value: "asset", label: "Asset" },
+];
+
+export default function AddTransactionModal() {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  function open() {
+    setError(null);
+    dialogRef.current?.showModal();
+  }
+
+  function close() {
+    dialogRef.current?.close();
+  }
+
+  function handleSubmit(formData: FormData) {
+    startTransition(async () => {
+      const result = await createTransaction({
+        type: formData.get("type") as TransactionType,
+        title: formData.get("title") as string,
+        amount: Number(formData.get("amount")),
+        category: (formData.get("category") as string) || undefined,
+      });
+      if (result.ok) {
+        close();
+      } else {
+        setError(result.error);
+      }
+    });
+  }
+
+  return (
+    <>
+      <button className="btn btn-primary" onClick={open}>
+        <Plus />
+        Add transaction
+      </button>
+
+      <dialog ref={dialogRef} className="modal">
+        <div className="modal-box">
+          <h3 className="mb-4 text-lg font-bold">Add transaction</h3>
+          <form action={handleSubmit} className="flex flex-col gap-3">
+            <label className="form-control w-full">
+              <span className="label-text mb-1">Type</span>
+              <select className="select select-bordered w-full" name="type" defaultValue="expense" required>
+                {TYPES.map((t) => (
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="form-control w-full">
+              <span className="label-text mb-1">Title</span>
+              <input
+                className="input input-bordered w-full"
+                type="text"
+                name="title"
+                placeholder="e.g. Groceries"
+                maxLength={255}
+                required
+              />
+            </label>
+            <label className="form-control w-full">
+              <span className="label-text mb-1">Amount</span>
+              <input
+                className="input input-bordered w-full"
+                type="number"
+                name="amount"
+                min="0.01"
+                step="0.01"
+                placeholder="0.00"
+                required
+              />
+            </label>
+            <label className="form-control w-full">
+              <span className="label-text mb-1">Category</span>
+              <input
+                className="input input-bordered w-full"
+                type="text"
+                name="category"
+                placeholder="e.g. Food, Rent, Salary"
+                maxLength={100}
+              />
+            </label>
+
+            {error && (
+              <div className="alert alert-error">
+                <span>{error}</span>
+              </div>
+            )}
+
+            <div className="modal-action">
+              <button
+                type="button"
+                className="btn"
+                onClick={close}
+                disabled={isPending}
+              >
+                Cancel
+              </button>
+              <button className="btn btn-primary" disabled={isPending}>
+                {isPending ? <Loader2 className="animate-spin" /> : null}
+                Save
+              </button>
+            </div>
+          </form>
+        </div>
+        <form method="dialog" className="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
+    </>
+  );
+}
