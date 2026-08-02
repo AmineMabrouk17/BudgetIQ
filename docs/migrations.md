@@ -27,6 +27,6 @@ Confirm the table columns exist, RLS is enabled, the policy is listed, and index
 
 ## Migrations
 
-| File | Applied? |
-|------|----------|
-| `supabase/migrations/0001_transactions.sql` | Yes — applied via SQL Editor |
+| File | Applied? | Verified? |
+|------|----------|-----------|
+| `supabase/migrations/0001_transactions.sql` | Yes — applied via SQL Editor | Yes — table, columns, and RLS confirmed via PostgREST |
