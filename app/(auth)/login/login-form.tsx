@@ -141,7 +141,7 @@ export default function LoginPage() {
       if (error) {
         applyError(error);
       } else if (data.session) {
-        window.location.href = "/";
+        window.location.href = "/dashboard";
       } else if (
         data.user &&
         Array.isArray(data.user.identities) &&
@@ -165,7 +165,7 @@ export default function LoginPage() {
       if (error) {
         applyError(error);
       } else {
-        window.location.href = "/";
+        window.location.href = "/dashboard";
       }
     }
 
