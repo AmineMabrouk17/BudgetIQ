@@ -70,7 +70,24 @@ function parseQuoteRecord(record: Record<string, unknown>): Quote | null {
   return text ? { text, author } : null;
 }
 
-const SOURCES: { url: string; parse: QuoteSource }[] = [
+function parseQuoteOfDay(data: unknown): Quote | null {
+  if (Array.isArray(data)) {
+    const record = data[0];
+    if (typeof record !== "object" || record === null) return null;
+    const r = record as Record<string, unknown>;
+    const text = typeof r.quote === "string" ? r.quote.trim() : "";
+    const author = typeof r.author === "string" ? r.author.trim() : "Unknown";
+    return text ? { text, author } : null;
+  }
+  return null;
+}
+
+const SOURCES: { url: string; headers?: Record<string, string>; parse: QuoteSource }[] = [
+  {
+    url: "https://api.api-ninjas.com/v2/quoteoftheday",
+    headers: { "X-Api-Key": process.env.API_NINJAS_API_KEY ?? "" },
+    parse: parseQuoteOfDay,
+  },
   {
     url: "https://api.quotable.io/quotes/random?tags=business",
     parse: (data) => {
@@ -100,6 +117,10 @@ async function fetchRandomQuote(): Promise<Quote> {
       const response = await fetch(source.url, {
         cache: "no-store",
         signal: AbortSignal.timeout(5_000),
+        headers: {
+          "Content-Type": "application/json",
+          ...(source.headers ?? {}),
+        },
       });
       if (!response.ok) continue;
       const data: unknown = await response.json();
