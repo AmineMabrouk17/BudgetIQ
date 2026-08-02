@@ -227,6 +227,39 @@ The chatbot uses Gemini's `gemini-1.5-flash` model. When a user chats with the A
 
 The frontend renders a DaisyUI Alert/Card with a "➕ Add Expense" button inside the chat UI, letting users confirm the addition with a single click!
 
+### Chat API
+
+`POST /api/chat` — session-protected, signed-in users only (401 otherwise).
+
+**Request**
+
+```json
+{ "message": "I bought groceries today for $45" }
+```
+
+**Response (transaction detected)**
+
+```json
+{
+  "message": "I noticed you spent money on groceries. Would you like me to log this expense?",
+  "hasAction": true,
+  "transaction": {
+    "type": "expense",
+    "title": "Groceries",
+    "amount": 45,
+    "category": "Food"
+  }
+}
+```
+
+**Response (no transaction)**
+
+```json
+{ "message": "Great question!", "hasAction": false }
+```
+
+Malformed or empty bodies return `400`, oversized messages return `413`. Conversation content is never logged; the route retries once on a transient Gemini error before returning a friendly fallback.
+
 ## ☁️ Deploying to Vercel
 
 1. Push your repository to GitHub.
