@@ -1,7 +1,7 @@
 import { getUser } from "@/lib/supabase/server";
 import { getTransactions } from "@/lib/transactions";
 import { computeSummary, groupExpensesByCategory } from "@/lib/summary";
-import { quoteForDate } from "@/lib/quotes";
+import { getDailyQuote } from "@/lib/quotes";
 import SummaryCards from "@/components/dashboard/SummaryCards";
 import CategoryChart from "@/components/dashboard/CategoryChart";
 import TransactionTable from "@/components/dashboard/TransactionTable";
@@ -13,7 +13,7 @@ export default async function DashboardPage() {
   const transactions = await getTransactions();
   const summary = computeSummary(transactions);
   const categories = groupExpensesByCategory(transactions);
-  const quote = quoteForDate();
+  const quote = await getDailyQuote();
 
   return (
     <ChatDrawer>

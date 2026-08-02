@@ -9,16 +9,8 @@ const QUOTES: Quote[] = [
     author: "Warren Buffett",
   },
   {
-    text: "The habit of saving is itself an education; it fosters every virtue, teaches self-denial, cultivates the sense of order, and trains to forethought.",
-    author: "Margaret Oliphant",
-  },
-  {
     text: "Financial freedom is available to those who learn about it and work for it.",
     author: "Robert Kiyosaki",
-  },
-  {
-    text: "Formal education will make you a living; self-education will make you a fortune.",
-    author: "Jim Rohn",
   },
   {
     text: "A budget is telling your money where to go instead of wondering where it went.",
@@ -37,10 +29,6 @@ const QUOTES: Quote[] = [
     author: "Benjamin Franklin",
   },
   {
-    text: "Don't look for the needle in the haystack. Just buy the haystack!",
-    author: "John Bogle",
-  },
-  {
     text: "The stock market is a device for transferring money from the impatient to the patient.",
     author: "Warren Buffett",
   },
@@ -51,10 +39,6 @@ const QUOTES: Quote[] = [
   {
     text: "Wealth is not about having a lot of money; it's about having a lot of options.",
     author: "Chris Rock",
-  },
-  {
-    text: "Saving money is a great habit to have, but investing money is a great way to grow it.",
-    author: "Unknown",
   },
   {
     text: "The best way to predict the future is to create it.",
@@ -77,6 +61,56 @@ export function quoteForDate(date: Date = new Date()): Quote {
   return QUOTES[index];
 }
 
-export function listQuotes(): Quote[] {
-  return QUOTES;
+type QuoteSource = (data: Record<string, unknown>) => Quote | null;
+
+const SOURCES: { url: string; parse: QuoteSource }[] = [
+  {
+    url: "https://api.quotable.io/random?tags=business",
+    parse: (data) => {
+      const text = typeof data.content === "string" ? data.content.trim() : "";
+      const author =
+        typeof data.author === "string" ? data.author.trim() : "Unknown";
+      return text ? { text, author } : null;
+    },
+  },
+  {
+    url: "https://dummyjson.com/quotes/random",
+    parse: (data) => {
+      const text = typeof data.quote === "string" ? data.quote.trim() : "";
+      const author =
+        typeof data.author === "string" ? data.author.trim() : "Unknown";
+      return text ? { text, author } : null;
+    },
+  },
+];
+
+async function fetchRandomQuote(): Promise<Quote> {
+  for (const source of SOURCES) {
+    try {
+      const response = await fetch(source.url, {
+        cache: "no-store",
+        signal: AbortSignal.timeout(5_000),
+      });
+      if (!response.ok) continue;
+      const data: unknown = await response.json();
+      if (typeof data !== "object" || data === null) continue;
+      const quote = source.parse(data as Record<string, unknown>);
+      if (quote) return quote;
+    } catch {
+      // try the next source
+    }
+  }
+  throw new Error("No quote source available");
+}
+
+const dailyCache = new Map<string, Quote>();
+
+export async function getDailyQuote(now: Date = new Date()): Promise<Quote> {
+  const key = now.toISOString().slice(0, 10);
+  const cached = dailyCache.get(key);
+  if (cached) return cached;
+
+  const quote = await fetchRandomQuote().catch(() => quoteForDate(now));
+  dailyCache.set(key, quote);
+  return quote;
 }
