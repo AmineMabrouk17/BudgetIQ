@@ -1,12 +1,12 @@
 # 🤖 BudgetIQ - AI-Powered Personal Finance & Budget Planner
 
-BudgetIQ is an open-source, intelligent personal finance manager. It features Google & Discord authentication, interactive financial tracking (Salary, Expenses, Assets), daily motivational quotes, and a built-in AI chatbot powered by the Google Gemini Free API that can naturally parse user conversation and automatically suggest adding transactions directly to your dashboard.
+BudgetIQ is an open-source, intelligent personal finance manager. It features Google sign-in & email authentication, interactive financial tracking (Salary, Expenses, Assets), daily motivational quotes, and a built-in AI chatbot powered by the Google Gemini Free API that can naturally parse user conversation and automatically suggest adding transactions directly to your dashboard.
 
 > 🗂️ See [`docs/taskflow.md`](docs/taskflow.md) for the project task flow (GitHub Project board + 14 implementation-ready issues).
 
 ## 🌟 Features
 
-- 🔐 **Authentication**: Single-click OAuth Login with Google & Discord via Supabase Auth.
+- 🔐 **Authentication**: One-click sign-in with Google (OAuth) or email & password, both via Supabase Auth.
 - 📊 **Comprehensive Dashboard**:
   - Track Salary / Income, Expenses, and Assets.
   - Real-time financial summary cards (Net Balance, Monthly Spending, Total Assets).
@@ -124,15 +124,34 @@ FOR ALL
 USING (auth.uid() = user_id);
 ```
 
+> User profiles are handled by `supabase/migrations/0002_profiles.sql` — run it from the SQL Editor to create the `profiles` table, its RLS policies, and a trigger that auto-creates a profile on signup (name & avatar are pulled from the Google provider, or from the signup form for email accounts).
+
 ### 5. Configure OAuth Providers in Supabase
 
 1. Navigate to Supabase Dashboard ➔ Authentication ➔ Providers.
 2. **Google Setup**: Enable Google and paste your Client ID & Client Secret from Google Cloud Console.
-3. **Discord Setup**: Enable Discord and paste your Client ID & Client Secret from Discord Developer Portal.
-4. Add Callback URL in both Google & Discord:
+3. Add Callback URL in Google:
    `https://<YOUR_SUPABASE_PROJECT_REF>.supabase.co/auth/v1/callback`
+4. Navigate to Authentication ➔ URL Configuration and add `http://localhost:3000/auth/callback` to **Redirect URLs** so Supabase can send users back to the app after sign-in.
 
-### 6. Run Locally
+Email & password sign-in is built into Supabase Auth — just make sure the **Email** provider is enabled (default). Email confirmations can be toggled under Authentication ➔ Providers ➔ Email in the **Confirm email** setting.
+
+### 6. Configure Email (SMTP with Resend)
+
+Supabase's default email service only sends ~2 emails/hour, so verification and password-reset emails won't reliably arrive. Use [Resend](https://resend.com) as the SMTP provider for both dev and production:
+
+1. Create a free account at resend.com and verify a domain you own (Settings ➔ Domains). Without a domain, you can test by sending from `onboarding@resend.dev`.
+2. Grab your SMTP credentials: resend.com ➔ Settings ➔ SMTP:
+   - **Host:** `smtp.resend.com`
+   - **Port:** `587` (or `465` for SSL)
+   - **Username:** `resend`
+   - **Password:** your Resend API key (`re_...`)
+3. In Supabase ➔ Authentication ➔ SMTP, paste the host/port/user/password, set a **Sender email** (e.g. `onboarding@resend.dev` for testing, or `no-reply@yourdomain.com`), and save.
+4. Optional: to sign up instantly without an email, turn off **Confirm email** under Authentication ➔ Providers ➔ Email. Turn it back on once SMTP is configured for production.
+
+> Store the Resend API key only in the Supabase dashboard — never commit it to the repository.
+
+### 7. Run Locally
 
 ```bash
 npm run dev

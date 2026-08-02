@@ -30,3 +30,5 @@ Confirm the table columns exist, RLS is enabled, the policy is listed, and index
 | File | Applied? | Verified? |
 |------|----------|-----------|
 | `supabase/migrations/0001_transactions.sql` | Yes — applied via SQL Editor | Yes — table, columns, and RLS confirmed via PostgREST |
+| `supabase/migrations/0002_profiles.sql` | | |
+| `supabase/migrations/0003_profiles_sync_update.sql` | | |
