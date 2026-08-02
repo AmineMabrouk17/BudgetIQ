@@ -61,24 +61,34 @@ export function quoteForDate(date: Date = new Date()): Quote {
   return QUOTES[index];
 }
 
-type QuoteSource = (data: Record<string, unknown>) => Quote | null;
+type QuoteSource = (data: unknown) => Quote | null;
+
+function parseQuoteRecord(record: Record<string, unknown>): Quote | null {
+  const text = typeof record.content === "string" ? record.content.trim() : "";
+  const author =
+    typeof record.author === "string" ? record.author.trim() : "Unknown";
+  return text ? { text, author } : null;
+}
 
 const SOURCES: { url: string; parse: QuoteSource }[] = [
   {
-    url: "https://api.quotable.io/random?tags=business",
+    url: "https://api.quotable.io/quotes/random?tags=business",
     parse: (data) => {
-      const text = typeof data.content === "string" ? data.content.trim() : "";
-      const author =
-        typeof data.author === "string" ? data.author.trim() : "Unknown";
-      return text ? { text, author } : null;
+      if (Array.isArray(data)) return parseQuoteRecord(data[0] ?? {});
+      if (typeof data === "object" && data !== null) {
+        return parseQuoteRecord(data as Record<string, unknown>);
+      }
+      return null;
     },
   },
   {
     url: "https://dummyjson.com/quotes/random",
     parse: (data) => {
-      const text = typeof data.quote === "string" ? data.quote.trim() : "";
+      if (typeof data !== "object" || data === null) return null;
+      const record = data as Record<string, unknown>;
+      const text = typeof record.quote === "string" ? record.quote.trim() : "";
       const author =
-        typeof data.author === "string" ? data.author.trim() : "Unknown";
+        typeof record.author === "string" ? record.author.trim() : "Unknown";
       return text ? { text, author } : null;
     },
   },
@@ -93,8 +103,7 @@ async function fetchRandomQuote(): Promise<Quote> {
       });
       if (!response.ok) continue;
       const data: unknown = await response.json();
-      if (typeof data !== "object" || data === null) continue;
-      const quote = source.parse(data as Record<string, unknown>);
+      const quote = source.parse(data);
       if (quote) return quote;
     } catch {
       // try the next source
