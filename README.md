@@ -92,10 +92,13 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 
 # Supabase Credentials
 NEXT_PUBLIC_SUPABASE_URL=https://your-supabase-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-supabase-publishable-key
 
 # Google Gemini API Key
 GEMINI_API_KEY=your-gemini-api-key
+
+# API Ninjas (daily quotes)
+API_NINJAS_API_KEY=your-api-ninjas-key
 ```
 
 ### 4. Database Setup (Supabase SQL)
@@ -264,13 +267,16 @@ Malformed or empty bodies return `400`, oversized messages return `413`. Convers
 
 1. Push your repository to GitHub.
 2. Go to Vercel and click "Add New Project".
-3. Import your budgetiq GitHub repository.
+3. Import the budgetiq GitHub repository.
 4. Add your Environment Variables in the Vercel dashboard:
    - `NEXT_PUBLIC_SITE_URL` (set to your production URL `https://your-app.vercel.app`)
    - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
    - `GEMINI_API_KEY`
+   - `API_NINJAS_API_KEY`
 5. Click Deploy! 🚀
+
+> OAuth note: after deploying, add your production URL to Supabase ➔ Authentication ➔ URL Configuration ➔ Redirect URLs (e.g. `https://your-app.vercel.app/auth/callback`) so Google sign-in redirects back to production.
 
 ## 📄 License
 
