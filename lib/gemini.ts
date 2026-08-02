@@ -1,6 +1,7 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+const INTERACTIONS_ENDPOINT =
+  "https://generativelanguage.googleapis.com/v1beta/interactions";
 
-const MODEL = "gemini-1.5-flash";
+const MODEL = "gemini-3.6-flash";
 
 export type TransactionActionType = "income" | "expense" | "asset";
 
@@ -25,25 +26,33 @@ const TRANSACTION_TYPES: readonly TransactionActionType[] = [
 
 const SYSTEM_PROMPT = `You are BudgetIQ, a friendly personal-finance assistant. Keep replies short and helpful.
 
-If the user's message is about tracking money — spending, earning, or acquiring an asset — respond with ONLY this JSON envelope:
-{
-  "message": "A short, natural sentence inviting the user to log it.",
-  "hasAction": true,
-  "transaction": {
-    "type": "income", "expense", or "asset",
-    "title": "Short title, at most 255 characters",
-    "amount": <positive number>,
-    "category": "Best-guess category such as Food, Transport, Salary, Rent, or General"
-  }
-}
-
-Rules:
+If the user's message is about tracking money — spending, earning, or acquiring an asset — set "hasAction" to true and fill the "transaction" object:
 - "type" must be exactly "income", "expense", or "asset".
-- "amount" must be a positive number. Parse $, €, £, and plain numbers ("$45" -> 45, "15 euros" -> 15).
-- Omit "category" when unsure.
-- If the message is not about tracking money, respond with ONLY:
-{ "message": "<a helpful, short answer>", "hasAction": false }
-- Always respond with valid JSON. No markdown, no code fences, no extra text.`;
+- "title" is a short label, at most 255 characters.
+- "amount" is a positive number. Parse $, €, £, and plain numbers ("$45" -> 45, "15 euros" -> 15).
+- "category" is a best-guess category such as Food, Transport, Salary, Rent, or General.
+- "message" is a short, natural sentence inviting the user to log the transaction.
+
+If the message is not about tracking money, set "hasAction" to false and answer the question helpfully in "message".`;
+
+const RESPONSE_SCHEMA = {
+  type: "object",
+  properties: {
+    message: { type: "string" },
+    hasAction: { type: "boolean" },
+    transaction: {
+      type: "object",
+      properties: {
+        type: { type: "string", enum: ["income", "expense", "asset"] },
+        title: { type: "string" },
+        amount: { type: "number" },
+        category: { type: "string" },
+      },
+      required: ["type", "title", "amount"],
+    },
+  },
+  required: ["message", "hasAction"],
+} as const;
 
 export function parseEnvelope(raw: string): ChatActionResponse {
   let data: unknown;
@@ -109,22 +118,55 @@ export function parseEnvelope(raw: string): ChatActionResponse {
   };
 }
 
+function extractText(payload: unknown): string {
+  if (typeof payload !== "object" || payload === null) {
+    throw new Error("Unexpected Gemini response shape");
+  }
+  const steps = (payload as Record<string, unknown>).steps;
+  if (!Array.isArray(steps)) {
+    throw new Error("Gemini response is missing steps");
+  }
+  for (const step of steps) {
+    if (typeof step !== "object" || step === null) continue;
+    const content = (step as Record<string, unknown>).content;
+    if (!Array.isArray(content)) continue;
+    for (const part of content) {
+      if (typeof part !== "object" || part === null) continue;
+      const text = (part as Record<string, unknown>).text;
+      if (typeof text === "string" && text.trim().length > 0) return text;
+    }
+  }
+  throw new Error("Gemini response contains no text");
+}
+
 export async function askGemini(message: string): Promise<ChatActionResponse> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY is not configured");
   }
 
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({
-    model: MODEL,
-    systemInstruction: SYSTEM_PROMPT,
-    generationConfig: {
-      responseMimeType: "application/json",
-      temperature: 0.2,
+  const response = await fetch(INTERACTIONS_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "x-goog-api-key": apiKey,
+      "Content-Type": "application/json",
     },
+    body: JSON.stringify({
+      model: MODEL,
+      input: message,
+      system_instruction: SYSTEM_PROMPT,
+      response_format: {
+        type: "text",
+        mime_type: "application/json",
+        schema: RESPONSE_SCHEMA,
+      },
+    }),
   });
 
-  const result = await model.generateContent(message);
-  return parseEnvelope(result.response.text());
+  if (!response.ok) {
+    throw new Error(`Gemini API error: ${response.status}`);
+  }
+
+  const payload = await response.json();
+  return parseEnvelope(extractText(payload));
 }
