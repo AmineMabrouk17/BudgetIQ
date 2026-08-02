@@ -52,7 +52,7 @@ export default async function Home() {
         <div className="hero-content text-center">
           <div className="max-w-md">
             <Image
-              src="/logo-horizontal.png"
+              src="/nobg-logo.png"
               alt="BudgetIQ logo"
               width={480}
               height={237}

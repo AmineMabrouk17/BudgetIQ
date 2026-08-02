@@ -3,7 +3,7 @@
 BudgetIQ is an open-source, intelligent personal finance manager. It features Google sign-in & email authentication, interactive financial tracking (Salary, Expenses, Assets), daily motivational quotes, and a built-in AI chatbot powered by the Google Gemini Free API that can naturally parse user conversation and automatically suggest adding transactions directly to your dashboard.
 
 <p align="center">
-  <img src="public/logo-horizontal.png" alt="BudgetIQ logo" width="480" />
+  <img src="public/nobg-logo.png" alt="BudgetIQ logo" width="480" />
 </p>
 
 
