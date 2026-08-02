@@ -1,5 +1,5 @@
 import { Landmark, Receipt, Wallet } from "lucide-react";
-import type { Summary } from "@/lib/transactions";
+import type { Summary } from "@/lib/summary";
 
 const currency = new Intl.NumberFormat("en-US", {
   style: "currency",

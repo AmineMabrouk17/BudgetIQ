@@ -1,5 +1,6 @@
 import { getUser } from "@/lib/supabase/server";
-import { computeSummary, getTransactions } from "@/lib/transactions";
+import { getTransactions } from "@/lib/transactions";
+import { computeSummary } from "@/lib/summary";
 import SummaryCards from "@/components/dashboard/SummaryCards";
 
 export default async function DashboardPage() {
