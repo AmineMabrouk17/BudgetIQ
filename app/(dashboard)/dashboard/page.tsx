@@ -3,6 +3,7 @@ import { getTransactions } from "@/lib/transactions";
 import { computeSummary, groupExpensesByCategory } from "@/lib/summary";
 import SummaryCards from "@/components/dashboard/SummaryCards";
 import CategoryChart from "@/components/dashboard/CategoryChart";
+import TransactionTable from "@/components/dashboard/TransactionTable";
 
 export default async function DashboardPage() {
   const user = await getUser();
@@ -20,6 +21,7 @@ export default async function DashboardPage() {
       </header>
       <SummaryCards summary={summary} hasTransactions={transactions.length > 0} />
       <CategoryChart categories={categories} />
+      <TransactionTable transactions={transactions} />
     </main>
   );
 }
