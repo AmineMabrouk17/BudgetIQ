@@ -1,35 +1,74 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import type { FormEvent } from "react";
+import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useSearchParams } from "next/navigation";
-import { Loader2, MessageCircle, Globe } from "lucide-react";
+import { Loader2, Globe, Mail } from "lucide-react";
 
-type Provider = "google" | "discord";
-
-const providers: { id: Provider; label: string; icon: typeof Globe }[] = [
-  { id: "google", label: "Continue with Google", icon: Globe },
-  { id: "discord", label: "Continue with Discord", icon: MessageCircle },
-];
+type Mode = "signin" | "signup";
 
 export default function LoginPage() {
-  const [pendingProvider, setPendingProvider] = useState<Provider | null>(null);
-  const [, startTransition] = useTransition();
+  const [mode, setMode] = useState<Mode>("signin");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [pendingOAuth, setPendingOAuth] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState(false);
   const searchParams = useSearchParams();
-  const error = searchParams.get("error");
+  const callbackError = searchParams.get("error");
 
-  function signIn(provider: Provider) {
-    const supabase = createClient();
-    setPendingProvider(provider);
-    startTransition(async () => {
-      await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-      setPendingProvider(null);
+  const supabase = createClient();
+
+  async function signInWithGoogle() {
+    setError(null);
+    setMessage(null);
+    setPendingOAuth(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
+    if (error) {
+      setError(error.message);
+      setPendingOAuth(false);
+    }
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+    setMessage(null);
+    setPendingEmail(true);
+
+    if (mode === "signup") {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+      });
+      if (error) {
+        setError(error.message);
+      } else if (data.session) {
+        window.location.href = "/";
+      } else {
+        setMessage(
+          "Check your inbox for a verification email to confirm your account."
+        );
+      }
+    } else {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) {
+        setError(error.message);
+      } else {
+        window.location.href = "/";
+      }
+    }
+
+    setPendingEmail(false);
   }
 
   return (
@@ -37,28 +76,93 @@ export default function LoginPage() {
       <div className="card-body">
         <h2 className="card-title justify-center text-2xl">Sign in to BudgetIQ</h2>
         <p className="text-center text-sm text-base-content/70">
-          Track your income, expenses, and assets with one-click sign-in.
+          Track your income, expenses, and assets.
         </p>
+
         <div className="mt-4 flex flex-col gap-3">
-          {providers.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              className="btn btn-outline"
-              onClick={() => signIn(id)}
-              disabled={pendingProvider !== null}
-            >
-              {pendingProvider === id ? (
-                <Loader2 className="animate-spin" />
-              ) : (
-                <Icon />
-              )}
-              {label}
-            </button>
-          ))}
+          <button
+            className="btn btn-outline"
+            onClick={signInWithGoogle}
+            disabled={pendingOAuth || pendingEmail}
+          >
+            {pendingOAuth ? <Loader2 className="animate-spin" /> : <Globe />}
+            Continue with Google
+          </button>
         </div>
-        {error && (
+
+        <div className="divider my-4">or</div>
+
+        <div role="tablist" className="tabs tabs-lift">
+          <button
+            role="tab"
+            className={`tab ${mode === "signin" ? "tab-active" : ""}`}
+            onClick={() => {
+              setMode("signin");
+              setError(null);
+              setMessage(null);
+            }}
+          >
+            Sign in
+          </button>
+          <button
+            role="tab"
+            className={`tab ${mode === "signup" ? "tab-active" : ""}`}
+            onClick={() => {
+              setMode("signup");
+              setError(null);
+              setMessage(null);
+            }}
+          >
+            Create account
+          </button>
+        </div>
+
+        <form className="mt-4 flex flex-col gap-3" onSubmit={handleSubmit}>
+          <label className="form-control w-full">
+            <span className="label-text mb-1">Email</span>
+            <input
+              className="input input-bordered w-full"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+            />
+          </label>
+          <label className="form-control w-full">
+            <span className="label-text mb-1">Password</span>
+            <input
+              className="input input-bordered w-full"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+              autoComplete={mode === "signup" ? "new-password" : "current-password"}
+            />
+          </label>
+          <button
+            className="btn btn-primary mt-2"
+            disabled={pendingEmail || pendingOAuth}
+          >
+            {pendingEmail ? <Loader2 className="animate-spin" /> : <Mail />}
+            {mode === "signin" ? "Sign in" : "Create account"}
+          </button>
+        </form>
+
+        {callbackError && (
           <div className="alert alert-error mt-4">
             <span>Sign-in failed. Please try again.</span>
+          </div>
+        )}
+        {error && (
+          <div className="alert alert-error mt-4">
+            <span>{error}</span>
+          </div>
+        )}
+        {message && (
+          <div className="alert alert-success mt-4">
+            <span>{message}</span>
           </div>
         )}
       </div>
