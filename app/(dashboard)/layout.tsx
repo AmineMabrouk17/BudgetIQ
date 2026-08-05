@@ -11,9 +11,9 @@ export default async function DashboardLayout({
   if (!user) redirect("/login");
 
   return (
-    <div className="min-h-screen bg-base-200">
+    <>
       <Navbar />
-      {children}
-    </div>
+      <div className="min-h-screen bg-base-200">{children}</div>
+    </>
   );
 }
