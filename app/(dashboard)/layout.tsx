@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/supabase/server";
+import Navbar from "@/components/Navbar";
 
 export default async function DashboardLayout({
   children,
@@ -9,5 +10,10 @@ export default async function DashboardLayout({
   const user = await getUser();
   if (!user) redirect("/login");
 
-  return <div className="min-h-screen bg-base-200">{children}</div>;
+  return (
+    <div className="min-h-screen bg-base-200">
+      <Navbar />
+      {children}
+    </div>
+  );
 }
