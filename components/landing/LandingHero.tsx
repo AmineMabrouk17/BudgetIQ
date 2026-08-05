@@ -14,8 +14,8 @@ export default function LandingHero() {
             className="mx-auto mb-6 h-auto w-full max-w-xs"
           />
           <p className="py-6 text-base-content/70">
-            Your AI-powered personal finance and budget planner. Track income,
-            expenses, and assets — coming soon.
+            Your AI-powered personal finance app. Track income, expenses, and
+            assets.
           </p>
           <a href="/login" className="btn btn-primary">
             Get Started
