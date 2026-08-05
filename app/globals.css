@@ -16,9 +16,17 @@
 }
 
 [data-theme="dark"] {
-  --color-primary: #14b37b;
-  --color-primary-content: #ffffff;
   --color-base-100: #0f1932;
   --color-base-200: #0b1326;
   --color-base-300: #080f1f;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --color-primary: #14b37b;
+    --color-primary-content: #ffffff;
+    --color-base-100: #0f1932;
+    --color-base-200: #0b1326;
+    --color-base-300: #080f1f;
+  }
 }
