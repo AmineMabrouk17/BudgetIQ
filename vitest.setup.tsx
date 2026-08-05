@@ -6,10 +6,9 @@ afterEach(() => {
   cleanup();
 });
 
-Object.defineProperty(window, "matchMedia", {
-  writable: true,
-  value: (query: string) => ({
-    matches: false,
+export function createMatchMedia(queries: Record<string, boolean> = {}) {
+  return (query: string) => ({
+    matches: Boolean(queries[query]),
     media: query,
     onchange: null,
     addListener: () => {},
@@ -17,7 +16,12 @@ Object.defineProperty(window, "matchMedia", {
     addEventListener: () => {},
     removeEventListener: () => {},
     dispatchEvent: () => false,
-  }),
+  });
+}
+
+Object.defineProperty(window, "matchMedia", {
+  writable: true,
+  value: createMatchMedia(),
 });
 
 vi.mock("next/image", () => ({

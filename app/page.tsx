@@ -9,6 +9,7 @@ import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import FaqSection from "@/components/landing/FaqSection";
 import CtaBand from "@/components/landing/CtaBand";
 import LandingFooter from "@/components/landing/LandingFooter";
+import Reveal from "@/components/landing/Reveal";
 
 export default async function Home() {
   const profile = await getProfile();
@@ -21,12 +22,24 @@ export default async function Home() {
     <div className="min-h-screen bg-base-200">
       <LandingNav />
       <main>
-        <LandingHero />
-        <FeaturesSection />
-        <HowItWorksSection />
-        <TestimonialsSection />
-        <FaqSection />
-        <CtaBand />
+        <Reveal>
+          <LandingHero />
+        </Reveal>
+        <Reveal>
+          <FeaturesSection />
+        </Reveal>
+        <Reveal>
+          <HowItWorksSection />
+        </Reveal>
+        <Reveal>
+          <TestimonialsSection />
+        </Reveal>
+        <Reveal>
+          <FaqSection />
+        </Reveal>
+        <Reveal>
+          <CtaBand />
+        </Reveal>
       </main>
       <LandingFooter />
     </div>
