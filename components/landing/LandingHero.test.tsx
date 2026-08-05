@@ -1,39 +1,35 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
 import LandingHero from "@/components/landing/LandingHero";
 
-vi.mock("next/image", () => ({
-  default: ({
-    src,
-    alt,
-    className,
-    width,
-    height,
-  }: {
-    src: string;
-    alt: string;
-    className?: string;
-    width?: number;
-    height?: number;
-  }) => (
-    // eslint-disable-next-line @next/next/no-img-element -- plain img stands in for next/image in jsdom
-    <img
-      src={src}
-      alt={alt}
-      className={className}
-      width={width}
-      height={height}
-    />
-  ),
-}));
-
 describe("LandingHero", () => {
-  it("renders the value proposition and call-to-action", () => {
+  it("renders the headline, both call-to-actions, and trust strip", () => {
     render(<LandingHero />);
 
     expect(
-      screen.getByText(/track income, expenses, and assets/i)
+      screen.getByRole("heading", {
+        level: 1,
+        name: /your money, finally under control/i,
+      })
     ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Get Started" })).toBeInTheDocument();
+
+    const getStarted = screen.getByRole("link", {
+      name: /get started free/i,
+    });
+    expect(getStarted).toBeInTheDocument();
+    expect(getStarted).toHaveAttribute("href", "/login");
+
+    const viewOnGithub = screen.getByRole("link", {
+      name: /view on github/i,
+    });
+    expect(viewOnGithub).toBeInTheDocument();
+    expect(viewOnGithub).toHaveAttribute(
+      "href",
+      "https://github.com/AmineMabrouk17/BudgetIQ"
+    );
+
+    expect(
+      screen.getByText(/free forever · open source · no ads · your data, yours/i)
+    ).toBeInTheDocument();
   });
 });
