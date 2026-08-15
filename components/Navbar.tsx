@@ -4,6 +4,7 @@ import { LogOut } from "lucide-react";
 import { getUser } from "@/lib/supabase/server";
 import { signOut } from "@/app/actions/auth";
 import ThemeToggle from "@/components/ThemeToggle";
+import CurrencySelect from "@/components/CurrencySelect";
 
 function initials(name: string): string {
   return name
@@ -32,6 +33,7 @@ export default async function Navbar() {
         </Link>
       </div>
       <div className="navbar-end gap-1 pr-3">
+        <CurrencySelect />
         <ThemeToggle />
         {user ? (
           <>
