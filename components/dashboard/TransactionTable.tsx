@@ -5,11 +5,7 @@ import { Check, Loader2, Trash2, X } from "lucide-react";
 import type { Transaction, TransactionType } from "@/types/transaction";
 import { deleteTransaction } from "@/app/actions/transactions";
 import AddTransactionModal from "@/components/dashboard/AddTransactionModal";
-
-const currency = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-});
+import { useCurrencyFormatter } from "@/lib/use-display-currency";
 
 const TYPE_BADGES: Record<TransactionType, string> = {
   income: "badge-success",
@@ -30,6 +26,7 @@ export default function TransactionTable({
 }: {
   transactions: Transaction[];
 }) {
+  const format = useCurrencyFormatter();
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -97,7 +94,7 @@ export default function TransactionTable({
                             : "font-semibold"
                       }
                     >
-                      {currency.format(t.amount)}
+                      {format(t.amount)}
                     </td>
                     <td className="whitespace-nowrap text-base-content/70">
                       {formatDate(t.created_at)}

@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Landmark,
   PiggyBank,
@@ -7,20 +9,19 @@ import {
   Wallet,
 } from "lucide-react";
 import type { Delta, Summary } from "@/lib/summary";
-
-const currency = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-});
+import { useCurrencyFormatter } from "@/lib/use-display-currency";
 
 const percent = new Intl.NumberFormat("en-US", {
   style: "percent",
   maximumFractionDigits: 1,
 });
 
-function formatMoneyDelta(delta: Delta): string {
+function formatMoneyDelta(
+  delta: Delta,
+  format: (amount: number) => string
+): string {
   const valueSign = delta.value > 0 ? "+" : delta.value < 0 ? "−" : "";
-  const value = `${valueSign}${currency.format(Math.abs(delta.value))}`;
+  const value = `${valueSign}${format(Math.abs(delta.value))}`;
   if (delta.percentage === null) return value;
   const pctSign = delta.percentage > 0 ? "+" : delta.percentage < 0 ? "−" : "";
   return `${value} (${pctSign}${Math.abs(delta.percentage).toFixed(1)}%)`;
@@ -38,6 +39,7 @@ export default function SummaryCards({
   summary: Summary;
   hasTransactions: boolean;
 }) {
+  const format = useCurrencyFormatter();
   return (
     <section aria-label="Financial summary">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -47,7 +49,7 @@ export default function SummaryCards({
           </div>
           <div className="stat-title">Net Balance</div>
           <div className="stat-value text-2xl">
-            {currency.format(summary.netBalance)}
+            {format(summary.netBalance)}
           </div>
           <div className="stat-desc">Income + Assets − Expenses</div>
         </div>
@@ -57,10 +59,10 @@ export default function SummaryCards({
           </div>
           <div className="stat-title">Income</div>
           <div className="stat-value text-2xl">
-            {currency.format(summary.monthlyIncome)}
+            {format(summary.monthlyIncome)}
           </div>
           <div className="stat-desc">
-            vs last month {formatMoneyDelta(summary.deltas.income)}
+            vs last month {formatMoneyDelta(summary.deltas.income, format)}
           </div>
         </div>
         <div className="stat rounded-box bg-base-100 shadow">
@@ -69,10 +71,10 @@ export default function SummaryCards({
           </div>
           <div className="stat-title">Expenses</div>
           <div className="stat-value text-2xl">
-            {currency.format(summary.monthlyExpenses)}
+            {format(summary.monthlyExpenses)}
           </div>
           <div className="stat-desc">
-            vs last month {formatMoneyDelta(summary.deltas.expenses)}
+            vs last month {formatMoneyDelta(summary.deltas.expenses, format)}
           </div>
         </div>
         <div className="stat rounded-box bg-base-100 shadow">
@@ -81,11 +83,11 @@ export default function SummaryCards({
           </div>
           <div className="stat-title">Monthly Spending</div>
           <div className="stat-value text-2xl">
-            {currency.format(summary.monthlySpending)}
+            {format(summary.monthlySpending)}
           </div>
           <div className="stat-desc">
             vs last month{" "}
-            {formatMoneyDelta(summary.deltas.monthlySpending)}
+            {formatMoneyDelta(summary.deltas.monthlySpending, format)}
           </div>
         </div>
         <div className="stat rounded-box bg-base-100 shadow">
@@ -111,7 +113,7 @@ export default function SummaryCards({
           </div>
           <div className="stat-title">Total Assets</div>
           <div className="stat-value text-2xl">
-            {currency.format(summary.totalAssets)}
+            {format(summary.totalAssets)}
           </div>
           <div className="stat-desc">Sum of asset accounts</div>
         </div>

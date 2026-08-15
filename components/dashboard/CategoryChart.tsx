@@ -2,11 +2,7 @@
 
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import type { CategoryTotal } from "@/lib/summary";
-
-const currency = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-});
+import { useCurrencyFormatter } from "@/lib/use-display-currency";
 
 const COLORS = [
   "#f97316",
@@ -24,6 +20,8 @@ export default function CategoryChart({
 }: {
   categories: CategoryTotal[];
 }) {
+  const format = useCurrencyFormatter();
+
   if (categories.length === 0) {
     return (
       <div className="card w-full bg-base-100 shadow">
@@ -52,7 +50,7 @@ export default function CategoryChart({
                 cy="50%"
                 outerRadius={90}
                 label={({ name, value }) =>
-                  `${name}: ${currency.format(Number(value))}`
+                  `${name}: ${format(Number(value))}`
                 }
               >
                 {categories.map((entry, index) => (
@@ -63,7 +61,7 @@ export default function CategoryChart({
                 ))}
               </Pie>
               <Tooltip
-                formatter={(value) => currency.format(Number(value))}
+                formatter={(value) => format(Number(value))}
                 labelFormatter={(label) => label}
               />
             </PieChart>

@@ -5,11 +5,7 @@ import { Check, Loader2, Plus } from "lucide-react";
 import type { ParsedTransactionAction } from "@/lib/gemini";
 import { createTransaction } from "@/app/actions/transactions";
 import { canonicalizeCategory } from "@/lib/categories";
-
-const currency = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-});
+import { useCurrencyFormatter } from "@/lib/use-display-currency";
 
 const TYPE_LABELS: Record<ParsedTransactionAction["type"], string> = {
   income: "Add Income",
@@ -22,6 +18,7 @@ export default function TransactionActionCard({
 }: {
   action: ParsedTransactionAction;
 }) {
+  const format = useCurrencyFormatter();
   const idRef = useRef<string>(crypto.randomUUID());
   const [status, setStatus] = useState<"idle" | "added" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +51,7 @@ export default function TransactionActionCard({
       <div className="alert alert-success mt-2 max-w-xs">
         <Check />
         <span>
-          Added {action.title} ({currency.format(action.amount)})
+          Added {action.title} ({format(action.amount)})
         </span>
       </div>
     );
@@ -67,7 +64,7 @@ export default function TransactionActionCard({
           Detected transaction
         </p>
         <p className="font-medium">
-          {action.title} — {currency.format(action.amount)}
+          {action.title} — {format(action.amount)}
         </p>
         {category && (
           <p className="text-xs text-base-content/60">
