@@ -4,6 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { Check, Loader2, Plus } from "lucide-react";
 import type { ParsedTransactionAction } from "@/lib/gemini";
 import { createTransaction } from "@/app/actions/transactions";
+import { canonicalizeCategory } from "@/lib/categories";
 
 const currency = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -25,6 +26,9 @@ export default function TransactionActionCard({
   const [status, setStatus] = useState<"idle" | "added" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const category = action.category
+    ? canonicalizeCategory(action.category)
+    : undefined;
 
   function handleAdd() {
     setError(null);
@@ -33,7 +37,7 @@ export default function TransactionActionCard({
         type: action.type,
         title: action.title,
         amount: action.amount,
-        category: action.category,
+        category,
         id: idRef.current,
       });
       if (result.ok) {
@@ -65,9 +69,9 @@ export default function TransactionActionCard({
         <p className="font-medium">
           {action.title} — {currency.format(action.amount)}
         </p>
-        {action.category && (
+        {category && (
           <p className="text-xs text-base-content/60">
-            Category: {action.category} · Type: {action.type}
+            Category: {category} · Type: {action.type}
           </p>
         )}
         {error && (
