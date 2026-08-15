@@ -2,7 +2,7 @@
 
 import { Landmark, Receipt, Wallet } from "lucide-react";
 import type { Summary } from "@/lib/summary";
-import { useCurrencyFormatter } from "@/lib/currency";
+import { useCurrencyFormatter } from "@/lib/use-display-currency";
 
 export default function SummaryCards({
   summary,

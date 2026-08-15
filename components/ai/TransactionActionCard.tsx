@@ -4,7 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { Check, Loader2, Plus } from "lucide-react";
 import type { ParsedTransactionAction } from "@/lib/gemini";
 import { createTransaction } from "@/app/actions/transactions";
-import { useCurrencyFormatter } from "@/lib/currency";
+import { useCurrencyFormatter } from "@/lib/use-display-currency";
 
 const TYPE_LABELS: Record<ParsedTransactionAction["type"], string> = {
   income: "Add Income",

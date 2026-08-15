@@ -5,7 +5,7 @@ import { Check, Loader2, Trash2, X } from "lucide-react";
 import type { Transaction, TransactionType } from "@/types/transaction";
 import { deleteTransaction } from "@/app/actions/transactions";
 import AddTransactionModal from "@/components/dashboard/AddTransactionModal";
-import { useCurrencyFormatter } from "@/lib/currency";
+import { useCurrencyFormatter } from "@/lib/use-display-currency";
 
 const TYPE_BADGES: Record<TransactionType, string> = {
   income: "badge-success",

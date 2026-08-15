@@ -1,5 +1,3 @@
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
-
 export const BASE_CURRENCY = "USD";
 export const DEFAULT_DISPLAY_CURRENCY = "USD";
 export const CURRENCY_COOKIE = "display-currency";
@@ -124,23 +122,15 @@ export function storedDisplayCurrency(): string {
   return DEFAULT_DISPLAY_CURRENCY;
 }
 
-function subscribe(callback: () => void): () => void {
+export function subscribeToDisplayCurrency(callback: () => void): () => void {
   listeners.add(callback);
   return () => {
     listeners.delete(callback);
   };
 }
 
-function getSnapshot(): string {
+export function getDisplayCurrencySnapshot(): string {
   return storedDisplayCurrency();
-}
-
-export function useDisplayCurrency(): string {
-  return useSyncExternalStore(
-    subscribe,
-    getSnapshot,
-    () => DEFAULT_DISPLAY_CURRENCY
-  );
 }
 
 export function setDisplayCurrency(code: string): void {
@@ -149,42 +139,4 @@ export function setDisplayCurrency(code: string): void {
     : DEFAULT_DISPLAY_CURRENCY;
   document.cookie = `${CURRENCY_COOKIE}=${safeCode}; path=/; max-age=31536000; samesite=lax`;
   listeners.forEach((listener) => listener());
-}
-
-let cachedRates: CurrencyRates | null = null;
-
-async function loadRates(): Promise<CurrencyRates> {
-  if (cachedRates) return cachedRates;
-  try {
-    const response = await fetch("/api/currency-rates", {
-      cache: "no-store",
-    });
-    if (!response.ok) return {};
-    const data: unknown = await response.json();
-    const rates = (data as { rates?: CurrencyRates } | null)?.rates ?? {};
-    cachedRates = rates;
-    return rates;
-  } catch {
-    return {};
-  }
-}
-
-export function useCurrencyFormatter(): (amountUsd: number) => string {
-  const code = useDisplayCurrency();
-  const [rates, setRates] = useState<CurrencyRates | null>(null);
-
-  useEffect(() => {
-    let active = true;
-    loadRates().then((loaded) => {
-      if (active) setRates(loaded);
-    });
-    return () => {
-      active = false;
-    };
-  }, [code]);
-
-  return useMemo(
-    () => (amountUsd: number) => formatCurrency(amountUsd, code, rates ?? {}),
-    [code, rates]
-  );
 }
