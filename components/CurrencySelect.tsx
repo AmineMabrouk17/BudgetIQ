@@ -17,7 +17,7 @@ export default function CurrencySelect() {
       aria-label="Display currency"
       title="Display currency"
     >
-      {CURRENCIES.map(({ code: currencyCode, name }) => (
+      {CURRENCIES.map(({ code: currencyCode }) => (
         <option key={currencyCode} value={currencyCode}>
           {currencyCode}
         </option>
