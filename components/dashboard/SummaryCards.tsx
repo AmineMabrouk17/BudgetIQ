@@ -1,10 +1,8 @@
+"use client";
+
 import { Landmark, Receipt, Wallet } from "lucide-react";
 import type { Summary } from "@/lib/summary";
-
-const currency = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-});
+import { useCurrencyFormatter } from "@/lib/currency";
 
 export default function SummaryCards({
   summary,
@@ -13,6 +11,7 @@ export default function SummaryCards({
   summary: Summary;
   hasTransactions: boolean;
 }) {
+  const format = useCurrencyFormatter();
   return (
     <section aria-label="Financial summary">
       <div className="stats stats-vertical w-full shadow lg:stats-horizontal">
@@ -22,7 +21,7 @@ export default function SummaryCards({
           </div>
           <div className="stat-title">Net Balance</div>
           <div className="stat-value text-2xl">
-            {currency.format(summary.netBalance)}
+            {format(summary.netBalance)}
           </div>
           <div className="stat-desc">Income + Assets − Expenses</div>
         </div>
@@ -32,7 +31,7 @@ export default function SummaryCards({
           </div>
           <div className="stat-title">Monthly Spending</div>
           <div className="stat-value text-2xl">
-            {currency.format(summary.monthlySpending)}
+            {format(summary.monthlySpending)}
           </div>
           <div className="stat-desc">Expenses this calendar month</div>
         </div>
@@ -42,7 +41,7 @@ export default function SummaryCards({
           </div>
           <div className="stat-title">Total Assets</div>
           <div className="stat-value text-2xl">
-            {currency.format(summary.totalAssets)}
+            {format(summary.totalAssets)}
           </div>
           <div className="stat-desc">Sum of asset accounts</div>
         </div>
