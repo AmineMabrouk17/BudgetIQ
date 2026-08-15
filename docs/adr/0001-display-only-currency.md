@@ -1,0 +1,5 @@
+# Display-only currency: stored amounts stay plain numbers, base USD
+
+Transactions store `amount` as a plain `NUMERIC(12, 2)` with no currency column, and every formatter hardcodes USD. The AI assistant already accepts `$`, `€`, and `£` symbols but drops them, so "€45" is stored as `45` and displayed as `$45.00`. We are adding a currency dropdown to the dashboard, and we decided this dropdown converts **for display only**: amounts stay plain numbers interpreted as a fixed base currency (USD), and are converted to the chosen display currency at render time using exchange rates cached in a `currency_rates` table (refreshed when older than ~24h, falling back to stale rates if the API fails).
+
+We chose this over per-transaction currency (a `currency` column, the Gemini schema recording the symbol, aggregating across currencies), which is the correct long-term shape but needs a schema migration, prompt/schema changes, and multi-currency aggregation now. Display-only delivers the visible feature with zero schema change, and a future migration to per-transaction currency remains possible because stored values are never rewritten.
