@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { insertTransaction, removeTransaction } from "@/lib/transactions";
+import { canonicalizeCategory } from "@/lib/categories";
 import type {
   CreateTransactionInput,
   Transaction,
@@ -101,7 +102,10 @@ export async function createTransaction(
   if (!parsed.ok) return parsed;
 
   try {
-    const transaction = await insertTransaction(parsed.data);
+    const transaction = await insertTransaction({
+      ...parsed.data,
+      category: canonicalizeCategory(parsed.data.category),
+    });
     revalidatePath("/dashboard");
     return { ok: true, transaction };
   } catch (error) {
