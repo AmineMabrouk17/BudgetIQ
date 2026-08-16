@@ -30,3 +30,16 @@
     --color-base-300: #080f1f;
   }
 }
+
+/* Added by the AntiInspect component to deter casual copying/inspection. */
+.anti-inspect {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.anti-inspect input,
+.anti-inspect textarea,
+.anti-inspect [contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+}
