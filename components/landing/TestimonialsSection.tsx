@@ -1,5 +1,6 @@
 import { Quote } from "lucide-react";
 import SectionHeading from "@/components/landing/SectionHeading";
+import Reveal from "@/components/landing/Reveal";
 
 interface TestimonialData {
   quote: string;
@@ -32,7 +33,7 @@ const testimonials: TestimonialData[] = [
 
 function TestimonialCard({ quote, name, role }: TestimonialData) {
   return (
-    <figure className="flex h-full flex-col rounded-2xl border border-white/[0.08] bg-night-raised p-6 shadow-lg">
+    <figure className="group flex h-full flex-col rounded-2xl border border-white/[0.08] bg-night-raised p-6 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-white/[0.18] hover:shadow-[0_24px_48px_-16px_rgba(0,0,0,0.55)] motion-reduce:hover:transform-none motion-reduce:transition-none">
       <Quote className="h-6 w-6 text-pop-yellow" aria-hidden="true" />
       <blockquote className="mt-4 flex-1 leading-[1.6] text-white/80">
         {quote}
@@ -55,8 +56,15 @@ export default function TestimonialsSection() {
           description="What early users say about BudgetIQ — real quotes coming soon."
         />
         <div className="mt-12 grid gap-6 md:grid-cols-3">
-          {testimonials.map((testimonial) => (
-            <TestimonialCard key={testimonial.name} {...testimonial} />
+          {testimonials.map((testimonial, index) => (
+            <Reveal
+              key={testimonial.name}
+              variant="up"
+              delay={index * 90}
+              className="h-full"
+            >
+              <TestimonialCard {...testimonial} />
+            </Reveal>
           ))}
         </div>
       </div>

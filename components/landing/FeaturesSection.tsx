@@ -8,6 +8,7 @@ import {
   Receipt,
 } from "lucide-react";
 import SectionHeading from "@/components/landing/SectionHeading";
+import Reveal from "@/components/landing/Reveal";
 
 const popClasses: Record<string, string> = {
   green: "text-pop-green",
@@ -72,8 +73,8 @@ const featureCards: FeatureCardData[] = [
 
 function FeatureCard({ icon: Icon, color, title, description }: FeatureCardData) {
   return (
-    <div className="rounded-2xl border border-white/[0.08] bg-night-raised p-6 shadow-lg">
-      <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.04]">
+    <div className="group h-full rounded-2xl border border-white/[0.08] bg-night-raised p-6 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-white/[0.18] hover:shadow-[0_24px_48px_-16px_rgba(0,0,0,0.55)] motion-reduce:hover:transform-none motion-reduce:transition-none">
+      <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.04] transition-transform duration-300 group-hover:scale-110 motion-reduce:group-hover:scale-100">
         <Icon className={`h-6 w-6 ${popClasses[color]}`} aria-hidden="true" />
       </div>
       <h3 className="mt-4 text-lg font-display font-semibold tracking-[-0.02em] text-white/90">
@@ -94,8 +95,15 @@ export default function FeaturesSection() {
           description="A complete money tracker with an AI assistant that does the data entry for you — free and open source."
         />
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {featureCards.map((card) => (
-            <FeatureCard key={card.title} {...card} />
+          {featureCards.map((card, index) => (
+            <Reveal
+              key={card.title}
+              variant="up"
+              delay={index * 90}
+              className="h-full"
+            >
+              <FeatureCard {...card} />
+            </Reveal>
           ))}
         </div>
       </div>
