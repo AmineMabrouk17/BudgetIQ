@@ -18,7 +18,7 @@ export default function LandingFooter() {
               <li key={href}>
                 <a
                   href={href}
-                  className="text-sm text-muted transition-colors hover:text-white/90"
+                  className="relative text-sm text-muted transition-colors hover:text-white/90 after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-0 after:bg-current after:transition-all after:duration-300 hover:after:w-full motion-reduce:after:hidden"
                 >
                   {label}
                 </a>
@@ -27,7 +27,7 @@ export default function LandingFooter() {
             <li>
               <a
                 href="https://github.com/AmineMabrouk17/BudgetIQ"
-                className="text-sm text-base-content/70 transition-colors hover:text-base-content"
+                className="relative text-sm text-base-content/70 transition-colors hover:text-base-content after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-0 after:bg-current after:transition-all after:duration-300 hover:after:w-full motion-reduce:after:hidden"
               >
                 GitHub
               </a>

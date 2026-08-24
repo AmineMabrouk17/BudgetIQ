@@ -84,4 +84,26 @@ describe("Reveal", () => {
     expect(screen.getByText("Static content")).toHaveClass("opacity-100");
     expect(MockIntersectionObserver.instances).toHaveLength(0);
   });
+
+  it("applies the variant transform classes when revealing", () => {
+    vi.stubGlobal(
+      "matchMedia",
+      createMatchMedia({ "(prefers-reduced-motion: reduce)": false })
+    );
+
+    render(
+      <Reveal variant="scale" delay={150}>
+        Scaled content
+      </Reveal>
+    );
+
+    const content = screen.getByText("Scaled content");
+    expect(content).toHaveClass("opacity-0");
+    expect(content).toHaveClass("scale-95");
+
+    act(() => MockIntersectionObserver.instances[0].trigger(true));
+
+    expect(content).toHaveClass("opacity-100");
+    expect(content).toHaveClass("scale-100");
+  });
 });

@@ -1,5 +1,6 @@
 import { ChevronDown } from "lucide-react";
 import SectionHeading from "@/components/landing/SectionHeading";
+import Reveal from "@/components/landing/Reveal";
 
 interface FaqData {
   question: string;
@@ -41,7 +42,7 @@ const faqs: FaqData[] = [
 
 function FaqItem({ question, answer }: FaqData) {
   return (
-    <details className="group rounded-2xl border border-white/[0.08] bg-night-raised">
+    <details className="group rounded-2xl border border-white/[0.08] bg-night-raised transition-colors duration-300 hover:border-white/[0.18] hover:bg-white/[0.02] motion-reduce:transition-none">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-base font-semibold text-white/90 [&::-webkit-details-marker]:hidden">
         {question}
         <ChevronDown
@@ -64,8 +65,10 @@ export default function FaqSection() {
           description="Everything you might wonder before signing up — answered honestly."
         />
         <div className="mt-12 flex flex-col gap-3">
-          {faqs.map((faq) => (
-            <FaqItem key={faq.question} {...faq} />
+          {faqs.map((faq, index) => (
+            <Reveal key={faq.question} variant="up" delay={index * 70}>
+              <FaqItem {...faq} />
+            </Reveal>
           ))}
         </div>
       </div>
