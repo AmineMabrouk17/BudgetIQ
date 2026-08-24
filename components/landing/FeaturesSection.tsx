@@ -9,8 +9,18 @@ import {
 } from "lucide-react";
 import SectionHeading from "@/components/landing/SectionHeading";
 
+const popClasses: Record<string, string> = {
+  green: "text-pop-green",
+  orange: "text-pop-orange",
+  purple: "text-pop-purple",
+  pink: "text-pop-pink",
+  yellow: "text-pop-yellow",
+  red: "text-pop-red",
+};
+
 interface FeatureCardData {
   icon: LucideIcon;
+  color: keyof typeof popClasses;
   title: string;
   description: string;
 }
@@ -18,59 +28,65 @@ interface FeatureCardData {
 const featureCards: FeatureCardData[] = [
   {
     icon: Receipt,
+    color: "green",
     title: "Track it all in one place",
     description:
       "Income, expenses, and assets live together in a single view — salary, bills, subscriptions, cash, and investments.",
   },
   {
     icon: MessageSquare,
+    color: "orange",
     title: "Log transactions by typing",
     description:
       'Just say "I spent $15 on coffee" and the AI assistant records it for you — no forms, no spreadsheets.',
   },
   {
     icon: Gauge,
+    color: "purple",
     title: "Know your numbers in real time",
     description:
       "Net balance, monthly spend, and total assets update the moment you add a transaction.",
   },
   {
     icon: ChartPie,
+    color: "pink",
     title: "See where your money goes",
     description:
       "Interactive category breakdowns and charts turn your habits into something you can act on.",
   },
   {
     icon: Quote,
+    color: "yellow",
     title: "A fresh quote every day",
     description:
       "Daily financial quotes keep you grounded and motivated, right inside the app.",
   },
   {
     icon: LogIn,
+    color: "red",
     title: "One-click sign-in, open source",
     description:
       "Sign in with Google in seconds — and since BudgetIQ is open source under MIT, you can inspect every line.",
   },
 ];
 
-function FeatureCard({ icon: Icon, title, description }: FeatureCardData) {
+function FeatureCard({ icon: Icon, color, title, description }: FeatureCardData) {
   return (
-    <div className="rounded-2xl border border-base-300/60 bg-base-100 p-6 shadow-sm">
-      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-        <Icon className="h-6 w-6" aria-hidden="true" />
+    <div className="rounded-2xl border border-white/[0.08] bg-night-raised p-6 shadow-lg">
+      <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.04]">
+        <Icon className={`h-6 w-6 ${popClasses[color]}`} aria-hidden="true" />
       </div>
-      <h3 className="mt-4 text-lg font-semibold">{title}</h3>
-      <p className="mt-2 text-sm leading-relaxed text-base-content/70">
-        {description}
-      </p>
+      <h3 className="mt-4 text-lg font-display font-semibold tracking-[-0.02em] text-white/90">
+        {title}
+      </h3>
+      <p className="mt-2 text-sm leading-[1.6] text-muted">{description}</p>
     </div>
   );
 }
 
 export default function FeaturesSection() {
   return (
-    <section id="features" className="scroll-mt-20 bg-base-100 py-20">
+    <section id="features" className="scroll-mt-20 bg-night py-20">
       <div className="mx-auto max-w-6xl px-6">
         <SectionHeading
           eyebrow="Features"

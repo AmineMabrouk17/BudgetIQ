@@ -14,9 +14,9 @@ describe("LandingNav", () => {
       expect(screen.getByRole("link", { name: anchor })).toBeInTheDocument();
     }
 
-    const signIn = screen.getByRole("link", { name: /sign in/i });
-    expect(signIn).toBeInTheDocument();
-    expect(signIn).toHaveAttribute("href", "/login");
+    const logIn = screen.getByRole("link", { name: /log in/i });
+    expect(logIn).toBeInTheDocument();
+    expect(logIn).toHaveAttribute("href", "/login");
 
     const getStarted = screen.getByRole("link", { name: /get started/i });
     expect(getStarted).toBeInTheDocument();

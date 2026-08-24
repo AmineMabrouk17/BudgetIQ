@@ -32,4 +32,10 @@ describe("LandingHero", () => {
       screen.getByText(/free forever · open source · no ads · your data, yours/i)
     ).toBeInTheDocument();
   });
+
+  it("renders the Groceries pill tag", () => {
+    render(<LandingHero />);
+
+    expect(screen.getByText(/groceries/i)).toBeInTheDocument();
+  });
 });
