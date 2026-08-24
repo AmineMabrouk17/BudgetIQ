@@ -1,8 +1,33 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-space-grotesk);
+}
+
+/* BudgetIQ design system — copilot.money-inspired (issue #58) */
+@theme {
+  /* Base surfaces */
+  --color-night: #010d1f;
+  --color-night-alt: #001122;
+  --color-night-raised: #11263b;
+
+  /* Primary accent / CTA */
+  --color-accent: #0099ff;
+  --color-accent-bright: #3388ff;
+  --color-accent-deep: #1a66ff;
+
+  /* Secondary/muted text */
+  --color-muted: #5979a6;
+
+  /* Playful accent pops */
+  --color-pop-green: #00cc4b;
+  --color-pop-orange: #f68002;
+  --color-pop-red: #ff4433;
+  --color-pop-pink: #ea687c;
+  --color-pop-yellow: #ffcc02;
+  --color-pop-purple: #8b5cf6;
 }
 
 @plugin "daisyui" {
@@ -11,22 +36,37 @@
 
 :root,
 [data-theme="light"] {
-  --color-primary: #14b37b;
+  --color-primary: #0099ff;
   --color-primary-content: #ffffff;
 }
 
 [data-theme="dark"] {
-  --color-base-100: #0f1932;
-  --color-base-200: #0b1326;
-  --color-base-300: #080f1f;
+  --color-base-100: #11263b;
+  --color-base-200: #001122;
+  --color-base-300: #010d1f;
+  --color-primary: #0099ff;
+  --color-primary-content: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
-    --color-primary: #14b37b;
+    --color-base-100: #11263b;
+    --color-base-200: #001122;
+    --color-base-300: #010d1f;
+    --color-primary: #0099ff;
     --color-primary-content: #ffffff;
-    --color-base-100: #0f1932;
-    --color-base-200: #0b1326;
-    --color-base-300: #080f1f;
   }
+}
+
+/* Added by the AntiInspect component to deter casual copying/inspection. */
+.anti-inspect {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.anti-inspect input,
+.anti-inspect textarea,
+.anti-inspect [contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
 }

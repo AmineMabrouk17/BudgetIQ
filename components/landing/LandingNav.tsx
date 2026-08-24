@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import ThemeToggle from "@/components/ThemeToggle";
 
 const anchors = [
   { href: "#features", label: "Features" },
@@ -10,9 +9,9 @@ const anchors = [
 
 export default function LandingNav() {
   return (
-    <header className="navbar sticky top-0 z-30 border-b border-base-300/50 bg-base-100/80 backdrop-blur">
-      <div className="navbar-start">
-        <Link href="/" className="flex items-center gap-2 px-4 text-xl font-bold">
+    <header className="sticky top-0 z-30 bg-night/60 backdrop-blur-md">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+        <Link href="/" className="flex items-center gap-2">
           <Image
             src="/logo-icon-light.png"
             alt="BudgetIQ logo"
@@ -20,31 +19,35 @@ export default function LandingNav() {
             height={32}
             className="h-8 w-8 rounded-lg"
           />
-          BudgetIQ
+          <span className="font-display font-bold text-lg text-white/90">
+            BudgetIQ
+          </span>
         </Link>
-      </div>
-      <div className="navbar-center hidden md:flex">
-        <ul className="menu menu-horizontal gap-1 px-1">
+        <nav className="hidden items-center gap-8 md:flex">
           {anchors.map(({ href, label }) => (
-            <li key={href}>
-              <a
-                href={href}
-                className="text-sm text-base-content/70 transition-colors hover:text-base-content"
-              >
-                {label}
-              </a>
-            </li>
+            <a
+              key={href}
+              href={href}
+              className="text-sm font-medium text-muted transition-colors hover:text-white/90"
+            >
+              {label}
+            </a>
           ))}
-        </ul>
-      </div>
-      <div className="navbar-end gap-1 pr-3">
-        <ThemeToggle />
-        <Link href="/login" className="btn btn-ghost btn-sm hidden sm:inline-flex">
-          Sign in
-        </Link>
-        <Link href="/login" className="btn btn-primary btn-sm">
-          Get started
-        </Link>
+        </nav>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/login"
+            className="hidden text-sm font-medium text-white/90 transition-colors hover:text-white sm:inline-flex"
+          >
+            Log in
+          </Link>
+          <Link
+            href="/login"
+            className="inline-flex items-center rounded-full bg-white px-5 py-2 text-sm font-semibold text-[#010D1F] transition-colors hover:bg-white/90"
+          >
+            Get started
+          </Link>
+        </div>
       </div>
     </header>
   );

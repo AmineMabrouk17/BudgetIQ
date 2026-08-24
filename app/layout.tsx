@@ -1,12 +1,19 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Inter, Space_Grotesk } from "next/font/google";
 import { cookies } from "next/headers";
 import "./globals.css";
 import { metadata as siteMetadata } from "./metadata";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
+  subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
@@ -31,7 +38,7 @@ export default async function RootLayout({
       lang="en"
       data-theme={dataTheme}
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable}`}
+      className={`${inter.variable} ${spaceGrotesk.variable} ${geistMono.variable}`}
     >
       <body>{children}</body>
     </html>

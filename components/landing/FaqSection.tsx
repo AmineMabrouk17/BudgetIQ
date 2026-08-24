@@ -1,3 +1,4 @@
+import { ChevronDown } from "lucide-react";
 import SectionHeading from "@/components/landing/SectionHeading";
 
 interface FaqData {
@@ -38,21 +39,24 @@ const faqs: FaqData[] = [
   },
 ];
 
-function FaqItem({ question, answer, index }: FaqData & { index: number }) {
+function FaqItem({ question, answer }: FaqData) {
   return (
-    <div className="collapse collapse-arrow rounded-2xl border border-base-300/60 bg-base-100">
-      <input type="radio" name="faq" defaultChecked={index === 0} />
-      <div className="collapse-title text-base font-semibold">{question}</div>
-      <div className="collapse-content text-sm leading-relaxed text-base-content/70">
-        {answer}
-      </div>
-    </div>
+    <details className="group rounded-2xl border border-white/[0.08] bg-night-raised">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-base font-semibold text-white/90 [&::-webkit-details-marker]:hidden">
+        {question}
+        <ChevronDown
+          className="h-5 w-5 shrink-0 text-muted transition-transform duration-200 group-open:rotate-180"
+          aria-hidden="true"
+        />
+      </summary>
+      <div className="px-5 pb-5 text-sm leading-[1.6] text-muted">{answer}</div>
+    </details>
   );
 }
 
 export default function FaqSection() {
   return (
-    <section id="faq" className="scroll-mt-20 bg-base-200 py-20">
+    <section id="faq" className="scroll-mt-20 bg-night-alt py-20">
       <div className="mx-auto max-w-3xl px-6">
         <SectionHeading
           eyebrow="FAQ"
@@ -60,8 +64,8 @@ export default function FaqSection() {
           description="Everything you might wonder before signing up — answered honestly."
         />
         <div className="mt-12 flex flex-col gap-3">
-          {faqs.map((faq, index) => (
-            <FaqItem key={faq.question} {...faq} index={index} />
+          {faqs.map((faq) => (
+            <FaqItem key={faq.question} {...faq} />
           ))}
         </div>
       </div>

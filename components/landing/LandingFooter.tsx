@@ -7,9 +7,9 @@ const productLinks = [
 
 export default function LandingFooter() {
   return (
-    <footer className="border-t border-base-300/50 bg-base-100">
+    <footer className="border-t border-white/[0.08] bg-night">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-10 sm:flex-row">
-        <p className="text-sm font-medium text-base-content/60">
+        <p className="text-sm font-medium text-muted">
           BudgetIQ · Open source under MIT
         </p>
         <nav aria-label="Footer">
@@ -18,7 +18,7 @@ export default function LandingFooter() {
               <li key={href}>
                 <a
                   href={href}
-                  className="text-sm text-base-content/70 transition-colors hover:text-base-content"
+                  className="text-sm text-muted transition-colors hover:text-white/90"
                 >
                   {label}
                 </a>
