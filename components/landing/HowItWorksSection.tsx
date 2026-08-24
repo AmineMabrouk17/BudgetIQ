@@ -1,4 +1,5 @@
 import SectionHeading from "@/components/landing/SectionHeading";
+import Reveal from "@/components/landing/Reveal";
 
 interface StepData {
   number: string;
@@ -33,13 +34,17 @@ const steps: StepData[] = [
 
 function StepCard({ number, title, description, colorClass }: StepData) {
   return (
-    <li className="rounded-2xl border border-white/[0.08] bg-night-raised p-6">
-      <span className={`text-4xl font-bold ${colorClass}`}>{number}</span>
+    <div className="group h-full rounded-2xl border border-white/[0.08] bg-night-raised p-6 transition-all duration-300 hover:-translate-y-1 hover:border-white/[0.18] hover:shadow-[0_24px_48px_-16px_rgba(0,0,0,0.55)] motion-reduce:hover:transform-none motion-reduce:transition-none">
+      <span
+        className={`text-4xl font-bold ${colorClass} transition-transform duration-300 group-hover:-translate-y-0.5 motion-reduce:group-hover:translate-y-0`}
+      >
+        {number}
+      </span>
       <h3 className="mt-3 text-lg font-display font-semibold tracking-[-0.02em] text-white/90">
         {title}
       </h3>
       <p className="mt-2 text-sm leading-[1.6] text-muted">{description}</p>
-    </li>
+    </div>
   );
 }
 
@@ -52,9 +57,13 @@ export default function HowItWorksSection() {
           title="Tracking your money in three steps"
           description="From sign-up to your first logged transaction in under a minute."
         />
-        <ol className="mt-12 grid gap-6 md:grid-cols-3">
-          {steps.map((step) => (
-            <StepCard key={step.number} {...step} />
+        <ol className="mt-12 grid list-none gap-6 md:grid-cols-3">
+          {steps.map((step, index) => (
+            <li key={step.number} className="h-full">
+              <Reveal variant="up" delay={index * 110} className="h-full">
+                <StepCard {...step} />
+              </Reveal>
+            </li>
           ))}
         </ol>
       </div>

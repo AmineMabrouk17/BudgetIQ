@@ -28,7 +28,7 @@ export default function LandingNav() {
             <a
               key={href}
               href={href}
-              className="text-sm font-medium text-muted transition-colors hover:text-white/90"
+              className="relative text-sm font-medium text-muted transition-colors hover:text-white/90 after:absolute after:-bottom-1 after:left-0 after:h-px after:w-0 after:bg-current after:transition-all after:duration-300 hover:after:w-full motion-reduce:after:hidden"
             >
               {label}
             </a>
@@ -43,7 +43,7 @@ export default function LandingNav() {
           </Link>
           <Link
             href="/login"
-            className="inline-flex items-center rounded-full bg-white px-5 py-2 text-sm font-semibold text-[#010D1F] transition-colors hover:bg-white/90"
+            className="group inline-flex items-center rounded-full bg-white px-5 py-2 text-sm font-semibold text-[#010D1F] transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/90 hover:shadow-xl active:translate-y-0 motion-reduce:hover:transform-none"
           >
             Get started
           </Link>

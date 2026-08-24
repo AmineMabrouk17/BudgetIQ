@@ -57,7 +57,7 @@ function DonutChart() {
 
 export default function HeroMockup() {
   return (
-    <div className="relative mx-auto w-full max-w-md rounded-2xl border border-white/[0.08] bg-night-raised p-6 shadow-2xl">
+    <div className="relative mx-auto w-full max-w-md rounded-2xl border border-white/[0.08] bg-night-raised p-6 shadow-2xl transition-transform duration-500 ease-out hover:-translate-y-1 hover:scale-[1.01] motion-reduce:hover:transform-none motion-reduce:transition-none">
       <div className="mb-6 flex items-center justify-between">
         <div className="flex gap-1.5">
           <span className="h-3 w-3 rounded-full bg-pop-red/70" aria-hidden="true" />
