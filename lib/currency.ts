@@ -24,6 +24,7 @@ export const CURRENCIES: Currency[] = [
   { code: "KRW", name: "South Korean Won" },
   { code: "SGD", name: "Singapore Dollar" },
   { code: "NZD", name: "New Zealand Dollar" },
+  { code: "TND", name: "Tunisian Dinar" },
 ];
 
 export const CURRENCY_CODES = CURRENCIES.map((currency) => currency.code);

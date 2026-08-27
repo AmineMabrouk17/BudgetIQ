@@ -37,13 +37,27 @@ export default async function Navbar() {
         <ThemeToggle />
         {user ? (
           <>
-            <div className="avatar placeholder">
-              <div className="w-8 rounded-full bg-neutral text-sm text-neutral-content">
-                {initials(user.user_metadata?.full_name ?? user.email ?? "U")}
+            <div className="avatar">
+              <div className="w-8 overflow-hidden rounded-full">
+                {user.user_metadata?.avatar_url ? (
+                  <Image
+                    src={user.user_metadata.avatar_url}
+                    alt="Profile photo"
+                    width={32}
+                    height={32}
+                    className="h-8 w-8 object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-neutral text-sm text-neutral-content">
+                    {initials(
+                      user.user_metadata?.full_name ?? user.user_metadata?.name ?? "U"
+                    )}
+                  </div>
+                )}
               </div>
             </div>
             <span className="hidden text-sm text-base-content/70 md:inline">
-              {user.email}
+              {user.user_metadata?.full_name ?? user.user_metadata?.name}
             </span>
             <form action={signOut}>
               <button className="btn btn-ghost btn-sm" aria-label="Sign out">
