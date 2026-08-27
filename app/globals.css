@@ -2,7 +2,6 @@
 
 @theme inline {
   --font-sans: var(--font-inter);
-  --font-mono: var(--font-geist-mono);
   --font-display: var(--font-space-grotesk);
 }
 

@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
-import { getProfile } from "@/lib/profiles";
-import { landingView } from "@/lib/landing-view";
+import { getUser } from "@/lib/supabase/server";
 import AnnouncementBar from "@/components/landing/AnnouncementBar";
 import LandingNav from "@/components/landing/LandingNav";
 import LandingHero from "@/components/landing/LandingHero";
@@ -12,9 +11,9 @@ import CtaBand from "@/components/landing/CtaBand";
 import LandingFooter from "@/components/landing/LandingFooter";
 
 export default async function Home() {
-  const profile = await getProfile();
+  const user = await getUser();
 
-  if (landingView(profile) === "dashboard") {
+  if (user) {
     redirect("/dashboard");
   }
 

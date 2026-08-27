@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Inter, Space_Grotesk } from "next/font/google";
+import { Inter, Space_Grotesk } from "next/font/google";
 import { cookies } from "next/headers";
 import "./globals.css";
 import { metadata as siteMetadata } from "./metadata";
@@ -15,11 +15,6 @@ const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
   subsets: ["latin"],
   display: "swap",
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
 });
 
 export const metadata: Metadata = siteMetadata;
@@ -39,7 +34,7 @@ export default async function RootLayout({
       lang="en"
       data-theme={dataTheme}
       suppressHydrationWarning
-      className={`${inter.variable} ${spaceGrotesk.variable} ${geistMono.variable}`}
+      className={`${inter.variable} ${spaceGrotesk.variable}`}
     >
       <body>
         {children}
