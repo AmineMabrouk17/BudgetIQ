@@ -42,7 +42,7 @@ function validateCreateInput(input: unknown):
     return { ok: false, error: "Invalid transaction payload." };
   }
 
-  const { type, title, amount, category, id } = input as Record<
+  const { type, title, amount, category } = input as Record<
     string,
     unknown
   >;
@@ -74,10 +74,6 @@ function validateCreateInput(input: unknown):
     return { ok: false, error: "Category must be 100 characters or fewer." };
   }
 
-  if (id !== undefined && (typeof id !== "string" || !UUID_REGEX.test(id))) {
-    return { ok: false, error: "Invalid transaction id." };
-  }
-
   return {
     ok: true,
     data: {
@@ -85,7 +81,6 @@ function validateCreateInput(input: unknown):
       title: title.trim(),
       amount: parsedAmount,
       category: trimmedCategory === "" ? undefined : trimmedCategory,
-      ...(typeof id === "string" ? { id } : {}),
     },
   };
 }

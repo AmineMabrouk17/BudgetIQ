@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { Check, Loader2, Plus } from "lucide-react";
 import type { ParsedTransactionAction } from "@/lib/gemini";
 import { createTransaction } from "@/app/actions/transactions";
@@ -19,7 +19,6 @@ export default function TransactionActionCard({
   action: ParsedTransactionAction;
 }) {
   const format = useCurrencyFormatter();
-  const idRef = useRef<string>(crypto.randomUUID());
   const [status, setStatus] = useState<"idle" | "added" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -35,7 +34,6 @@ export default function TransactionActionCard({
         title: action.title,
         amount: action.amount,
         category,
-        id: idRef.current,
       });
       if (result.ok) {
         setStatus("added");

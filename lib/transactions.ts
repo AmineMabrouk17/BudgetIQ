@@ -58,16 +58,13 @@ export async function insertTransaction(
     title: input.title,
     amount: input.amount,
     category: input.category ?? "General",
-    ...(input.id ? { id: input.id } : {}),
   };
 
-  const query = input.id
-    ? supabase
-        .from("transactions")
-        .upsert(row, { onConflict: "id" })
-    : supabase.from("transactions").insert(row);
-
-  const { data, error } = await query.select().single();
+  const { data, error } = await supabase
+    .from("transactions")
+    .insert(row)
+    .select()
+    .single();
 
   if (error) throw error;
   return toTransaction(data);
