@@ -57,19 +57,6 @@
   }
 }
 
-/* Added by the AntiInspect component to deter casual copying/inspection. */
-.anti-inspect {
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-.anti-inspect input,
-.anti-inspect textarea,
-.anti-inspect [contenteditable="true"] {
-  -webkit-user-select: text;
-  user-select: text;
-}
-
 /* Motion system (issue #58 follow-up): load + scroll animations */
 
 @keyframes bi-rise {
