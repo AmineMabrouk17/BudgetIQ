@@ -75,6 +75,7 @@ export default async function DashboardPage({
         <SummaryCards
           summary={summary}
           hasTransactions={transactions.length > 0}
+          incomeType={profile?.income_type ?? "salaried"}
         />
         <div className="flex items-center justify-end">
           <ScopeFilter scope={scope} />
