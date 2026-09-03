@@ -23,12 +23,20 @@ export default function Parallax({
     if (mediaQuery.matches) return;
 
     let frame = 0;
+    let cachedDocTop = 0;
+    let cachedHeight = 0;
+
+    const measure = () => {
+      const rect = element.getBoundingClientRect();
+      cachedDocTop = rect.top + window.scrollY;
+      cachedHeight = rect.height;
+    };
 
     const update = () => {
       frame = 0;
-      const rect = element.getBoundingClientRect();
       const viewportCenter = window.innerHeight / 2;
-      const offset = (rect.top + rect.height / 2 - viewportCenter) * speed;
+      const viewportTop = cachedDocTop - window.scrollY;
+      const offset = (viewportTop + cachedHeight / 2 - viewportCenter) * speed;
       element.style.transform = `translate3d(0, ${offset.toFixed(1)}px, 0)`;
     };
 
@@ -38,13 +46,19 @@ export default function Parallax({
       }
     };
 
+    const onResize = () => {
+      measure();
+      update();
+    };
+
+    measure();
     update();
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll, { passive: true });
+    window.addEventListener("resize", onResize, { passive: true });
 
     return () => {
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
+      window.removeEventListener("resize", onResize);
       if (frame) {
         window.cancelAnimationFrame(frame);
       }
