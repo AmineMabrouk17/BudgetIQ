@@ -1,12 +1,15 @@
-import { getTransactions } from "@/lib/transactions";
+import { getTransactions, getTransactionsPage } from "@/lib/transactions";
 import { computeSummary, groupExpensesByCategory } from "@/lib/summary";
 import SummaryCards from "@/components/dashboard/SummaryCards";
-import CategoryChart from "@/components/dashboard/CategoryChart";
+import LazyCategoryChart from "@/components/dashboard/LazyCategoryChart";
 import TransactionTable from "@/components/dashboard/TransactionTable";
 import ChatDrawer from "@/components/ai/ChatDrawer";
 
 export default async function DashboardPage() {
-  const transactions = await getTransactions();
+  const [transactions, page] = await Promise.all([
+    getTransactions(),
+    getTransactionsPage(),
+  ]);
   const summary = computeSummary(transactions);
   const categories = groupExpensesByCategory(transactions);
 
@@ -20,8 +23,11 @@ export default async function DashboardPage() {
           summary={summary}
           hasTransactions={transactions.length > 0}
         />
-        <CategoryChart categories={categories} />
-        <TransactionTable transactions={transactions} />
+        <LazyCategoryChart categories={categories} />
+        <TransactionTable
+          transactions={page.transactions}
+          nextCursor={page.nextCursor}
+        />
       </main>
     </ChatDrawer>
   );
