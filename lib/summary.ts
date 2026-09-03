@@ -5,6 +5,25 @@ export type Delta = {
   percentage: number | null;
 };
 
+export type PayCycleConfig = {
+  payday: number;
+  expectedIncome: number;
+  graceDays?: number;
+  cycleTransactions?: Transaction[];
+};
+
+export type PayCycleSummary = {
+  enabled: boolean;
+  cycleStart: string;
+  cycleEnd: string;
+  expectedIncome: number;
+  actualIncome: number;
+  expenses: number;
+  savingsRate: number | null;
+  received: boolean;
+  overdue: boolean;
+};
+
 export type Summary = {
   netBalance: number;
   monthlySpending: number;
@@ -12,6 +31,7 @@ export type Summary = {
   monthlyIncome: number;
   monthlyExpenses: number;
   savingsRate: number | null;
+  payCycle: PayCycleSummary | null;
   deltas: {
     monthlySpending: Delta;
     income: Delta;
@@ -24,6 +44,53 @@ export type CategoryTotal = {
   category: string;
   amount: number;
 };
+
+export const PAY_CYCLE_GRACE_DAYS = 5;
+
+function paydayInMonth(year: number, month: number, payday: number): Date {
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const day = Math.min(Math.max(1, payday), daysInMonth);
+  return new Date(year, month, day);
+}
+
+function previousPayday(payday: number, from: Date): Date {
+  let year = from.getFullYear();
+  let month = from.getMonth();
+  for (let i = 0; i < 400; i++) {
+    const candidate = paydayInMonth(year, month, payday);
+    if (candidate <= from) return candidate;
+    month -= 1;
+    if (month < 0) {
+      month = 11;
+      year -= 1;
+    }
+  }
+  return from;
+}
+
+function nextPayday(payday: number, from: Date): Date {
+  let year = from.getFullYear();
+  let month = from.getMonth() + 1;
+  if (month > 11) {
+    month = 0;
+    year += 1;
+  }
+  return paydayInMonth(year, month, payday);
+}
+
+export function getPayCycleBounds(
+  payday: number,
+  now: Date = new Date()
+): { currentStart: Date; currentEnd: Date; previousStart: Date } {
+  const currentStart = previousPayday(payday, now);
+  const currentEnd = nextPayday(payday, currentStart);
+  const previousStart = paydayInMonth(
+    currentStart.getFullYear(),
+    currentStart.getMonth() - 1,
+    payday
+  );
+  return { currentStart, currentEnd, previousStart };
+}
 
 export function groupExpensesByCategory(
   transactions: Transaction[]
@@ -53,41 +120,96 @@ function monthlySavingsRate(income: number, expenses: number): number | null {
 
 export function computeSummary(
   transactions: Transaction[],
-  now: Date = new Date()
+  now: Date = new Date(),
+  options: { payCycle?: PayCycleConfig } = {}
 ): Summary {
   let income = 0;
   let expenses = 0;
   let totalAssets = 0;
-  let monthlySpending = 0;
   let monthlyIncome = 0;
   let monthlyExpenses = 0;
-  let lastMonthIncome = 0;
-  let lastMonthExpenses = 0;
+  let monthlySpending = 0;
+  let lastIncome = 0;
+  let lastExpenses = 0;
+
+  const payCycleConfig = options.payCycle;
+  const payday = payCycleConfig?.payday ?? null;
+  const isCycle = payday !== null && payday > 0;
 
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const lastMonthStart = new Date(
-    now.getFullYear(),
-    now.getMonth() - 1,
-    1
-  );
+  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+  let cycleStart: Date | null = null;
+  let cycleEnd: Date | null = null;
+  let previousCycleStart: Date | null = null;
+
+  if (isCycle) {
+    const bounds = getPayCycleBounds(payday, now);
+    cycleStart = bounds.currentStart;
+    cycleEnd = bounds.currentEnd;
+    previousCycleStart = bounds.previousStart;
+  }
 
   for (const t of transactions) {
-    const date = new Date(t.created_at);
-    if (t.type === "income") {
-      income += t.amount;
-      if (date >= monthStart) monthlyIncome += t.amount;
-      else if (date >= lastMonthStart) lastMonthIncome += t.amount;
-    } else if (t.type === "expense") {
-      expenses += t.amount;
-      if (date >= monthStart) {
-        monthlySpending += t.amount;
-        monthlyExpenses += t.amount;
-      } else if (date >= lastMonthStart) lastMonthExpenses += t.amount;
-    } else if (t.type === "asset") totalAssets += t.amount;
+    if (t.type === "income") income += t.amount;
+    else if (t.type === "expense") expenses += t.amount;
+    else if (t.type === "asset") totalAssets += t.amount;
+  }
+
+  if (isCycle && cycleStart && cycleEnd && previousCycleStart) {
+    const cycleTransactions = payCycleConfig?.cycleTransactions ?? [];
+    for (const t of cycleTransactions) {
+      const date = new Date(t.created_at);
+      if (t.type === "income") {
+        if (date >= cycleStart && date < cycleEnd) monthlyIncome += t.amount;
+        else if (date >= previousCycleStart && date < cycleStart)
+          lastIncome += t.amount;
+      } else if (t.type === "expense") {
+        if (date >= cycleStart && date < cycleEnd) {
+          monthlySpending += t.amount;
+          monthlyExpenses += t.amount;
+        } else if (date >= previousCycleStart && date < cycleStart)
+          lastExpenses += t.amount;
+      }
+    }
+  } else {
+    for (const t of transactions) {
+      const date = new Date(t.created_at);
+      if (t.type === "income") {
+        if (date >= monthStart) monthlyIncome += t.amount;
+        else if (date >= lastMonthStart) lastIncome += t.amount;
+      } else if (t.type === "expense") {
+        if (date >= monthStart) {
+          monthlySpending += t.amount;
+          monthlyExpenses += t.amount;
+        } else if (date >= lastMonthStart) lastExpenses += t.amount;
+      }
+    }
   }
 
   const currentRate = monthlySavingsRate(monthlyIncome, monthlyExpenses);
-  const lastRate = monthlySavingsRate(lastMonthIncome, lastMonthExpenses);
+  const lastRate = monthlySavingsRate(lastIncome, lastExpenses);
+
+  const graceDays = payCycleConfig?.graceDays ?? PAY_CYCLE_GRACE_DAYS;
+  const payCycle: PayCycleSummary | null =
+    isCycle && payCycleConfig && cycleStart && cycleEnd
+      ? {
+          enabled: true,
+          cycleStart: cycleStart.toISOString(),
+          cycleEnd: cycleEnd.toISOString(),
+          expectedIncome: payCycleConfig.expectedIncome,
+          actualIncome: monthlyIncome,
+          expenses: monthlyExpenses,
+          savingsRate: currentRate,
+          received: monthlyIncome >= payCycleConfig.expectedIncome,
+          overdue:
+            now.getTime() >
+              new Date(
+                cycleStart.getTime() + graceDays * 24 * 60 * 60 * 1000
+              ).getTime() &&
+            monthlyIncome < payCycleConfig.expectedIncome,
+        }
+      : null;
 
   return {
     netBalance: income + totalAssets - expenses,
@@ -96,10 +218,11 @@ export function computeSummary(
     monthlyIncome,
     monthlyExpenses,
     savingsRate: currentRate,
+    payCycle,
     deltas: {
-      monthlySpending: moneyDelta(monthlySpending, lastMonthExpenses),
-      income: moneyDelta(monthlyIncome, lastMonthIncome),
-      expenses: moneyDelta(monthlyExpenses, lastMonthExpenses),
+      monthlySpending: moneyDelta(monthlySpending, lastExpenses),
+      income: moneyDelta(monthlyIncome, lastIncome),
+      expenses: moneyDelta(monthlyExpenses, lastExpenses),
       savingsRate:
         currentRate === null || lastRate === null
           ? null

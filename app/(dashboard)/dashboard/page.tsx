@@ -1,5 +1,15 @@
-import { getTransactions, getTransactionsPage } from "@/lib/transactions";
-import { computeSummary, groupExpensesByCategory } from "@/lib/summary";
+import {
+  getTransactions,
+  getTransactionsBetween,
+  getTransactionsPage,
+} from "@/lib/transactions";
+import {
+  computeSummary,
+  getPayCycleBounds,
+  groupExpensesByCategory,
+  type Summary,
+} from "@/lib/summary";
+import { getProfile } from "@/lib/profiles";
 import SummaryCards from "@/components/dashboard/SummaryCards";
 import LazyCategoryChart from "@/components/dashboard/LazyCategoryChart";
 import TransactionTable from "@/components/dashboard/TransactionTable";
@@ -11,7 +21,29 @@ export default async function DashboardPage() {
     getTransactions(),
     getTransactionsPage(),
   ]);
-  const summary = computeSummary(transactions);
+
+  const profile = await getProfile();
+  const payday = profile?.payday ?? null;
+  const expectedIncome = profile?.expected_income ?? null;
+  const isCycleEligible =
+    payday !== null &&
+    expectedIncome !== null &&
+    (profile?.income_type === "salaried" || profile?.income_type === "hourly");
+
+  let summary: Summary;
+  if (isCycleEligible) {
+    const bounds = getPayCycleBounds(payday);
+    const cycleTransactions = await getTransactionsBetween(
+      bounds.previousStart.toISOString(),
+      bounds.currentEnd.toISOString()
+    );
+    summary = computeSummary(transactions, new Date(), {
+      payCycle: { payday, expectedIncome, cycleTransactions },
+    });
+  } else {
+    summary = computeSummary(transactions);
+  }
+
   const categories = groupExpensesByCategory(transactions);
 
   return (
