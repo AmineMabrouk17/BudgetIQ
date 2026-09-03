@@ -7,22 +7,14 @@ import {
   deleteTransaction,
   loadMoreTransactions,
 } from "@/app/actions/transactions";
-import AddTransactionModal from "@/components/dashboard/AddTransactionModal";
-import { useCurrencyFormatter } from "@/lib/use-display-currency";
+import { useCurrencyFormatter } from "@/lib/currency/use-display-currency";
+import { formatDate } from "@/lib/format";
 
 const TYPE_BADGES: Record<TransactionType, string> = {
   income: "badge-success",
   expense: "badge-error",
   asset: "badge-info",
 };
-
-function formatDate(value: string): string {
-  return new Date(value).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
 
 export default function TransactionTable({
   transactions: initialTransactions,
@@ -69,7 +61,6 @@ export default function TransactionTable({
       <div className="card-body">
         <div className="flex items-center justify-between">
           <h2 className="card-title">Transactions</h2>
-          <AddTransactionModal />
         </div>
 
         {error && (
@@ -83,7 +74,6 @@ export default function TransactionTable({
             <p className="text-base-content/60">
               No transactions yet. Add your first income, expense, or asset.
             </p>
-            <AddTransactionModal />
           </div>
         ) : (
           <div className="overflow-x-auto">

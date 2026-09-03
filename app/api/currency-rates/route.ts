@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getRatesForDisplay } from "@/lib/currency-rates";
+import { getRatesForDisplay } from "@/lib/currency/rates";
 
 export const runtime = "nodejs";
 

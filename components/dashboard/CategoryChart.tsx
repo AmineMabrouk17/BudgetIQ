@@ -2,7 +2,7 @@
 
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import type { CategoryTotal } from "@/lib/summary";
-import { useCurrencyFormatter } from "@/lib/use-display-currency";
+import { useCurrencyFormatter } from "@/lib/currency/use-display-currency";
 
 const COLORS = [
   "#f97316",

@@ -8,29 +8,14 @@ import {
   TrendingUp,
   Wallet,
 } from "lucide-react";
-import type { Delta, Summary } from "@/lib/summary";
-import { useCurrencyFormatter } from "@/lib/use-display-currency";
+import type { Summary } from "@/lib/summary";
+import { useCurrencyFormatter } from "@/lib/currency/use-display-currency";
+import { formatMoneyDelta, formatRateDelta } from "@/lib/format";
 
 const percent = new Intl.NumberFormat("en-US", {
   style: "percent",
   maximumFractionDigits: 1,
 });
-
-function formatMoneyDelta(
-  delta: Delta,
-  format: (amount: number) => string
-): string {
-  const valueSign = delta.value > 0 ? "+" : delta.value < 0 ? "−" : "";
-  const value = `${valueSign}${format(Math.abs(delta.value))}`;
-  if (delta.percentage === null) return value;
-  const pctSign = delta.percentage > 0 ? "+" : delta.percentage < 0 ? "−" : "";
-  return `${value} (${pctSign}${Math.abs(delta.percentage).toFixed(1)}%)`;
-}
-
-function formatRateDelta(delta: Delta): string {
-  const sign = delta.value > 0 ? "+" : delta.value < 0 ? "−" : "";
-  return `${sign}${Math.abs(delta.value * 100).toFixed(1)} pp`;
-}
 
 export default function SummaryCards({
   summary,
