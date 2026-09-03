@@ -12,6 +12,32 @@ export type PayCycleConfig = {
   cycleTransactions?: Transaction[];
 };
 
+export type FreelanceConfig = {
+  taxRate?: number;
+  savingsRate?: number;
+};
+
+export type RollingAverage = {
+  months: number;
+  average: number | null;
+  totalIncome: number;
+  incomeMonths: number;
+};
+
+export type FreelanceSummary = {
+  enabled: boolean;
+  taxRate: number;
+  taxReserve: number;
+  monthlyTaxAccrual: number;
+  savingsRate: number;
+  monthlySavingsTarget: number;
+  averages: {
+    three: RollingAverage;
+    six: RollingAverage;
+    twelve: RollingAverage;
+  };
+};
+
 export type PayCycleSummary = {
   enabled: boolean;
   cycleStart: string;
@@ -32,6 +58,7 @@ export type Summary = {
   monthlyExpenses: number;
   savingsRate: number | null;
   payCycle: PayCycleSummary | null;
+  freelance: FreelanceSummary | null;
   deltas: {
     monthlySpending: Delta;
     income: Delta;
@@ -46,6 +73,10 @@ export type CategoryTotal = {
 };
 
 export const PAY_CYCLE_GRACE_DAYS = 5;
+
+export const DEFAULT_FREELANCE_TAX_RATE = 0.25;
+export const DEFAULT_FREELANCE_SAVINGS_RATE = 0.1;
+export const FREELANCE_AVERAGE_WINDOWS = [3, 6, 12] as const;
 
 function paydayInMonth(year: number, month: number, payday: number): Date {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -118,10 +149,82 @@ function monthlySavingsRate(income: number, expenses: number): number | null {
   return income === 0 ? null : (income - expenses) / income;
 }
 
+function monthKey(year: number, month: number): number {
+  return year * 12 + month;
+}
+
+function incomeByMonth(transactions: Transaction[]): Map<number, number> {
+  const byMonth = new Map<number, number>();
+  for (const t of transactions) {
+    if (t.type !== "income") continue;
+    const d = new Date(t.created_at);
+    const key = monthKey(d.getFullYear(), d.getMonth());
+    byMonth.set(key, (byMonth.get(key) ?? 0) + t.amount);
+  }
+  return byMonth;
+}
+
+function rollingAverage(
+  byMonth: Map<number, number>,
+  now: Date,
+  months: number
+): RollingAverage {
+  const currentKey = monthKey(now.getFullYear(), now.getMonth());
+  const startKey = currentKey - (months - 1);
+  let totalIncome = 0;
+  let incomeMonths = 0;
+  for (const [key, amount] of byMonth) {
+    if (key > currentKey) continue;
+    if (key < startKey) continue;
+    totalIncome += amount;
+    incomeMonths += 1;
+  }
+  return {
+    months,
+    totalIncome,
+    incomeMonths,
+    average: incomeMonths === 0 ? null : totalIncome / incomeMonths,
+  };
+}
+
+export function computeFreelanceSummary(
+  transactions: Transaction[],
+  now: Date = new Date(),
+  options: FreelanceConfig = {}
+): FreelanceSummary {
+  const taxRate = options.taxRate ?? DEFAULT_FREELANCE_TAX_RATE;
+  const savingsRate = options.savingsRate ?? DEFAULT_FREELANCE_SAVINGS_RATE;
+
+  const byMonth = incomeByMonth(transactions);
+
+  const currentKey = monthKey(now.getFullYear(), now.getMonth());
+  const monthIncome = byMonth.get(currentKey) ?? 0;
+
+  let taxReserve = 0;
+  for (const t of transactions) {
+    if (t.type !== "income") continue;
+    taxReserve += t.amount * taxRate;
+  }
+
+  return {
+    enabled: true,
+    taxRate,
+    taxReserve,
+    monthlyTaxAccrual: monthIncome * taxRate,
+    savingsRate,
+    monthlySavingsTarget: monthIncome * savingsRate,
+    averages: {
+      three: rollingAverage(byMonth, now, 3),
+      six: rollingAverage(byMonth, now, 6),
+      twelve: rollingAverage(byMonth, now, 12),
+    },
+  };
+}
+
 export function computeSummary(
   transactions: Transaction[],
   now: Date = new Date(),
-  options: { payCycle?: PayCycleConfig } = {}
+  options: { payCycle?: PayCycleConfig; freelance?: FreelanceConfig } = {}
 ): Summary {
   let income = 0;
   let expenses = 0;
@@ -219,6 +322,9 @@ export function computeSummary(
     monthlyExpenses,
     savingsRate: currentRate,
     payCycle,
+    freelance: options.freelance
+      ? computeFreelanceSummary(transactions, now, options.freelance)
+      : null,
     deltas: {
       monthlySpending: moneyDelta(monthlySpending, lastExpenses),
       income: moneyDelta(monthlyIncome, lastIncome),

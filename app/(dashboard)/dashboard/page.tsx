@@ -29,6 +29,7 @@ export default async function DashboardPage() {
     payday !== null &&
     expectedIncome !== null &&
     (profile?.income_type === "salaried" || profile?.income_type === "hourly");
+  const isFreelancer = profile?.income_type === "freelancer";
 
   let summary: Summary;
   if (isCycleEligible) {
@@ -40,6 +41,8 @@ export default async function DashboardPage() {
     summary = computeSummary(transactions, new Date(), {
       payCycle: { payday, expectedIncome, cycleTransactions },
     });
+  } else if (isFreelancer) {
+    summary = computeSummary(transactions, new Date(), { freelance: {} });
   } else {
     summary = computeSummary(transactions);
   }

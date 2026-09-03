@@ -251,3 +251,123 @@ describe("computeSummary with pay cycle", () => {
     expect(summary.deltas.income.value).toBe(-5000);
   });
 });
+
+describe("computeSummary with freelance", () => {
+  function freelance(
+    transactions: Transaction[],
+    now: Date,
+    overrides: { taxRate?: number; savingsRate?: number } = {}
+  ) {
+    return computeSummary(transactions, now, { freelance: overrides });
+  }
+
+  it("computes 3/6/12-month rolling income averages from realized income", () => {
+    const now = new Date(2026, 2, 15);
+    const txs = [
+      transaction("income", 3000, at(2026, 2, 10)),
+      transaction("income", 3000, at(2026, 1, 10)),
+      transaction("income", 3000, at(2026, 0, 10)),
+      transaction("income", 3000, at(2025, 4, 10)),
+      transaction("income", 3000, at(2025, 3, 10)),
+    ];
+
+    const summary = freelance(txs, now);
+
+    expect(summary.freelance?.averages.three.average).toBe(3000);
+    expect(summary.freelance?.averages.six.average).toBe(3000);
+    expect(summary.freelance?.averages.twelve.average).toBe(3000);
+    expect(summary.freelance?.averages.twelve.incomeMonths).toBe(5);
+    expect(summary.freelance?.enabled).toBe(true);
+  });
+
+  it("averages over income months and ignores gaps", () => {
+    const now = new Date(2026, 2, 15);
+    const txs = [
+      transaction("income", 1000, at(2026, 2, 5)),
+      transaction("income", 500, at(2025, 10, 5)),
+      transaction("income", 500, at(2025, 10, 20)),
+    ];
+
+    const summary = freelance(txs, now);
+
+    expect(summary.freelance?.averages.six.incomeMonths).toBe(2);
+    expect(summary.freelance?.averages.six.average).toBe(1000);
+    expect(summary.freelance?.averages.six.totalIncome).toBe(2000);
+  });
+
+  it("accrues a percentage tax reserve per income transaction", () => {
+    const now = new Date(2026, 2, 15);
+    const txs = [
+      transaction("income", 1000, at(2026, 2, 5)),
+      transaction("income", 500, at(2026, 1, 5)),
+    ];
+
+    const summary = freelance(txs, now, { taxRate: 0.25 });
+
+    expect(summary.freelance?.taxRate).toBe(0.25);
+    expect(summary.freelance?.taxReserve).toBe(375);
+    expect(summary.freelance?.monthlyTaxAccrual).toBe(250);
+  });
+
+  it("uses a default tax rate when none is provided", () => {
+    const summary = freelance(
+      [transaction("income", 1000, at(2026, 2, 5))],
+      new Date(2026, 2, 15)
+    );
+
+    expect(summary.freelance?.taxRate).toBe(0.25);
+    expect(summary.freelance?.taxReserve).toBe(250);
+  });
+
+  it("computes a savings goal on realized monthly income only", () => {
+    const summary = freelance(
+      [transaction("income", 2000, at(2026, 2, 5))],
+      new Date(2026, 2, 15),
+      { savingsRate: 0.1 }
+    );
+
+    expect(summary.freelance?.savingsRate).toBe(0.1);
+    expect(summary.freelance?.monthlySavingsTarget).toBe(200);
+  });
+
+  it("degrades gracefully when a month has zero income", () => {
+    const now = new Date(2026, 2, 15);
+    const txs = [
+      transaction("income", 1000, at(2026, 2, 5)),
+      transaction("expense", 400, at(2026, 1, 5)),
+    ];
+
+    const summary = freelance(txs, now);
+
+    expect(summary.freelance?.averages.three.average).toBe(1000);
+    expect(summary.freelance?.averages.three.incomeMonths).toBe(1);
+    expect(summary.freelance?.averages.three.totalIncome).toBe(1000);
+  });
+
+  it("shows a dash (null average) when the window has no income at all", () => {
+    const summary = freelance(
+      [transaction("expense", 500, at(2026, 2, 5))],
+      new Date(2026, 2, 15)
+    );
+
+    expect(summary.freelance?.averages.three.average).toBeNull();
+    expect(summary.freelance?.averages.three.incomeMonths).toBe(0);
+    expect(summary.freelance?.averages.three.totalIncome).toBe(0);
+  });
+
+  it("handles empty transaction sets without throwing", () => {
+    const summary = freelance([], new Date(2026, 2, 15));
+
+    expect(summary.freelance?.averages.twelve.average).toBeNull();
+    expect(summary.freelance?.taxReserve).toBe(0);
+  });
+
+  it("is null unless the freelance block is requested", () => {
+    const summary = computeSummary(
+      [transaction("income", 5000, at(2026, 2, 5))],
+      new Date(2026, 2, 15)
+    );
+
+    expect(summary.freelance).toBeNull();
+  });
+});

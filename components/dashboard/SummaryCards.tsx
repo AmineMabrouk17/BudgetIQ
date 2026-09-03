@@ -2,6 +2,7 @@
 
 import {
   CalendarClock,
+  Coins,
   Landmark,
   PiggyBank,
   Receipt,
@@ -17,6 +18,13 @@ const percent = new Intl.NumberFormat("en-US", {
   style: "percent",
   maximumFractionDigits: 1,
 });
+
+function fmtAvg(
+  avg: { average: number | null; incomeMonths: number },
+  format: (amount: number) => string
+): string {
+  return avg.average === null ? "—" : format(avg.average);
+}
 
 export default function SummaryCards({
   summary,
@@ -130,6 +138,53 @@ export default function SummaryCards({
               )}
             </div>
           </div>
+        )}
+        {summary.freelance?.enabled && (
+          <>
+            <div className="stat rounded-box bg-base-100 shadow">
+              <div className="stat-figure text-primary">
+                <TrendingUp className="h-8 w-8" />
+              </div>
+              <div className="stat-title">Rolling Income Averages</div>
+              <div className="stat-value text-2xl">
+                {summary.freelance.averages.three.average === null
+                  ? "—"
+                  : format(summary.freelance.averages.three.average)}
+              </div>
+              <div className="stat-desc">
+                3-mo{" "}
+                {fmtAvg(summary.freelance.averages.three, format)} · 6-mo{" "}
+                {fmtAvg(summary.freelance.averages.six, format)} · 12-mo{" "}
+                {fmtAvg(summary.freelance.averages.twelve, format)}
+              </div>
+            </div>
+            <div className="stat rounded-box bg-base-100 shadow">
+              <div className="stat-figure text-error">
+                <Coins className="h-8 w-8" />
+              </div>
+              <div className="stat-title">Tax Reserve</div>
+              <div className="stat-value text-2xl">
+                {format(summary.freelance.taxReserve)}
+              </div>
+              <div className="stat-desc">
+                {percent.format(summary.freelance.taxRate)} of income set aside
+                · +{format(summary.freelance.monthlyTaxAccrual)} this month
+              </div>
+            </div>
+            <div className="stat rounded-box bg-base-100 shadow">
+              <div className="stat-figure text-secondary">
+                <PiggyBank className="h-8 w-8" />
+              </div>
+              <div className="stat-title">Savings Goal</div>
+              <div className="stat-value text-2xl">
+                {format(summary.freelance.monthlySavingsTarget)}
+              </div>
+              <div className="stat-desc">
+                {percent.format(summary.freelance.savingsRate)} of realized
+                income this month
+              </div>
+            </div>
+          </>
         )}
       </div>
       {!hasTransactions && (
