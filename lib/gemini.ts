@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 const INTERACTIONS_ENDPOINT =
   "https://generativelanguage.googleapis.com/v1beta/interactions";
 
@@ -30,11 +32,50 @@ export class GeminiApiError extends Error {
   }
 }
 
-const TRANSACTION_TYPES: readonly TransactionActionType[] = [
+const TRANSACTION_TYPES = [
   "income",
   "expense",
   "asset",
-];
+] as const satisfies readonly TransactionActionType[];
+
+const INVALID_AMOUNT = "Gemini response has an invalid transaction amount";
+
+const strictAmount = z
+  .union([z.number(), z.string()])
+  .transform((value, ctx): number => {
+    const text = typeof value === "number" ? String(value) : value.trim();
+    if (!/^\d+(\.\d+)?$/.test(text)) {
+      ctx.addIssue({ code: "custom", message: INVALID_AMOUNT });
+      return z.NEVER;
+    }
+    const amount = Number(text);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      ctx.addIssue({ code: "custom", message: INVALID_AMOUNT });
+      return z.NEVER;
+    }
+    return amount;
+  });
+
+const envelopeSchema = z.object({
+  message: z
+    .string()
+    .trim()
+    .min(1, { message: "Gemini response is missing a message" }),
+  hasAction: z.boolean(),
+  transaction: z
+    .object({
+      type: z.enum(TRANSACTION_TYPES, {
+        message: "Gemini response has an invalid transaction type",
+      }),
+      title: z
+        .string()
+        .trim()
+        .min(1, { message: "Gemini response is missing the transaction title" }),
+      amount: strictAmount,
+      category: z.string().trim().min(1).optional(),
+    })
+    .optional(),
+});
 
 const SYSTEM_PROMPT = `You are BudgetIQ, a friendly personal-finance assistant. Keep replies short and helpful.
 
@@ -74,58 +115,30 @@ export function parseEnvelope(raw: string): ChatActionResponse {
     throw new Error("Gemini returned invalid JSON");
   }
 
-  if (typeof data !== "object" || data === null) {
-    throw new Error("Gemini returned a non-object envelope");
+  const parsed = envelopeSchema.safeParse(data);
+  if (!parsed.success) {
+    throw new Error(
+      parsed.error.issues[0]?.message ?? "Gemini returned an invalid envelope"
+    );
   }
 
-  const record = data as Record<string, unknown>;
-  const message = typeof record.message === "string" ? record.message.trim() : "";
-  if (message.length === 0) {
-    throw new Error("Gemini response is missing a message");
-  }
-
-  if (record.hasAction !== true) {
+  const { message, hasAction, transaction } = parsed.data;
+  if (!hasAction) {
     return { message, hasAction: false };
   }
 
-  const transaction = record.transaction;
-  if (typeof transaction !== "object" || transaction === null) {
+  if (!transaction) {
     throw new Error("Gemini response is missing the transaction object");
   }
-
-  const t = transaction as Record<string, unknown>;
-  const type = t.type;
-  if (
-    typeof type !== "string" ||
-    !TRANSACTION_TYPES.includes(type as TransactionActionType)
-  ) {
-    throw new Error("Gemini response has an invalid transaction type");
-  }
-
-  const title = typeof t.title === "string" ? t.title.trim() : "";
-  if (title.length === 0) {
-    throw new Error("Gemini response is missing the transaction title");
-  }
-
-  const amount =
-    typeof t.amount === "number" ? t.amount : Number.parseFloat(String(t.amount));
-  if (!Number.isFinite(amount) || amount <= 0) {
-    throw new Error("Gemini response has an invalid transaction amount");
-  }
-
-  const category =
-    typeof t.category === "string" && t.category.trim().length > 0
-      ? t.category.trim()
-      : undefined;
 
   return {
     message,
     hasAction: true,
     transaction: {
-      type: type as TransactionActionType,
-      title,
-      amount,
-      ...(category ? { category } : {}),
+      type: transaction.type,
+      title: transaction.title,
+      amount: transaction.amount,
+      ...(transaction.category ? { category: transaction.category } : {}),
     },
   };
 }
