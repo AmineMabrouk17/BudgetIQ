@@ -15,5 +15,4 @@ export type CreateTransactionInput = {
   title: string;
   amount: number;
   category?: string;
-  id?: string;
 };
