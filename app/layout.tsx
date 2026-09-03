@@ -3,7 +3,6 @@ import { Inter, Space_Grotesk } from "next/font/google";
 import { cookies } from "next/headers";
 import "./globals.css";
 import { metadata as siteMetadata } from "./metadata";
-import AntiInspect from "@/components/AntiInspect";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -38,7 +37,6 @@ export default async function RootLayout({
     >
       <body>
         {children}
-        <AntiInspect />
       </body>
     </html>
   );
