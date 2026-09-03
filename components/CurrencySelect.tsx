@@ -4,7 +4,7 @@ import {
   CURRENCIES,
   setDisplayCurrency,
 } from "@/lib/currency";
-import { useDisplayCurrency } from "@/lib/use-display-currency";
+import { useDisplayCurrency } from "@/lib/currency/use-display-currency";
 
 export default function CurrencySelect() {
   const code = useDisplayCurrency();
