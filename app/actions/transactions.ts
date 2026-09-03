@@ -1,7 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { insertTransaction, removeTransaction } from "@/lib/transactions";
+import {
+  getTransactionsPage,
+  insertTransaction,
+  removeTransaction,
+} from "@/lib/transactions";
 import { canonicalizeCategory } from "@/lib/categories";
 import type {
   CreateTransactionInput,
@@ -15,6 +19,10 @@ export type CreateTransactionResult =
 
 export type DeleteTransactionResult =
   | { ok: true }
+  | { ok: false; error: string };
+
+export type LoadMoreTransactionsResult =
+  | { ok: true; transactions: Transaction[]; nextCursor: string | null }
   | { ok: false; error: string };
 
 const TRANSACTION_TYPES: readonly TransactionType[] = [
@@ -124,6 +132,25 @@ export async function deleteTransaction(
     await removeTransaction(id);
     revalidatePath("/dashboard");
     return { ok: true };
+  } catch (error) {
+    return { ok: false, error: errorMessage(error) };
+  }
+}
+
+export async function loadMoreTransactions(
+  cursor: string
+): Promise<LoadMoreTransactionsResult> {
+  if (typeof cursor !== "string" || cursor.length === 0 || cursor.length > 512) {
+    return { ok: false, error: "Invalid cursor." };
+  }
+
+  try {
+    const page = await getTransactionsPage(cursor);
+    return {
+      ok: true,
+      transactions: page.transactions,
+      nextCursor: page.nextCursor,
+    };
   } catch (error) {
     return { ok: false, error: errorMessage(error) };
   }

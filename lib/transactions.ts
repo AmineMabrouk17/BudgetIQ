@@ -27,6 +27,36 @@ function toTransaction(row: TransactionRow): Transaction {
   };
 }
 
+export const TRANSACTION_PAGE_SIZE = 100;
+
+export type TransactionPage = {
+  transactions: Transaction[];
+  nextCursor: string | null;
+};
+
+type PageCursor = { created_at: string; id: string };
+
+function encodeCursor(cursor: PageCursor): string {
+  return Buffer.from(JSON.stringify(cursor)).toString("base64url");
+}
+
+function decodeCursor(raw: string): PageCursor {
+  try {
+    const parsed = JSON.parse(Buffer.from(raw, "base64url").toString("utf8"));
+    if (
+      typeof parsed === "object" &&
+      parsed !== null &&
+      typeof parsed.created_at === "string" &&
+      typeof parsed.id === "string"
+    ) {
+      return parsed as PageCursor;
+    }
+  } catch {
+    // fall through to thrown error
+  }
+  throw new Error("Invalid transaction cursor");
+}
+
 export async function getTransactions(): Promise<Transaction[]> {
   const supabase = await createClient();
   const {
@@ -41,6 +71,49 @@ export async function getTransactions(): Promise<Transaction[]> {
 
   if (error) throw error;
   return (data ?? []).map(toTransaction);
+}
+
+export async function getTransactionsPage(
+  cursor?: string
+): Promise<TransactionPage> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  let query = supabase
+    .from("transactions")
+    .select("id, user_id, type, title, amount, category, created_at")
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
+    .limit(TRANSACTION_PAGE_SIZE + 1);
+
+  if (cursor) {
+    const parsed = decodeCursor(cursor);
+    query = query.or(
+      `created_at.lt.${parsed.created_at},and(created_at.eq.${parsed.created_at},id.lt.${parsed.id})`
+    );
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+
+  const rows = data ?? [];
+  const hasMore = rows.length > TRANSACTION_PAGE_SIZE;
+  const pageRows = hasMore ? rows.slice(0, TRANSACTION_PAGE_SIZE) : rows;
+
+  const last = pageRows[pageRows.length - 1];
+  return {
+    transactions: pageRows.map(toTransaction),
+    nextCursor:
+      hasMore && last
+        ? encodeCursor({
+            created_at: last.created_at,
+            id: last.id,
+          })
+        : null,
+  };
 }
 
 export async function insertTransaction(

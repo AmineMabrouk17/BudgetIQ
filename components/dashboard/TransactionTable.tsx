@@ -3,7 +3,10 @@
 import { useState, useTransition } from "react";
 import { Check, Loader2, Trash2, X } from "lucide-react";
 import type { Transaction, TransactionType } from "@/types/transaction";
-import { deleteTransaction } from "@/app/actions/transactions";
+import {
+  deleteTransaction,
+  loadMoreTransactions,
+} from "@/app/actions/transactions";
 import AddTransactionModal from "@/components/dashboard/AddTransactionModal";
 import { useCurrencyFormatter } from "@/lib/use-display-currency";
 
@@ -22,11 +25,16 @@ function formatDate(value: string): string {
 }
 
 export default function TransactionTable({
-  transactions,
+  transactions: initialTransactions,
+  nextCursor: initialCursor,
 }: {
   transactions: Transaction[];
+  nextCursor: string | null;
 }) {
   const format = useCurrencyFormatter();
+  const [transactions, setTransactions] =
+    useState<Transaction[]>(initialTransactions);
+  const [nextCursor, setNextCursor] = useState<string | null>(initialCursor);
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -38,6 +46,21 @@ export default function TransactionTable({
         setError(result.error);
       }
       setConfirmId(null);
+    });
+  }
+
+  function handleLoadMore() {
+    if (!nextCursor) return;
+    const cursor = nextCursor;
+    setError(null);
+    startTransition(async () => {
+      const result = await loadMoreTransactions(cursor);
+      if (result.ok) {
+        setTransactions((prev) => [...prev, ...result.transactions]);
+        setNextCursor(result.nextCursor);
+      } else {
+        setError(result.error);
+      }
     });
   }
 
@@ -145,6 +168,18 @@ export default function TransactionTable({
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+        {nextCursor && (
+          <div className="flex justify-center pt-2">
+            <button
+              className="btn btn-outline btn-sm"
+              onClick={handleLoadMore}
+              disabled={isPending}
+            >
+              {isPending ? <Loader2 className="animate-spin" /> : null}
+              Load more
+            </button>
           </div>
         )}
       </div>
