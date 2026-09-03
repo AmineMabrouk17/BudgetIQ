@@ -1,10 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUser } from "@/lib/supabase/server";
-import { askGemini } from "@/lib/gemini";
+import { askGemini, GeminiApiError } from "@/lib/gemini";
 
 export const runtime = "nodejs";
 
 const MAX_MESSAGE_LENGTH = 1000;
+
+const MAX_RETRIES = 2;
+const BASE_RETRY_DELAY_MS = 200;
+
+function isRetryable(e: unknown): boolean {
+  if (!(e instanceof GeminiApiError)) return false;
+  return e.status === 429 || e.status >= 500;
+}
+
+async function callGeminiWithRetry(
+  message: string
+): Promise<ReturnType<typeof askGemini>> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      return await askGemini(message);
+    } catch (e) {
+      lastError = e;
+      if (!isRetryable(e) || attempt === MAX_RETRIES) throw e;
+      await new Promise((resolve) =>
+        setTimeout(resolve, BASE_RETRY_DELAY_MS * 2 ** attempt)
+      );
+    }
+  }
+  throw lastError;
+}
 
 export async function POST(request: NextRequest) {
   const user = await getUser();
@@ -37,18 +63,13 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const response = await askGemini(message);
+    const response = await callGeminiWithRetry(message);
     return NextResponse.json(response);
   } catch (error) {
-    try {
-      const response = await askGemini(message);
-      return NextResponse.json(response);
-    } catch (retryError) {
-      console.error("Gemini chat failed:", error, retryError);
-      return NextResponse.json({
-        message: "Sorry, I couldn't process that. Please try again.",
-        hasAction: false,
-      });
-    }
+    console.error("Gemini chat failed:", error);
+    return NextResponse.json({
+      message: "Sorry, I couldn't process that. Please try again.",
+      hasAction: false,
+    });
   }
 }
