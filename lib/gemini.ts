@@ -18,6 +18,18 @@ export type ChatActionResponse = {
   transaction?: ParsedTransactionAction;
 };
 
+export type GeminiErrorStatus = number;
+
+export class GeminiApiError extends Error {
+  readonly status: number;
+
+  constructor(status: number, message?: string) {
+    super(message ?? `Gemini API error: ${status}`);
+    this.name = "GeminiApiError";
+    this.status = status;
+  }
+}
+
 const TRANSACTION_TYPES: readonly TransactionActionType[] = [
   "income",
   "expense",
@@ -164,7 +176,10 @@ export async function askGemini(message: string): Promise<ChatActionResponse> {
   });
 
   if (!response.ok) {
-    throw new Error(`Gemini API error: ${response.status}`);
+    throw new GeminiApiError(
+      response.status,
+      `Gemini API error: ${response.status}`
+    );
   }
 
   const payload = await response.json();
