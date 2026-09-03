@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { computeSummary } from "@/lib/summary";
-import type { Transaction } from "@/types/transaction";
+import type { Transaction, TransactionScope } from "@/types/transaction";
 
 const NOW = new Date(2026, 2, 15);
 
@@ -11,16 +11,18 @@ function at(year: number, month: number, day: number): string {
 function transaction(
   type: Transaction["type"],
   amount: number,
-  created_at: string
+  created_at: string,
+  scope: TransactionScope = "personal"
 ): Transaction {
   return {
-    id: `${type}-${amount}-${created_at}`,
+    id: `${type}-${amount}-${created_at}-${scope}`,
     user_id: "user-1",
     type,
     title: "Test transaction",
     amount,
     category: "General",
     created_at,
+    scope,
   };
 }
 
@@ -369,5 +371,102 @@ describe("computeSummary with freelance", () => {
     );
 
     expect(summary.freelance).toBeNull();
+  });
+});
+
+describe("computeSummary with business", () => {
+  function business(
+    txs: Transaction[],
+    now: Date = new Date(2026, 2, 15)
+  ) {
+    return computeSummary(txs, now, { business: true });
+  }
+
+  it("computes profit as business income minus business costs only", () => {
+    const txs = [
+      transaction("income", 10000, at(2026, 2, 5), "business"),
+      transaction("expense", 3000, at(2026, 2, 7), "business"),
+      transaction("expense", 500, at(2026, 2, 9), "business"),
+      transaction("income", 5000, at(2026, 2, 3), "personal"),
+      transaction("expense", 2000, at(2026, 2, 4), "personal"),
+    ];
+
+    const summary = business(txs);
+
+    expect(summary.business?.enabled).toBe(true);
+    expect(summary.business?.income).toBe(10000);
+    expect(summary.business?.expenses).toBe(3500);
+    expect(summary.business?.profit).toBe(6500);
+  });
+
+  it("computes runway as available cash divided by average monthly burn", () => {
+    const txs = [
+      transaction("income", 1000, at(2026, 2, 28), "business"),
+      transaction("income", 1000, at(2026, 1, 28), "business"),
+      transaction("expense", 100, at(2026, 2, 10), "business"),
+      transaction("expense", 100, at(2026, 1, 10), "business"),
+      transaction("expense", 100, at(2026, 0, 10), "business"),
+    ];
+
+    const summary = business(txs);
+
+    expect(summary.business?.monthlyBurn).toBeCloseTo(100);
+    expect(summary.business?.availableCash).toBe(1700);
+    expect(summary.business?.runway).toBeCloseTo(17);
+  });
+
+  it("leaves runway null and never divides by zero with no business expenses", () => {
+    const txs = [transaction("income", 1000, at(2026, 2, 5), "business")];
+
+    const summary = business(txs);
+
+    expect(summary.business?.monthlyBurn).toBe(0);
+    expect(summary.business?.availableCash).toBe(1000);
+    expect(summary.business?.runway).toBeNull();
+  });
+
+  it("ignores personal transactions in the business block", () => {
+    const txs = [
+      transaction("income", 9000, at(2026, 2, 5), "personal"),
+      transaction("expense", 2000, at(2026, 2, 6), "personal"),
+    ];
+
+    const summary = business(txs);
+
+    expect(summary.business?.income).toBe(0);
+    expect(summary.business?.expenses).toBe(0);
+    expect(summary.business?.profit).toBe(0);
+    expect(summary.business?.runway).toBeNull();
+  });
+
+  it("reports zero profit with no business transactions", () => {
+    const summary = business([]);
+
+    expect(summary.business?.profit).toBe(0);
+    expect(summary.business?.runway).toBeNull();
+    expect(summary.business?.enabled).toBe(true);
+  });
+
+  it("reports normal salary KPIs for salaried users regardless of business flag", () => {
+    const txs = [
+      transaction("income", 5000, at(2026, 2, 5)),
+      transaction("expense", 1000, at(2026, 2, 6)),
+    ];
+
+    const summary = computeSummary(txs, NOW, { business: true });
+
+    expect(summary.business?.enabled).toBe(true);
+    expect(summary.monthlyIncome).toBe(5000);
+    expect(summary.monthlyExpenses).toBe(1000);
+    expect(summary.savingsRate).toBeCloseTo(0.8);
+  });
+
+  it("is null unless the business block is requested", () => {
+    const summary = computeSummary(
+      [transaction("income", 5000, at(2026, 2, 5))],
+      new Date(2026, 2, 15)
+    );
+
+    expect(summary.business).toBeNull();
   });
 });

@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import type {
   CreateTransactionInput,
   Transaction,
+  TransactionScope,
   TransactionType,
 } from "@/types/transaction";
 
@@ -13,6 +14,7 @@ type TransactionRow = {
   amount: string;
   category: string;
   created_at: string;
+  scope: string;
 };
 
 function toTransaction(row: TransactionRow): Transaction {
@@ -24,8 +26,12 @@ function toTransaction(row: TransactionRow): Transaction {
     amount: Number(row.amount),
     category: row.category,
     created_at: row.created_at,
+    scope: (row.scope as TransactionScope) ?? "personal",
   };
 }
+
+const SELECT_COLS =
+  "id, user_id, type, title, amount, category, created_at, scope";
 
 export const TRANSACTION_PAGE_SIZE = 100;
 
@@ -57,24 +63,33 @@ function decodeCursor(raw: string): PageCursor {
   throw new Error("Invalid transaction cursor");
 }
 
-export async function getTransactions(): Promise<Transaction[]> {
+export type TransactionScopeFilter = TransactionScope | null;
+
+export async function getTransactions(
+  scope: TransactionScopeFilter = null
+): Promise<Transaction[]> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Unauthorized");
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("transactions")
-    .select("id, user_id, type, title, amount, category, created_at")
+    .select(SELECT_COLS)
     .order("created_at", { ascending: false });
+
+  if (scope) query = query.eq("scope", scope);
+
+  const { data, error } = await query;
 
   if (error) throw error;
   return (data ?? []).map(toTransaction);
 }
 
 export async function getTransactionsPage(
-  cursor?: string
+  cursor?: string,
+  scope: TransactionScopeFilter = null
 ): Promise<TransactionPage> {
   const supabase = await createClient();
   const {
@@ -84,10 +99,12 @@ export async function getTransactionsPage(
 
   let query = supabase
     .from("transactions")
-    .select("id, user_id, type, title, amount, category, created_at")
+    .select(SELECT_COLS)
     .order("created_at", { ascending: false })
     .order("id", { ascending: false })
     .limit(TRANSACTION_PAGE_SIZE + 1);
+
+  if (scope) query = query.eq("scope", scope);
 
   if (cursor) {
     const parsed = decodeCursor(cursor);
@@ -129,7 +146,7 @@ export async function getTransactionsBetween(
 
   const { data, error } = await supabase
     .from("transactions")
-    .select("id, user_id, type, title, amount, category, created_at")
+    .select(SELECT_COLS)
     .gte("created_at", startISO)
     .lt("created_at", endISO)
     .order("created_at", { ascending: true })
@@ -154,6 +171,7 @@ export async function insertTransaction(
     title: input.title,
     amount: input.amount,
     category: input.category ?? "General",
+    scope: input.scope ?? "personal",
   };
 
   const { data, error } = await supabase

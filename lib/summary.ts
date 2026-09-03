@@ -50,6 +50,16 @@ export type PayCycleSummary = {
   overdue: boolean;
 };
 
+export type BusinessSummary = {
+  enabled: boolean;
+  profit: number;
+  income: number;
+  expenses: number;
+  availableCash: number;
+  monthlyBurn: number;
+  runway: number | null;
+};
+
 export type Summary = {
   netBalance: number;
   monthlySpending: number;
@@ -59,6 +69,7 @@ export type Summary = {
   savingsRate: number | null;
   payCycle: PayCycleSummary | null;
   freelance: FreelanceSummary | null;
+  business: BusinessSummary | null;
   deltas: {
     monthlySpending: Delta;
     income: Delta;
@@ -153,6 +164,22 @@ function monthKey(year: number, month: number): number {
   return year * 12 + month;
 }
 
+function averageMonthlyBurn(
+  transactions: Transaction[]
+): number {
+  const expensesByMonth = new Map<number, number>();
+  for (const t of transactions) {
+    if (t.type !== "expense") continue;
+    const d = new Date(t.created_at);
+    const key = monthKey(d.getFullYear(), d.getMonth());
+    expensesByMonth.set(key, (expensesByMonth.get(key) ?? 0) + t.amount);
+  }
+  if (expensesByMonth.size === 0) return 0;
+  let total = 0;
+  for (const amount of expensesByMonth.values()) total += amount;
+  return total / expensesByMonth.size;
+}
+
 function incomeByMonth(transactions: Transaction[]): Map<number, number> {
   const byMonth = new Map<number, number>();
   for (const t of transactions) {
@@ -221,10 +248,42 @@ export function computeFreelanceSummary(
   };
 }
 
+export function computeBusinessSummary(
+  transactions: Transaction[]
+): BusinessSummary {
+  const business = transactions.filter((t) => t.scope === "business");
+  let income = 0;
+  let expenses = 0;
+  let totalAssets = 0;
+  for (const t of business) {
+    if (t.type === "income") income += t.amount;
+    else if (t.type === "expense") expenses += t.amount;
+    else if (t.type === "asset") totalAssets += t.amount;
+  }
+  const profit = income - expenses;
+  const availableCash = income + totalAssets - expenses;
+  const monthlyBurn = averageMonthlyBurn(business);
+  const runway = monthlyBurn > 0 ? availableCash / monthlyBurn : null;
+
+  return {
+    enabled: true,
+    profit,
+    income,
+    expenses,
+    availableCash,
+    monthlyBurn,
+    runway,
+  };
+}
+
 export function computeSummary(
   transactions: Transaction[],
   now: Date = new Date(),
-  options: { payCycle?: PayCycleConfig; freelance?: FreelanceConfig } = {}
+  options: {
+    payCycle?: PayCycleConfig;
+    freelance?: FreelanceConfig;
+    business?: boolean;
+  } = {}
 ): Summary {
   let income = 0;
   let expenses = 0;
@@ -324,6 +383,9 @@ export function computeSummary(
     payCycle,
     freelance: options.freelance
       ? computeFreelanceSummary(transactions, now, options.freelance)
+      : null,
+    business: options.business
+      ? computeBusinessSummary(transactions)
       : null,
     deltas: {
       monthlySpending: moneyDelta(monthlySpending, lastExpenses),
