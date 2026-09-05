@@ -5,6 +5,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useSearchParams } from "next/navigation";
 import { Loader2, Globe, Mail, Send } from "lucide-react";
+import { checkLoginRateLimit } from "@/app/actions/auth";
 
 type Mode = "signin" | "signup";
 type ErrorAction = "switchToSignIn" | "switchToSignUp" | "resend" | null;
@@ -136,6 +137,13 @@ export default function LoginPage() {
     setErrorAction(null);
     setMessage(null);
     setPendingEmail(true);
+
+    const limitCheck = await checkLoginRateLimit(email);
+    if (!limitCheck.ok) {
+      setError(limitCheck.error);
+      setPendingEmail(false);
+      return;
+    }
 
     if (mode === "signup") {
       const { data, error } = await supabase.auth.signUp({
