@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  CalendarClock,
   Landmark,
   PiggyBank,
   Receipt,
@@ -10,7 +11,7 @@ import {
 } from "lucide-react";
 import type { Summary } from "@/lib/summary";
 import { useCurrencyFormatter } from "@/lib/currency/use-display-currency";
-import { formatMoneyDelta, formatRateDelta } from "@/lib/format";
+import { formatDate, formatMoneyDelta, formatRateDelta } from "@/lib/format";
 
 const percent = new Intl.NumberFormat("en-US", {
   style: "percent",
@@ -47,7 +48,9 @@ export default function SummaryCards({
             {format(summary.monthlyIncome)}
           </div>
           <div className="stat-desc">
-            vs last month {formatMoneyDelta(summary.deltas.income, format)}
+            {summary.payCycle?.enabled
+              ? `of ${format(summary.payCycle.expectedIncome)} this pay cycle`
+              : `vs last month ${formatMoneyDelta(summary.deltas.income, format)}`}
           </div>
         </div>
         <div className="stat rounded-box bg-base-100 shadow">
@@ -102,6 +105,32 @@ export default function SummaryCards({
           </div>
           <div className="stat-desc">Sum of asset accounts</div>
         </div>
+        {summary.payCycle?.enabled && (
+          <div className="stat rounded-box bg-base-100 shadow">
+            <div className="stat-figure text-warning">
+              <CalendarClock className="h-8 w-8" />
+            </div>
+            <div className="stat-title">Pay Cycle</div>
+            <div className="stat-value text-2xl">
+              {format(summary.payCycle.actualIncome)}
+              <span className="text-base-content/50 text-sm">
+                {" "}
+                / {format(summary.payCycle.expectedIncome)}
+              </span>
+            </div>
+            <div className="stat-desc">
+              {summary.payCycle.overdue ? (
+                <span className="font-semibold text-error">
+                  Overdue — expected income not logged
+                </span>
+              ) : summary.payCycle.received ? (
+                "Cycle income received"
+              ) : (
+                `Expected by ${formatDate(summary.payCycle.cycleEnd)}`
+              )}
+            </div>
+          </div>
+        )}
       </div>
       {!hasTransactions && (
         <p className="mt-3 text-sm text-base-content/60">

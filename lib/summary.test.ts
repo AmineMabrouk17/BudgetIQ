@@ -142,3 +142,112 @@ describe("computeSummary", () => {
     expect(summary.deltas.income.percentage).toBeNull();
   });
 });
+
+describe("computeSummary with pay cycle", () => {
+  function cycleSummary(
+    transactions: Transaction[],
+    now: Date,
+    overrides: {
+      payday: number;
+      expectedIncome: number;
+      graceDays?: number;
+      cycleTransactions?: Transaction[];
+    }
+  ) {
+    return computeSummary(transactions, now, {
+      payCycle: {
+        payday: overrides.payday,
+        expectedIncome: overrides.expectedIncome,
+        graceDays: overrides.graceDays,
+        cycleTransactions: overrides.cycleTransactions ?? transactions,
+      },
+    });
+  }
+
+  it("keeps KPIs stable across a calendar-month boundary for a 28th payday", () => {
+    const at28 = (year: number, month: number) => at(year, month, 28);
+    const now = new Date(2026, 2, 5);
+    const transactions = [
+      transaction("income", 5000, at28(2026, 0)),
+      transaction("income", 5000, at28(2026, 1)),
+      transaction("expense", 1500, at(2026, 2, 2)),
+    ];
+
+    const summary = cycleSummary(transactions, now, {
+      payday: 28,
+      expectedIncome: 5000,
+    });
+
+    expect(summary.payCycle?.enabled).toBe(true);
+    expect(summary.monthlyIncome).toBe(5000);
+    expect(summary.payCycle?.actualIncome).toBe(5000);
+    expect(summary.deltas.income.value).toBe(0);
+    expect(summary.deltas.income.percentage).toBeCloseTo(0);
+  });
+
+  it("reports an overdue state when payday plus grace passes with no income", () => {
+    const now = new Date(2026, 2, 10);
+    const transactions = [transaction("expense", 500, at(2026, 2, 2))];
+
+    const summary = cycleSummary(transactions, now, {
+      payday: 28,
+      expectedIncome: 5000,
+      graceDays: 5,
+    });
+
+    expect(summary.payCycle?.overdue).toBe(true);
+    expect(summary.payCycle?.received).toBe(false);
+    expect(summary.payCycle?.actualIncome).toBe(0);
+  });
+
+  it("does not report overdue within the grace period after payday", () => {
+    const now = new Date(2026, 3, 1);
+    const transactions = [transaction("expense", 500, at(2026, 3, 1))];
+
+    const summary = cycleSummary(transactions, now, {
+      payday: 28,
+      expectedIncome: 5000,
+      graceDays: 5,
+    });
+
+    expect(summary.payCycle?.overdue).toBe(false);
+  });
+
+  it("marks the cycle as received once expected income is logged", () => {
+    const now = new Date(2026, 2, 10);
+    const transactions = [transaction("income", 5000, at(2026, 1, 28))];
+
+    const summary = cycleSummary(transactions, now, {
+      payday: 28,
+      expectedIncome: 5000,
+    });
+
+    expect(summary.payCycle?.received).toBe(true);
+    expect(summary.payCycle?.overdue).toBe(false);
+  });
+
+  it("compares expected income against actual income for the cycle", () => {
+    const now = new Date(2026, 2, 10);
+    const transactions = [transaction("income", 3000, at(2026, 1, 28))];
+
+    const summary = cycleSummary(transactions, now, {
+      payday: 28,
+      expectedIncome: 5000,
+    });
+
+    expect(summary.payCycle?.expectedIncome).toBe(5000);
+    expect(summary.payCycle?.actualIncome).toBe(3000);
+    expect(summary.payCycle?.received).toBe(false);
+  });
+
+  it("falls back to calendar-month behavior when no pay cycle is configured", () => {
+    const summary = computeSummary(
+      [transaction("income", 5000, at(2026, 1, 28))],
+      NOW
+    );
+
+    expect(summary.payCycle).toBeNull();
+    expect(summary.monthlyIncome).toBe(0);
+    expect(summary.deltas.income.value).toBe(-5000);
+  });
+});

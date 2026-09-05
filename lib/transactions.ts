@@ -116,6 +116,29 @@ export async function getTransactionsPage(
   };
 }
 
+export async function getTransactionsBetween(
+  startISO: string,
+  endISO: string,
+  limit = 500
+): Promise<Transaction[]> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const { data, error } = await supabase
+    .from("transactions")
+    .select("id, user_id, type, title, amount, category, created_at")
+    .gte("created_at", startISO)
+    .lt("created_at", endISO)
+    .order("created_at", { ascending: true })
+    .limit(limit);
+
+  if (error) throw error;
+  return (data ?? []).map(toTransaction);
+}
+
 export async function insertTransaction(
   input: CreateTransactionInput
 ): Promise<Transaction> {
