@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { createClient } from "@/lib/supabase/server";
 import {
   getTransactionsPage,
   insertTransaction,
@@ -162,6 +163,51 @@ export async function loadMoreTransactions(
       transactions: page.transactions,
       nextCursor: page.nextCursor,
     };
+  } catch (error) {
+    return { ok: false, error: errorMessage(error) };
+  }
+}
+
+export type UserCategoriesResult =
+  | { ok: true; distinct: string[]; topFour: string[] }
+  | { ok: false; error: string };
+
+export async function getUserCategories(): Promise<UserCategoriesResult> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { ok: false, error: "Unauthorized" };
+
+    const { data: rows, error: queryErr } = await supabase
+      .from("transactions")
+      .select("category")
+      .eq("user_id", user.id);
+
+    if (queryErr) throw queryErr;
+
+    const distinct = [
+      ...new Set(
+        (rows ?? [])
+          .map((r) => (r.category ?? "").trim())
+          .filter((c) => c.length > 0)
+      ),
+    ].sort();
+
+    const counts = new Map<string, number>();
+    for (const row of rows ?? []) {
+      const cat = (row.category ?? "").trim();
+      if (cat.length === 0) continue;
+      counts.set(cat, (counts.get(cat) ?? 0) + 1);
+    }
+
+    const topFour = [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 4)
+      .map(([cat]) => cat);
+
+    return { ok: true, distinct, topFour };
   } catch (error) {
     return { ok: false, error: errorMessage(error) };
   }

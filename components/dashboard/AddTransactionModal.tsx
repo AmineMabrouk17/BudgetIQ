@@ -4,6 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { Loader2, Plus } from "lucide-react";
 import { createTransaction } from "@/app/actions/transactions";
 import type { TransactionScope, TransactionType } from "@/types/transaction";
+import CategoryCombobox from "@/components/ui/CategoryCombobox";
 
 const TYPES: { value: TransactionType; label: string }[] = [
   { value: "income", label: "Income" },
@@ -107,13 +108,7 @@ export default function AddTransactionModal() {
             </label>
             <label className="form-control w-full">
               <span className="label-text mb-1">Category</span>
-              <input
-                className="input input-bordered w-full"
-                type="text"
-                name="category"
-                placeholder="e.g. Food, Rent, Salary"
-                maxLength={100}
-              />
+              <CategoryCombobox name="category" />
             </label>
 
             {error && (
