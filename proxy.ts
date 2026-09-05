@@ -11,15 +11,16 @@ const supabaseWssUrl = `wss://${supabaseOrigin.host}`;
 function contentSecurityPolicy(nonce: string): string {
   return [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ""}`,
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://challenges.cloudflare.com${isDev ? " 'unsafe-eval'" : ""}`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' blob: data: https://*.googleusercontent.com",
     "font-src 'self'",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
+    "frame-src https://challenges.cloudflare.com",
     "frame-ancestors 'self'",
-    `connect-src 'self' ${supabaseOrigin.origin} ${supabaseWssUrl}`,
+    `connect-src 'self' ${supabaseOrigin.origin} ${supabaseWssUrl} https://challenges.cloudflare.com`,
     "upgrade-insecure-requests",
   ].join("; ");
 }
