@@ -2,9 +2,9 @@ import type { LucideIcon } from "lucide-react";
 import {
   ChartPie,
   Gauge,
+  LayoutDashboard,
   LogIn,
   MessageSquare,
-  Quote,
   Receipt,
 } from "lucide-react";
 import SectionHeading from "@/components/landing/SectionHeading";
@@ -56,11 +56,11 @@ const featureCards: FeatureCardData[] = [
       "Interactive category breakdowns and charts turn your habits into something you can act on.",
   },
   {
-    icon: Quote,
+    icon: LayoutDashboard,
     color: "yellow",
-    title: "A fresh quote every day",
+    title: "Custom KPI cards that fit your life",
     description:
-      "Daily financial quotes keep you grounded and motivated, right inside the app.",
+      "Net balance, savings rate, profit, and runway — tailored cards for salaried, freelance, and business finances.",
   },
   {
     icon: LogIn,

@@ -21,7 +21,7 @@ describe("FeaturesSection", () => {
       "Log transactions by typing",
       "Know your numbers in real time",
       "See where your money goes",
-      "A fresh quote every day",
+      "Custom KPI cards that fit your life",
       "One-click sign-in, open source",
     ];
 

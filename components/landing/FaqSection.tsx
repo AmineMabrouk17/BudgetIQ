@@ -36,7 +36,7 @@ const faqs: FaqData[] = [
   {
     question: "How is BudgetIQ different from other finance apps?",
     answer:
-      "AI-assisted logging from plain language, real-time net balance and asset tracking, daily financial quotes, and a fully open-source codebase — all free with no ads.",
+      "AI-assisted logging from plain language, real-time net balance and asset tracking, tailored KPI cards, and a fully open-source codebase — all free with no ads.",
   },
 ];
 
