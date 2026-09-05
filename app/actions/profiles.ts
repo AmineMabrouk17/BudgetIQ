@@ -7,6 +7,7 @@ import {
   updateIncomeProfileInDb,
   type IncomeType,
 } from "@/lib/profiles";
+import { seedDefaultKpis } from "@/lib/kpi";
 
 export type UpdateIncomeProfileResult =
   | { ok: true }
@@ -53,6 +54,7 @@ export async function updateIncomeProfile(
       ...(payday !== undefined && { payday }),
       ...(expected_income !== undefined && { expected_income }),
     });
+    await seedDefaultKpis(user.id);
     revalidatePath("/dashboard");
     return { ok: true };
   } catch (error) {
