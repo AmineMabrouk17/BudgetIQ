@@ -1,11 +1,16 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { Loader2, Plus } from "lucide-react";
 import { createTransaction } from "@/app/actions/transactions";
 import type { TransactionScope, TransactionType } from "@/types/transaction";
 import CategoryCombobox from "@/components/ui/CategoryCombobox";
 import { suggestCategory } from "@/lib/categories";
+import { BASE_CURRENCY, type CurrencyRates } from "@/lib/currency";
+import {
+  useDisplayCurrency,
+  loadRates,
+} from "@/lib/currency/use-display-currency";
 
 const TYPES: { value: TransactionType; label: string }[] = [
   { value: "income", label: "Income" },
@@ -24,6 +29,22 @@ export default function AddTransactionModal() {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [category, setCategory] = useState("");
+  const displayCurrency = useDisplayCurrency();
+  const [rates, setRates] = useState<CurrencyRates | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    loadRates().then((loaded) => {
+      if (active) setRates(loaded);
+    });
+    return () => {
+      active = false;
+    };
+  }, [displayCurrency]);
+
+  const isNonUsd = displayCurrency !== BASE_CURRENCY;
+  const rateToUsd = rates?.[displayCurrency] ?? null;
+  const canSave = !isNonUsd || (rateToUsd !== null && rateToUsd > 0);
 
   function open() {
     setError(null);
@@ -44,10 +65,14 @@ export default function AddTransactionModal() {
 
   function handleSubmit(formData: FormData) {
     startTransition(async () => {
+      let rawAmount = Number(formData.get("amount"));
+      if (isNonUsd && rateToUsd !== null && rateToUsd > 0) {
+        rawAmount = rawAmount / rateToUsd;
+      }
       const result = await createTransaction({
         type: formData.get("type") as TransactionType,
         title: formData.get("title") as string,
-        amount: Number(formData.get("amount")),
+        amount: rawAmount,
         category: (formData.get("category") as string) || undefined,
         scope: (formData.get("scope") as TransactionScope) || undefined,
       });
@@ -95,16 +120,27 @@ export default function AddTransactionModal() {
             </label>
             <label className="form-control w-full">
               <span className="label-text mb-1">Amount</span>
-              <input
-                className="input input-bordered w-full"
-                type="number"
-                name="amount"
-                min="0.01"
-                step="0.01"
-                placeholder="0.00"
-                required
-              />
+              <div className="join w-full">
+                <span className="join-item btn btn-sm pointer-events-none">
+                  {displayCurrency}
+                </span>
+                <input
+                  className="input input-bordered join-item w-full"
+                  type="number"
+                  name="amount"
+                  min="0.01"
+                  step="0.01"
+                  placeholder="0.00"
+                  required
+                />
+              </div>
             </label>
+
+            {isNonUsd && rateToUsd === null && (
+              <div className="alert alert-warning">
+                <span>Exchange rate for {displayCurrency} is unavailable. Please try again later.</span>
+              </div>
+            )}
             <label className="form-control w-full">
               <span className="label-text mb-1">Scope</span>
               <select
@@ -139,7 +175,7 @@ export default function AddTransactionModal() {
               >
                 Cancel
               </button>
-              <button className="btn btn-primary" disabled={isPending}>
+              <button className="btn btn-primary" disabled={isPending || !canSave}>
                 {isPending ? <Loader2 className="animate-spin" /> : null}
                 Save
               </button>
