@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUser } from "@/lib/supabase/server";
 import { askGemini, GeminiApiError } from "@/lib/gemini";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
+
+const CHAT_RATE_LIMIT = 20;
+const CHAT_RATE_WINDOW = 60;
 
 const MAX_MESSAGE_LENGTH = 1000;
 
@@ -36,6 +40,19 @@ export async function POST(request: NextRequest) {
   const user = await getUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const rate = await rateLimit({
+    prefix: "chat",
+    identifier: user.id,
+    limit: CHAT_RATE_LIMIT,
+    window: CHAT_RATE_WINDOW,
+  });
+  if (!rate.success) {
+    return NextResponse.json(
+      { error: "Rate limit exceeded" },
+      { status: 429 }
+    );
   }
 
   let body: unknown;
