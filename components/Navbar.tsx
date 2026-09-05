@@ -1,10 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
-import { LogOut } from "lucide-react";
+import { LogOut, SlidersHorizontal } from "lucide-react";
 import { getUser } from "@/lib/supabase/server";
+import { getProfile } from "@/lib/profiles";
 import { signOut } from "@/app/actions/auth";
 import ThemeToggle from "@/components/ThemeToggle";
 import CurrencySelect from "@/components/CurrencySelect";
+import IncomeProfilePicker from "@/components/IncomeProfilePicker";
 
 function initials(name: string): string {
   return name
@@ -17,6 +19,7 @@ function initials(name: string): string {
 
 export default async function Navbar() {
   const user = await getUser();
+  const profile = await getProfile();
 
   return (
     <header className="navbar sticky top-0 z-30 border-b border-base-300/50 bg-base-100/80 backdrop-blur">
@@ -37,6 +40,24 @@ export default async function Navbar() {
         <ThemeToggle />
         {user ? (
           <>
+            <div className="dropdown dropdown-end">
+              <div tabIndex={0} role="button" className="btn btn-ghost btn-sm">
+                <SlidersHorizontal className="h-4 w-4" aria-hidden />
+                <span className="hidden lg:inline">Income</span>
+              </div>
+              <div
+                tabIndex={0}
+                className="dropdown-content z-30 mt-2 w-80 rounded-box border border-base-300 bg-base-100 shadow"
+              >
+                <p className="px-4 pb-1 pt-3 text-xs font-semibold text-base-content/60">
+                  Income profile
+                </p>
+                <IncomeProfilePicker
+                  variant="menu"
+                  initialIncomeType={profile?.income_type ?? null}
+                />
+              </div>
+            </div>
             <div className="avatar">
               <div className="w-8 overflow-hidden rounded-full">
                 {user.user_metadata?.avatar_url ? (

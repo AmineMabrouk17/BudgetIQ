@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/supabase/server";
+import { getProfile, needsOnboarding } from "@/lib/profiles";
 import Navbar from "@/components/Navbar";
 
 export default async function DashboardLayout({
@@ -9,6 +10,9 @@ export default async function DashboardLayout({
 }>) {
   const user = await getUser();
   if (!user) redirect("/login");
+
+  const profile = await getProfile();
+  if (needsOnboarding(profile)) redirect("/onboarding");
 
   return (
     <>
