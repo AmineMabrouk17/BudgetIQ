@@ -44,9 +44,9 @@ describe("Parallax", () => {
     vi.stubGlobal("innerHeight", 800);
     vi.stubGlobal("scrollY", 0);
 
-    let rafCallback: (() => void) | null = null;
+    const raf: { cb: (() => void) | null } = { cb: null };
     vi.stubGlobal("requestAnimationFrame", (cb: () => void) => {
-      rafCallback = cb;
+      raf.cb = cb;
       return 1;
     });
     vi.stubGlobal("cancelAnimationFrame", () => {});
@@ -63,8 +63,8 @@ describe("Parallax", () => {
     getBoundingClientRect.mockClear();
 
     window.dispatchEvent(new Event("scroll"));
-    expect(rafCallback).not.toBeNull();
-    rafCallback?.();
+    expect(raf.cb).not.toBeNull();
+    raf.cb?.();
 
     expect(getBoundingClientRect).not.toHaveBeenCalled();
     expect(wrapper.style.transform).toMatch(/^translate3d\(0, -/);

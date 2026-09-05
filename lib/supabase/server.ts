@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { env } from "@/lib/env";
+import { getPreviewMockSession } from "@/lib/auth/preview-bypass";
 
 export async function createClient() {
   const cookieStore = await cookies();
@@ -28,6 +29,12 @@ export async function createClient() {
 }
 
 export async function getUser() {
+  // Preview QA bypass: a signed synthetic session short-circuits the Supabase
+  // session so the app renders authenticated pages without real credentials.
+  // Inert unless a valid HMAC header is present on preview environments.
+  const mock = getPreviewMockSession(await headers());
+  if (mock) return mock.user;
+
   const supabase = await createClient();
   const {
     data: { user },

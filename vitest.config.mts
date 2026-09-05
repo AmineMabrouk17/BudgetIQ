@@ -10,6 +10,8 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./vitest.setup.tsx"],
     exclude: [
+      "tests/**",
+      ".opencode/**",
       "e2e/**",
       "**/node_modules/**",
       "**/dist/**",
