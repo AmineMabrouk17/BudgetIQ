@@ -71,8 +71,7 @@ Under the hood it pairs a **Next.js** front end with **Supabase** (PostgreSQL + 
 ### 🔌 API Integrations
 - **Supabase Auth** — Google OAuth (one-click) and email/password sign-in.
 - **Google Gemini** (`gemini-3.6-flash` via the Interactions API) — structured JSON responses with schema-enforced transaction detection.
-- **Quotes API** (`api-ninjas`, with fallbacks) — the daily quote feed.
-- **Session-protected endpoints** — `/api/chat` and `/api/quotes` require an authenticated session.
+- **Session-protected endpoint** — `/api/chat` requires an authenticated session.
 
 ---
 
@@ -182,14 +181,14 @@ A non-exhaustive set of ideas for the future — feel free to open these as GitH
 │   ├── (auth)/            # Login & auth callback routes
 │   ├── (dashboard)/       # Dashboard pages & layout
 │   ├── actions/           # Server Actions (auth, transactions)
-│   ├── api/               # /api/chat (Gemini) & /api/quotes routes
+│   ├── api/               # /api/chat (Gemini) route
 │   └── layout.tsx         # Root layout, fonts & theme
 ├── components/
 │   ├── ai/                # AI assistant drawer & action cards
 │   ├── dashboard/         # Summary cards, charts, tables, modals
 │   ├── landing/           # Landing page sections (with tests)
 │   └── Navbar.tsx         # Header with auth & theme toggle
-├── lib/                   # Supabase clients, Gemini, data layers, quotes
+├── lib/                   # Supabase clients, Gemini, data layers
 ├── supabase/migrations/   # Database schema & RLS
 └── types/                 # Shared types
 ```
