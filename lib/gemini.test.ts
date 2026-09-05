@@ -49,3 +49,63 @@ describe("parseEnvelope amount parsing", () => {
     );
   });
 });
+
+describe("parseEnvelope response shape regression", () => {
+  it("has no action returns exactly { message, hasAction }", () => {
+    const result = parseEnvelope(
+      JSON.stringify({ message: "Hello", hasAction: false })
+    );
+    expect(result).toEqual({ message: "Hello", hasAction: false });
+    expect(Object.keys(result).sort()).toEqual(["hasAction", "message"]);
+  });
+
+  it("with action returns exactly { message, hasAction, transaction }", () => {
+    const result = parseEnvelope(
+      JSON.stringify({
+        message: "Logged it",
+        hasAction: true,
+        transaction: {
+          type: "expense",
+          title: "Lunch",
+          amount: "12",
+          category: "Food",
+        },
+      })
+    );
+    expect(result).toEqual({
+      message: "Logged it",
+      hasAction: true,
+      transaction: {
+        type: "expense",
+        title: "Lunch",
+        amount: 12,
+        category: "Food",
+      },
+    });
+    expect(Object.keys(result).sort()).toEqual([
+      "hasAction",
+      "message",
+      "transaction",
+    ]);
+  });
+
+  it("with action omits undefined category from transaction", () => {
+    const result = parseEnvelope(
+      JSON.stringify({
+        message: "Logged it",
+        hasAction: true,
+        transaction: { type: "income", title: "Salary", amount: 500 },
+      })
+    );
+    expect(result).toEqual({
+      message: "Logged it",
+      hasAction: true,
+      transaction: { type: "income", title: "Salary", amount: 500 },
+    });
+    expect(Object.keys(result.transaction ?? {})).toEqual([
+      "type",
+      "title",
+      "amount",
+    ]);
+  });
+});
