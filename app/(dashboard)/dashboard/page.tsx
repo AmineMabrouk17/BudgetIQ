@@ -7,14 +7,13 @@ import {
 import {
   computeSummary,
   getPayCycleBounds,
-  groupExpensesByCategory,
   type Summary,
 } from "@/lib/summary";
 import { getProfile } from "@/lib/profiles";
 import SummaryCards from "@/components/dashboard/SummaryCards";
 import ScopeFilter from "@/components/dashboard/ScopeFilter";
 import TransactionTable from "@/components/dashboard/TransactionTable";
-import LazyCategoryChart from "@/components/dashboard/LazyCategoryChart";
+import LazyAnalyticsContainer from "@/components/dashboard/LazyAnalyticsContainer";
 import AddTransactionModal from "@/components/dashboard/AddTransactionModal";
 import ChatDrawer from "@/components/ai/ChatDrawer";
 
@@ -61,10 +60,6 @@ export default async function DashboardPage({
     summary = computeSummary(transactions);
   }
 
-  const categories = groupExpensesByCategory(
-    scope ? await getTransactions(scope) : transactions
-  );
-
   return (
     <ChatDrawer>
       <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 p-6">
@@ -80,7 +75,7 @@ export default async function DashboardPage({
         <div className="flex items-center justify-end">
           <ScopeFilter scope={scope} />
         </div>
-        <LazyCategoryChart categories={categories} />
+        <LazyAnalyticsContainer transactions={transactions} />
         <TransactionTable
           transactions={page.transactions}
           nextCursor={page.nextCursor}
