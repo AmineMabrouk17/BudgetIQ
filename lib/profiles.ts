@@ -54,13 +54,13 @@ export async function updateIncomeProfileInDb(
   input: UpdateIncomeProfileInput
 ): Promise<Profile> {
   const supabase = await createClient();
+  const updates: Record<string, unknown> = { income_type: input.income_type };
+  if (input.payday !== undefined) updates.payday = input.payday;
+  if (input.expected_income !== undefined)
+    updates.expected_income = input.expected_income;
   const { data, error } = await supabase
     .from("profiles")
-    .update({
-      income_type: input.income_type,
-      payday: input.payday ?? null,
-      expected_income: input.expected_income ?? null,
-    })
+    .update(updates)
     .eq("id", userId)
     .select(
       "id, email, full_name, avatar_url, income_type, payday, expected_income"

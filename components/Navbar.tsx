@@ -55,6 +55,8 @@ export default async function Navbar() {
                 <IncomeProfilePicker
                   variant="menu"
                   initialIncomeType={profile?.income_type ?? null}
+                  initialPayday={profile?.payday ?? null}
+                  initialExpectedIncome={profile?.expected_income ?? null}
                 />
               </div>
             </div>
