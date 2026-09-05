@@ -19,6 +19,10 @@ const percent = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 1,
 });
 
+const months = new Intl.NumberFormat("en-US", {
+  maximumFractionDigits: 1,
+});
+
 function fmtAvg(
   avg: { average: number | null; incomeMonths: number },
   format: (amount: number) => string
@@ -34,6 +38,7 @@ export default function SummaryCards({
   hasTransactions: boolean;
 }) {
   const format = useCurrencyFormatter();
+  const isBusiness = summary.business?.enabled === true;
   return (
     <section aria-label="Financial summary">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -47,20 +52,55 @@ export default function SummaryCards({
           </div>
           <div className="stat-desc">Income + Assets − Expenses</div>
         </div>
-        <div className="stat rounded-box bg-base-100 shadow">
-          <div className="stat-figure text-success">
-            <TrendingUp className="h-8 w-8" />
+        {isBusiness ? (
+          <>
+            <div className="stat rounded-box bg-base-100 shadow">
+              <div className="stat-figure text-success">
+                <TrendingUp className="h-8 w-8" />
+              </div>
+              <div className="stat-title">Profit</div>
+              <div className="stat-value text-2xl">
+                {format(summary.business?.profit ?? 0)}
+              </div>
+              <div className="stat-desc">
+                Business income − business costs
+              </div>
+            </div>
+            {summary.business && (
+              <div className="stat rounded-box bg-base-100 shadow">
+                <div className="stat-figure text-info">
+                  <CalendarClock className="h-8 w-8" />
+                </div>
+                <div className="stat-title">Runway</div>
+                <div className="stat-value text-2xl">
+                  {summary.business.runway === null
+                    ? "—"
+                    : `${months.format(summary.business.runway)} mo`}
+                </div>
+                <div className="stat-desc">
+                  {summary.business.monthlyBurn > 0
+                    ? `${format(summary.business.monthlyBurn)}/mo burn`
+                    : "No business expenses yet"}
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="stat rounded-box bg-base-100 shadow">
+            <div className="stat-figure text-success">
+              <TrendingUp className="h-8 w-8" />
+            </div>
+            <div className="stat-title">Income</div>
+            <div className="stat-value text-2xl">
+              {format(summary.monthlyIncome)}
+            </div>
+            <div className="stat-desc">
+              {summary.payCycle?.enabled
+                ? `of ${format(summary.payCycle.expectedIncome)} this pay cycle`
+                : `vs last month ${formatMoneyDelta(summary.deltas.income, format)}`}
+            </div>
           </div>
-          <div className="stat-title">Income</div>
-          <div className="stat-value text-2xl">
-            {format(summary.monthlyIncome)}
-          </div>
-          <div className="stat-desc">
-            {summary.payCycle?.enabled
-              ? `of ${format(summary.payCycle.expectedIncome)} this pay cycle`
-              : `vs last month ${formatMoneyDelta(summary.deltas.income, format)}`}
-          </div>
-        </div>
+        )}
         <div className="stat rounded-box bg-base-100 shadow">
           <div className="stat-figure text-error">
             <TrendingDown className="h-8 w-8" />
@@ -86,23 +126,25 @@ export default function SummaryCards({
             {formatMoneyDelta(summary.deltas.monthlySpending, format)}
           </div>
         </div>
-        <div className="stat rounded-box bg-base-100 shadow">
-          <div className="stat-figure text-info">
-            <PiggyBank className="h-8 w-8" />
+        {!isBusiness && (
+          <div className="stat rounded-box bg-base-100 shadow">
+            <div className="stat-figure text-info">
+              <PiggyBank className="h-8 w-8" />
+            </div>
+            <div className="stat-title">Savings Rate</div>
+            <div className="stat-value text-2xl">
+              {summary.savingsRate === null
+                ? "—"
+                : percent.format(summary.savingsRate)}
+            </div>
+            <div className="stat-desc">
+              vs last month{" "}
+              {summary.deltas.savingsRate === null
+                ? "—"
+                : formatRateDelta(summary.deltas.savingsRate)}
+            </div>
           </div>
-          <div className="stat-title">Savings Rate</div>
-          <div className="stat-value text-2xl">
-            {summary.savingsRate === null
-              ? "—"
-              : percent.format(summary.savingsRate)}
-          </div>
-          <div className="stat-desc">
-            vs last month{" "}
-            {summary.deltas.savingsRate === null
-              ? "—"
-              : formatRateDelta(summary.deltas.savingsRate)}
-          </div>
-        </div>
+        )}
         <div className="stat rounded-box bg-base-100 shadow">
           <div className="stat-figure text-accent">
             <Landmark className="h-8 w-8" />

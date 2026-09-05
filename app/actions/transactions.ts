@@ -10,9 +10,9 @@ import { canonicalizeCategory } from "@/lib/categories";
 import type {
   CreateTransactionInput,
   Transaction,
+  TransactionScope,
   TransactionType,
 } from "@/types/transaction";
-
 export type CreateTransactionResult =
   | { ok: true; transaction: Transaction }
   | { ok: false; error: string };
@@ -29,6 +29,11 @@ const TRANSACTION_TYPES: readonly TransactionType[] = [
   "income",
   "expense",
   "asset",
+];
+
+const TRANSACTION_SCOPES: readonly TransactionScope[] = [
+  "business",
+  "personal",
 ];
 
 const UUID_REGEX =
@@ -50,13 +55,19 @@ function validateCreateInput(input: unknown):
     return { ok: false, error: "Invalid transaction payload." };
   }
 
-  const { type, title, amount, category } = input as Record<
+  const { type, title, amount, category, scope } = input as Record<
     string,
     unknown
   >;
 
   if (!TRANSACTION_TYPES.includes(type as TransactionType)) {
     return { ok: false, error: "Type must be income, expense, or asset." };
+  }
+
+  if (scope !== undefined && scope !== null) {
+    if (!TRANSACTION_SCOPES.includes(scope as TransactionScope)) {
+      return { ok: false, error: "Scope must be business or personal." };
+    }
   }
 
   if (typeof title !== "string" || title.trim().length === 0) {
@@ -89,6 +100,7 @@ function validateCreateInput(input: unknown):
       title: title.trim(),
       amount: parsedAmount,
       category: trimmedCategory === "" ? undefined : trimmedCategory,
+      scope: scope === undefined ? undefined : (scope as TransactionScope),
     },
   };
 }
@@ -133,14 +145,18 @@ export async function deleteTransaction(
 }
 
 export async function loadMoreTransactions(
-  cursor: string
+  cursor: string,
+  scope: TransactionScope | null = null
 ): Promise<LoadMoreTransactionsResult> {
   if (typeof cursor !== "string" || cursor.length === 0 || cursor.length > 512) {
     return { ok: false, error: "Invalid cursor." };
   }
+  if (scope !== null && !TRANSACTION_SCOPES.includes(scope)) {
+    return { ok: false, error: "Invalid scope." };
+  }
 
   try {
-    const page = await getTransactionsPage(cursor);
+    const page = await getTransactionsPage(cursor, scope);
     return {
       ok: true,
       transactions: page.transactions,
