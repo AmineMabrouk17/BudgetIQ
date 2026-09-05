@@ -40,8 +40,81 @@ describe("IncomeProfilePicker", () => {
     );
 
     await waitFor(() => {
-      expect(updateIncomeProfile).toHaveBeenCalledWith("freelancer");
+      expect(updateIncomeProfile).toHaveBeenCalledWith("freelancer", {});
     });
     expect(refresh).toHaveBeenCalled();
+  });
+
+  it("submits payday and expected income for pay-cycle income types", async () => {
+    updateIncomeProfile.mockResolvedValue({ ok: true });
+
+    render(<IncomeProfilePicker />);
+
+    fireEvent.click(screen.getByRole("radio", { name: /salaried/i }));
+    fireEvent.change(
+      screen.getByLabelText(/payday/i),
+      { target: { value: "28" } }
+    );
+    fireEvent.change(
+      screen.getByLabelText(/expected income per pay period/i),
+      { target: { value: "5000" } }
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: /save income profile/i })
+    );
+
+    await waitFor(() => {
+      expect(updateIncomeProfile).toHaveBeenCalledWith("salaried", {
+        payday: 28,
+        expected_income: 5000,
+      });
+    });
+    expect(refresh).toHaveBeenCalled();
+  });
+
+  it("does not clear payday/expected_income when the fields are left blank", async () => {
+    updateIncomeProfile.mockResolvedValue({ ok: true });
+
+    render(
+      <IncomeProfilePicker
+        initialIncomeType="salaried"
+        initialPayday={15}
+        initialExpectedIncome={4000}
+      />
+    );
+
+    expect(screen.getByLabelText(/payday/i)).toHaveValue(15);
+
+    fireEvent.change(screen.getByLabelText(/payday/i), {
+      target: { value: "" },
+    });
+    fireEvent.change(screen.getByLabelText(/expected income per pay period/i), {
+      target: { value: "" },
+    });
+    fireEvent.click(
+      screen.getByRole("button", { name: /save income profile/i })
+    );
+
+    await waitFor(() => {
+      expect(updateIncomeProfile).toHaveBeenCalledWith("salaried", {});
+    });
+    expect(refresh).toHaveBeenCalled();
+  });
+
+  it("omits payday/expected_income for freelancer and business types", async () => {
+    updateIncomeProfile.mockResolvedValue({ ok: true });
+
+    render(
+      <IncomeProfilePicker initialIncomeType="salaried" initialPayday={15} />
+    );
+
+    fireEvent.click(screen.getByRole("radio", { name: /business/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /save income profile/i })
+    );
+
+    await waitFor(() => {
+      expect(updateIncomeProfile).toHaveBeenCalledWith("business", {});
+    });
   });
 });

@@ -28,17 +28,29 @@ const INCOME_TYPE_OPTIONS: { value: IncomeType; title: string; description: stri
   },
 ];
 
+const PAY_CYCLE_TYPES: IncomeType[] = ["salaried", "hourly"];
+
 export default function IncomeProfilePicker({
   initialIncomeType = null,
+  initialPayday = null,
+  initialExpectedIncome = null,
   variant = "step",
 }: {
   initialIncomeType?: IncomeType | null;
+  initialPayday?: number | null;
+  initialExpectedIncome?: number | null;
   variant?: "step" | "menu";
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [selected, setSelected] = useState<IncomeType | null>(
     initialIncomeType
+  );
+  const [payday, setPayday] = useState<string>(
+    initialPayday !== null ? String(initialPayday) : ""
+  );
+  const [expectedIncome, setExpectedIncome] = useState<string>(
+    initialExpectedIncome !== null ? String(initialExpectedIncome) : ""
   );
   const [error, setError] = useState<string | null>(null);
 
@@ -48,8 +60,20 @@ export default function IncomeProfilePicker({
       return;
     }
     setError(null);
+
+    const isPayCycleType = PAY_CYCLE_TYPES.includes(selected);
+    const paydayValue = payday.trim();
+    const expectedIncomeValue = expectedIncome.trim();
+    const options: { payday?: number; expected_income?: number } = {};
+    if (isPayCycleType && paydayValue !== "") {
+      options.payday = parseInt(paydayValue, 10);
+    }
+    if (isPayCycleType && expectedIncomeValue !== "") {
+      options.expected_income = parseFloat(expectedIncomeValue);
+    }
+
     startTransition(async () => {
-      const result = await updateIncomeProfile(selected);
+      const result = await updateIncomeProfile(selected, options);
       if (!result.ok) {
         setError(result.error);
         return;
@@ -62,6 +86,8 @@ export default function IncomeProfilePicker({
     variant === "menu"
       ? "space-y-1"
       : "grid grid-cols-1 gap-3 sm:grid-cols-2";
+
+  const payCycleFields = selected && PAY_CYCLE_TYPES.includes(selected);
 
   return (
     <form
@@ -101,6 +127,54 @@ export default function IncomeProfilePicker({
           );
         })}
       </div>
+
+      {payCycleFields && (
+        <div
+          className={
+            variant === "menu"
+              ? "mt-3 grid gap-2"
+              : "mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2"
+          }
+        >
+          <label className="form-control">
+            <span className="label-text mb-1 text-xs font-semibold text-base-content/70">
+              Payday (day of month)
+            </span>
+            <input
+              type="number"
+              name="payday"
+              min={1}
+              max={31}
+              step={1}
+              inputMode="numeric"
+              value={payday}
+              onChange={(e) => setPayday(e.target.value)}
+              placeholder="e.g. 28"
+              className="input input-bordered input-sm"
+            />
+          </label>
+          <label className="form-control">
+            <span className="label-text mb-1 text-xs font-semibold text-base-content/70">
+              Expected income per pay period
+            </span>
+            <input
+              type="number"
+              name="expected_income"
+              min={0}
+              step={0.01}
+              inputMode="decimal"
+              value={expectedIncome}
+              onChange={(e) => setExpectedIncome(e.target.value)}
+              placeholder="e.g. 5000"
+              className="input input-bordered input-sm"
+            />
+          </label>
+          <p className="text-xs text-base-content/50 sm:col-span-2">
+            Used to track pay-cycle progress on your dashboard. Leave blank to
+            keep your current values.
+          </p>
+        </div>
+      )}
 
       {error && (
         <p className="mt-3 text-sm text-error" role="alert">
