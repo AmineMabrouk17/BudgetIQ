@@ -1,10 +1,16 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useSearchParams } from "next/navigation";
+import { verifyTurnstile } from "@/app/actions/auth";
 import { Loader2, Globe, Mail, Send } from "lucide-react";
+
+const TURNSTILE_SCRIPT_URL =
+  "https://challenges.cloudflare.com/turnstile/v0/api.js";
+
+const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
 type Mode = "signin" | "signup";
 type ErrorAction = "switchToSignIn" | "switchToSignUp" | "resend" | null;
@@ -74,16 +80,100 @@ export default function LoginPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [pendingOAuth, setPendingOAuth] = useState(false);
   const [pendingEmail, setPendingEmail] = useState(false);
+  const turnstileContainerRef = useRef<HTMLDivElement>(null);
+  const turnstileWidgetId = useRef<string | undefined>(undefined);
+  const turnstileTokenRef = useRef<string | null>(null);
   const searchParams = useSearchParams();
   const callbackError = searchParams.get("error");
 
   const supabase = createClient();
+
+  useEffect(() => {
+    if (!turnstileSiteKey) return;
+
+    const siteKey: string = turnstileSiteKey;
+    const container = turnstileContainerRef.current;
+    if (!container) return;
+
+    const widgetTarget: HTMLElement = container;
+
+    let cancelled = false;
+    turnstileTokenRef.current = null;
+
+    function renderWidget() {
+      if (cancelled || !window.turnstile) return;
+      if (turnstileWidgetId.current) {
+        try {
+          window.turnstile.remove(turnstileWidgetId.current);
+        } catch {
+          // The widget may already be gone (e.g. tab switch); render a fresh one.
+        }
+        turnstileWidgetId.current = undefined;
+      }
+      turnstileWidgetId.current = window.turnstile.render(widgetTarget, {
+        sitekey: siteKey,
+        action: "turnstile-spin-v2",
+        callback: (token) => {
+          turnstileTokenRef.current = token;
+        },
+        "expired-callback": () => {
+          turnstileTokenRef.current = null;
+        },
+      });
+    }
+
+    function loadScript() {
+      if (window.turnstile) {
+        renderWidget();
+        return;
+      }
+      const existing = document.querySelector<HTMLScriptElement>(
+        `script[src="${TURNSTILE_SCRIPT_URL}"]`
+      );
+      if (existing) {
+        existing.addEventListener("load", renderWidget, { once: true });
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = TURNSTILE_SCRIPT_URL;
+      script.async = true;
+      script.defer = true;
+      script.addEventListener("load", renderWidget, { once: true });
+      document.head.appendChild(script);
+    }
+
+    loadScript();
+
+    return () => {
+      cancelled = true;
+      if (turnstileWidgetId.current && window.turnstile) {
+        try {
+          window.turnstile.remove(turnstileWidgetId.current);
+        } catch {
+          // ignore
+        }
+        turnstileWidgetId.current = undefined;
+      }
+    };
+  }, [mode]);
+
+  function resetTurnstile() {
+    turnstileTokenRef.current = null;
+    if (turnstileWidgetId.current && window.turnstile) {
+      try {
+        window.turnstile.reset(turnstileWidgetId.current);
+      } catch {
+        // ignore
+      }
+    }
+  }
 
   function switchMode(next: Mode) {
     setMode(next);
     setError(null);
     setErrorAction(null);
     setMessage(null);
+    resetTurnstile();
   }
 
   function applyError(error: AuthError) {
@@ -135,7 +225,23 @@ export default function LoginPage() {
     setError(null);
     setErrorAction(null);
     setMessage(null);
+
+    const turnstileTokenValue = turnstileTokenRef.current;
+    if (!turnstileTokenValue) {
+      setError("Please complete the security check before submitting.");
+      resetTurnstile();
+      return;
+    }
+
     setPendingEmail(true);
+
+    const verification = await verifyTurnstile(turnstileTokenValue);
+    if (!verification.ok) {
+      setError(verification.error);
+      resetTurnstile();
+      setPendingEmail(false);
+      return;
+    }
 
     if (mode === "signup") {
       const { data, error } = await supabase.auth.signUp({
@@ -184,6 +290,7 @@ export default function LoginPage() {
     }
 
     setPendingEmail(false);
+    resetTurnstile();
   }
 
   return (
@@ -274,6 +381,13 @@ export default function LoginPage() {
               autoComplete={mode === "signup" ? "new-password" : "current-password"}
             />
           </label>
+          {turnstileSiteKey && (
+            <div
+              key={mode}
+              ref={turnstileContainerRef}
+              className="mt-1 flex min-h-[65px] justify-center"
+            />
+          )}
           <button
             className="btn btn-primary mt-2"
             disabled={pendingEmail || pendingOAuth}
