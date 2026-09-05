@@ -5,6 +5,7 @@ import { Loader2, Plus } from "lucide-react";
 import { createTransaction } from "@/app/actions/transactions";
 import type { TransactionScope, TransactionType } from "@/types/transaction";
 import CategoryCombobox from "@/components/ui/CategoryCombobox";
+import { suggestCategory } from "@/lib/categories";
 
 const TYPES: { value: TransactionType; label: string }[] = [
   { value: "income", label: "Income" },
@@ -19,8 +20,10 @@ const SCOPES: { value: TransactionScope; label: string }[] = [
 
 export default function AddTransactionModal() {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const titleRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [category, setCategory] = useState("");
 
   function open() {
     setError(null);
@@ -29,6 +32,14 @@ export default function AddTransactionModal() {
 
   function close() {
     dialogRef.current?.close();
+  }
+
+  function handleTitleBlur() {
+    if (category) return;
+    const title = titleRef.current?.value ?? "";
+    if (title.trim().length === 0) return;
+    const suggested = suggestCategory(title);
+    if (suggested) setCategory(suggested);
   }
 
   function handleSubmit(formData: FormData) {
@@ -72,12 +83,14 @@ export default function AddTransactionModal() {
             <label className="form-control w-full">
               <span className="label-text mb-1">Title</span>
               <input
+                ref={titleRef}
                 className="input input-bordered w-full"
                 type="text"
                 name="title"
                 placeholder="e.g. Groceries"
                 maxLength={255}
                 required
+                onBlur={handleTitleBlur}
               />
             </label>
             <label className="form-control w-full">
@@ -108,7 +121,7 @@ export default function AddTransactionModal() {
             </label>
             <label className="form-control w-full">
               <span className="label-text mb-1">Category</span>
-              <CategoryCombobox name="category" />
+              <CategoryCombobox name="category" value={category} />
             </label>
 
             {error && (

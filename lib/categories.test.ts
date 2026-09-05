@@ -3,6 +3,7 @@ import {
   canonicalizeCategory,
   titleCase,
   filterCategories,
+  suggestCategory,
   CATEGORY_PRESETS,
 } from "@/lib/categories";
 
@@ -86,5 +87,60 @@ describe("filterCategories", () => {
   it("returns empty array when nothing matches", () => {
     const result = filterCategories("zzzzz", history);
     expect(result).toHaveLength(0);
+  });
+});
+
+describe("suggestCategory", () => {
+  const cases: { keyword: string; expected: string }[] = [
+    { keyword: "uber", expected: "Transportation" },
+    { keyword: "lyft", expected: "Transportation" },
+    { keyword: "gas", expected: "Transportation" },
+    { keyword: "netflix", expected: "Subscriptions" },
+    { keyword: "spotify", expected: "Subscriptions" },
+    { keyword: "rent", expected: "Housing & Rent" },
+    { keyword: "electric bill", expected: "Utilities & Bills" },
+    { keyword: "wifi", expected: "Utilities & Bills" },
+    { keyword: "groceries", expected: "Groceries" },
+    { keyword: "walmart", expected: "Groceries" },
+    { keyword: "restaurant", expected: "Food & Dining" },
+    { keyword: "starbucks", expected: "Food & Dining" },
+    { keyword: "movie", expected: "Entertainment & Leisure" },
+    { keyword: "pharmacy", expected: "Health & Medical" },
+    { keyword: "gym", expected: "Health & Medical" },
+    { keyword: "salary", expected: "Work & Business" },
+    { keyword: "invoice", expected: "Work & Business" },
+    { keyword: "amazon", expected: "Shopping & Other" },
+  ];
+
+  for (const { keyword, expected } of cases) {
+    it(`suggests "${expected}" for "${keyword}"`, () => {
+      expect(suggestCategory(keyword)).toBe(expected);
+    });
+  }
+
+  it("matches keywords substring-aware within a longer title", () => {
+    expect(suggestCategory("Uber ride to airport")).toBe("Transportation");
+    expect(suggestCategory("Netflix monthly subscription")).toBe(
+      "Subscriptions"
+    );
+  });
+
+  it("is case-insensitive", () => {
+    expect(suggestCategory("UBER")).toBe("Transportation");
+    expect(suggestCategory("NetFlix")).toBe("Subscriptions");
+    expect(suggestCategory("WALMART")).toBe("Groceries");
+  });
+
+  it("returns null when no keyword matches", () => {
+    expect(suggestCategory("one-off gift from grandma")).toBeNull();
+    expect(suggestCategory("")).toBeNull();
+    expect(suggestCategory("   ")).toBeNull();
+  });
+
+  it("returns a preset label exactly as defined in CATEGORY_PRESETS", () => {
+    const presetLabels = CATEGORY_PRESETS.map((p) => p.label);
+    for (const { keyword } of cases) {
+      expect(presetLabels).toContain(suggestCategory(keyword));
+    }
   });
 });

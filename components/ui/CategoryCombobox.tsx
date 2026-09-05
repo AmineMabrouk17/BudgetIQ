@@ -19,9 +19,10 @@ import { getUserCategories } from "@/app/actions/transactions";
 type Props = {
   name: string;
   defaultValue?: string;
+  value?: string;
 };
 
-export default function CategoryCombobox({ name, defaultValue = "" }: Props) {
+export default function CategoryCombobox({ name, defaultValue = "", value }: Props) {
   const [query, setQuery] = useState(defaultValue);
   const [isOpen, setIsOpen] = useState(false);
   const [highlightIndex, setHighlightIndex] = useState(-1);
@@ -33,6 +34,16 @@ export default function CategoryCombobox({ name, defaultValue = "" }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
+
+  const [previousValue, setPreviousValue] = useState(value);
+
+  if (value !== previousValue) {
+    setPreviousValue(value);
+    if (value !== undefined) {
+      setSelected(value);
+      setQuery(value);
+    }
+  }
 
   useEffect(() => {
     startTransition(async () => {
