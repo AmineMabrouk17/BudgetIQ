@@ -152,6 +152,45 @@ exports[`SummaryCards > matches the business snapshot 1`] = `
         </div>
       </div>
     </div>
+    <div
+      class="mt-6 flex items-center justify-between"
+    >
+      <h2
+        class="text-lg font-semibold text-base-content"
+      >
+        Custom KPIs
+      </h2>
+      <button
+        class="btn btn-outline btn-sm"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-plus"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M5 12h14"
+          />
+          <path
+            d="M12 5v14"
+          />
+        </svg>
+        Add KPI
+      </button>
+    </div>
+    <div
+      class="mt-3 rounded-box border border-dashed border-base-content/30 p-6 text-center text-sm text-base-content/60"
+    >
+      No custom KPIs yet — add one to track a metric your way.
+    </div>
   </section>
 </div>
 `;
@@ -301,6 +340,45 @@ exports[`SummaryCards > matches the freelancer snapshot 1`] = `
           25% of income set aside · +$750.00 this month
         </div>
       </div>
+    </div>
+    <div
+      class="mt-6 flex items-center justify-between"
+    >
+      <h2
+        class="text-lg font-semibold text-base-content"
+      >
+        Custom KPIs
+      </h2>
+      <button
+        class="btn btn-outline btn-sm"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-plus"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M5 12h14"
+          />
+          <path
+            d="M12 5v14"
+          />
+        </svg>
+        Add KPI
+      </button>
+    </div>
+    <div
+      class="mt-3 rounded-box border border-dashed border-base-content/30 p-6 text-center text-sm text-base-content/60"
+    >
+      No custom KPIs yet — add one to track a metric your way.
     </div>
   </section>
 </div>
@@ -489,6 +567,45 @@ exports[`SummaryCards > matches the salaried snapshot 1`] = `
           vs last month +10.0 pp
         </div>
       </div>
+    </div>
+    <div
+      class="mt-6 flex items-center justify-between"
+    >
+      <h2
+        class="text-lg font-semibold text-base-content"
+      >
+        Custom KPIs
+      </h2>
+      <button
+        class="btn btn-outline btn-sm"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-plus"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M5 12h14"
+          />
+          <path
+            d="M12 5v14"
+          />
+        </svg>
+        Add KPI
+      </button>
+    </div>
+    <div
+      class="mt-3 rounded-box border border-dashed border-base-content/30 p-6 text-center text-sm text-base-content/60"
+    >
+      No custom KPIs yet — add one to track a metric your way.
     </div>
   </section>
 </div>
