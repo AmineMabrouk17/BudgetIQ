@@ -7,8 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "audit": "pnpm audit",
+    "audit:fix": "pnpm audit --fix"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",
