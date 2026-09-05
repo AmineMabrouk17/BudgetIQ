@@ -20,7 +20,7 @@ export function useDisplayCurrency(): string {
 
 let cachedRates: CurrencyRates | null = null;
 
-async function loadRates(): Promise<CurrencyRates> {
+export async function loadRates(): Promise<CurrencyRates> {
   if (cachedRates) return cachedRates;
   try {
     const response = await fetch("/api/currency-rates", {
