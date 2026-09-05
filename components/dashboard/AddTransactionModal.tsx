@@ -3,12 +3,17 @@
 import { useRef, useState, useTransition } from "react";
 import { Loader2, Plus } from "lucide-react";
 import { createTransaction } from "@/app/actions/transactions";
-import type { TransactionType } from "@/types/transaction";
+import type { TransactionScope, TransactionType } from "@/types/transaction";
 
 const TYPES: { value: TransactionType; label: string }[] = [
   { value: "income", label: "Income" },
   { value: "expense", label: "Expense" },
   { value: "asset", label: "Asset" },
+];
+
+const SCOPES: { value: TransactionScope; label: string }[] = [
+  { value: "personal", label: "Personal" },
+  { value: "business", label: "Business" },
 ];
 
 export default function AddTransactionModal() {
@@ -32,6 +37,7 @@ export default function AddTransactionModal() {
         title: formData.get("title") as string,
         amount: Number(formData.get("amount")),
         category: (formData.get("category") as string) || undefined,
+        scope: (formData.get("scope") as TransactionScope) || undefined,
       });
       if (result.ok) {
         close();
@@ -84,6 +90,20 @@ export default function AddTransactionModal() {
                 placeholder="0.00"
                 required
               />
+            </label>
+            <label className="form-control w-full">
+              <span className="label-text mb-1">Scope</span>
+              <select
+                className="select select-bordered w-full"
+                name="scope"
+                defaultValue="personal"
+              >
+                {SCOPES.map((s) => (
+                  <option key={s.value} value={s.value}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
             </label>
             <label className="form-control w-full">
               <span className="label-text mb-1">Category</span>

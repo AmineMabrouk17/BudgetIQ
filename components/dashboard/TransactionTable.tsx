@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Check, Loader2, Trash2, X } from "lucide-react";
-import type { Transaction, TransactionType } from "@/types/transaction";
+import type { Transaction, TransactionScope, TransactionType } from "@/types/transaction";
 import {
   deleteTransaction,
   loadMoreTransactions,
@@ -16,12 +16,19 @@ const TYPE_BADGES: Record<TransactionType, string> = {
   asset: "badge-info",
 };
 
+const SCOPE_BADGES: Record<Transaction["scope"], string> = {
+  business: "badge-secondary",
+  personal: "badge-ghost",
+};
+
 export default function TransactionTable({
   transactions: initialTransactions,
   nextCursor: initialCursor,
+  scope,
 }: {
   transactions: Transaction[];
   nextCursor: string | null;
+  scope: TransactionScope | null;
 }) {
   const format = useCurrencyFormatter();
   const [transactions, setTransactions] =
@@ -46,7 +53,7 @@ export default function TransactionTable({
     const cursor = nextCursor;
     setError(null);
     startTransition(async () => {
-      const result = await loadMoreTransactions(cursor);
+      const result = await loadMoreTransactions(cursor, scope);
       if (result.ok) {
         setTransactions((prev) => [...prev, ...result.transactions]);
         setNextCursor(result.nextCursor);
@@ -83,6 +90,7 @@ export default function TransactionTable({
                   <th>Title</th>
                   <th>Category</th>
                   <th>Type</th>
+                  <th>Scope</th>
                   <th>Amount</th>
                   <th>Date</th>
                   <th className="text-right">Actions</th>
@@ -96,6 +104,11 @@ export default function TransactionTable({
                     <td>
                       <span className={`badge ${TYPE_BADGES[t.type]}`}>
                         {t.type}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`badge ${SCOPE_BADGES[t.scope]}`}>
+                        {t.scope}
                       </span>
                     </td>
                     <td

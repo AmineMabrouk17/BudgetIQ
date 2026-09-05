@@ -1,0 +1,495 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`SummaryCards > matches the business snapshot 1`] = `
+<div>
+  <section
+    aria-label="Financial summary"
+  >
+    <div
+      class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+    >
+      <div
+        class="stat rounded-box bg-base-100 shadow"
+      >
+        <div
+          class="stat-figure text-primary"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-wallet h-8 w-8"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"
+            />
+            <path
+              d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"
+            />
+          </svg>
+        </div>
+        <div
+          class="stat-title"
+        >
+          Net Balance
+        </div>
+        <div
+          class="stat-value text-2xl"
+        >
+          $40,000.00
+        </div>
+        <div
+          class="stat-desc"
+        >
+          Income + Assets − Expenses
+        </div>
+      </div>
+      <div
+        class="stat rounded-box bg-base-100 shadow"
+      >
+        <div
+          class="stat-figure text-success"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-trending-up h-8 w-8"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M16 7h6v6"
+            />
+            <path
+              d="m22 7-8.5 8.5-5-5L2 17"
+            />
+          </svg>
+        </div>
+        <div
+          class="stat-title"
+        >
+          Profit
+        </div>
+        <div
+          class="stat-value text-2xl"
+        >
+          $6,500.00
+        </div>
+        <div
+          class="stat-desc"
+        >
+          Business income − business costs
+        </div>
+      </div>
+      <div
+        class="stat rounded-box bg-base-100 shadow"
+      >
+        <div
+          class="stat-figure text-info"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-calendar-clock h-8 w-8"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M16 14v2.2l1.6 1"
+            />
+            <path
+              d="M16 2v3"
+            />
+            <path
+              d="M21 7.338V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h2.338"
+            />
+            <path
+              d="M3 9h5.859"
+            />
+            <path
+              d="M8 2v3"
+            />
+            <circle
+              cx="16"
+              cy="16"
+              r="6"
+            />
+          </svg>
+        </div>
+        <div
+          class="stat-title"
+        >
+          Runway
+        </div>
+        <div
+          class="stat-value text-2xl"
+        >
+          18.6 mo
+        </div>
+        <div
+          class="stat-desc"
+        >
+          $350.00/mo burn
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+`;
+
+exports[`SummaryCards > matches the freelancer snapshot 1`] = `
+<div>
+  <section
+    aria-label="Financial summary"
+  >
+    <div
+      class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+    >
+      <div
+        class="stat rounded-box bg-base-100 shadow"
+      >
+        <div
+          class="stat-figure text-primary"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-wallet h-8 w-8"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"
+            />
+            <path
+              d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"
+            />
+          </svg>
+        </div>
+        <div
+          class="stat-title"
+        >
+          Net Balance
+        </div>
+        <div
+          class="stat-value text-2xl"
+        >
+          $9,000.00
+        </div>
+        <div
+          class="stat-desc"
+        >
+          Income + Assets − Expenses
+        </div>
+      </div>
+      <div
+        class="stat rounded-box bg-base-100 shadow"
+      >
+        <div
+          class="stat-figure text-primary"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-trending-up h-8 w-8"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M16 7h6v6"
+            />
+            <path
+              d="m22 7-8.5 8.5-5-5L2 17"
+            />
+          </svg>
+        </div>
+        <div
+          class="stat-title"
+        >
+          Rolling Income Averages
+        </div>
+        <div
+          class="stat-value text-2xl"
+        >
+          $3,000.00
+        </div>
+        <div
+          class="stat-desc"
+        >
+          3-mo $3,000.00 · 6-mo $3,000.00 · 12-mo $2,750.00
+        </div>
+      </div>
+      <div
+        class="stat rounded-box bg-base-100 shadow"
+      >
+        <div
+          class="stat-figure text-error"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-coins h-8 w-8"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M13.744 17.736a6 6 0 1 1-7.48-7.48"
+            />
+            <path
+              d="M15 6h1v4"
+            />
+            <path
+              d="m6.134 14.768.866-.5 2 3.464"
+            />
+            <circle
+              cx="16"
+              cy="8"
+              r="6"
+            />
+          </svg>
+        </div>
+        <div
+          class="stat-title"
+        >
+          Tax Reserve
+        </div>
+        <div
+          class="stat-value text-2xl"
+        >
+          $3,750.00
+        </div>
+        <div
+          class="stat-desc"
+        >
+          25% of income set aside · +$750.00 this month
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+`;
+
+exports[`SummaryCards > matches the salaried snapshot 1`] = `
+<div>
+  <section
+    aria-label="Financial summary"
+  >
+    <div
+      class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+    >
+      <div
+        class="stat rounded-box bg-base-100 shadow"
+      >
+        <div
+          class="stat-figure text-primary"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-wallet h-8 w-8"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"
+            />
+            <path
+              d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"
+            />
+          </svg>
+        </div>
+        <div
+          class="stat-title"
+        >
+          Net Balance
+        </div>
+        <div
+          class="stat-value text-2xl"
+        >
+          $15,000.00
+        </div>
+        <div
+          class="stat-desc"
+        >
+          Income + Assets − Expenses
+        </div>
+      </div>
+      <div
+        class="stat rounded-box bg-base-100 shadow"
+      >
+        <div
+          class="stat-figure text-success"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-trending-up h-8 w-8"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M16 7h6v6"
+            />
+            <path
+              d="m22 7-8.5 8.5-5-5L2 17"
+            />
+          </svg>
+        </div>
+        <div
+          class="stat-title"
+        >
+          Income
+        </div>
+        <div
+          class="stat-value text-2xl"
+        >
+          $5,000.00
+        </div>
+        <div
+          class="stat-desc"
+        >
+          of $5,000.00 this pay cycle
+        </div>
+      </div>
+      <div
+        class="stat rounded-box bg-base-100 shadow"
+      >
+        <div
+          class="stat-figure text-error"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-trending-down h-8 w-8"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M16 17h6v-6"
+            />
+            <path
+              d="m22 17-8.5-8.5-5 5L2 7"
+            />
+          </svg>
+        </div>
+        <div
+          class="stat-title"
+        >
+          Spending
+        </div>
+        <div
+          class="stat-value text-2xl"
+        >
+          $2,000.00
+        </div>
+        <div
+          class="stat-desc"
+        >
+          vs last month −$1,000.00 (−33.3%)
+        </div>
+      </div>
+      <div
+        class="stat rounded-box bg-base-100 shadow"
+      >
+        <div
+          class="stat-figure text-info"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-piggy-bank h-8 w-8"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M11 17h3v2a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-3a3.16 3.16 0 0 0 2-2h1a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1h-1a5 5 0 0 0-2-4V3a4 4 0 0 0-3.2 1.6l-.3.4H11a6 6 0 0 0-6 6v1a5 5 0 0 0 2 4v3a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1z"
+            />
+            <path
+              d="M16 10h.01"
+            />
+            <path
+              d="M2 8v1a2 2 0 0 0 2 2h1"
+            />
+          </svg>
+        </div>
+        <div
+          class="stat-title"
+        >
+          Savings Rate
+        </div>
+        <div
+          class="stat-value text-2xl"
+        >
+          60%
+        </div>
+        <div
+          class="stat-desc"
+        >
+          vs last month +10.0 pp
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+`;

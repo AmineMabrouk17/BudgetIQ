@@ -1,4 +1,5 @@
 export type TransactionType = "income" | "expense" | "asset";
+export type TransactionScope = "business" | "personal";
 
 export type Transaction = {
   id: string;
@@ -8,6 +9,7 @@ export type Transaction = {
   amount: number;
   category: string;
   created_at: string;
+  scope: TransactionScope;
 };
 
 export type CreateTransactionInput = {
@@ -15,4 +17,5 @@ export type CreateTransactionInput = {
   title: string;
   amount: number;
   category?: string;
+  scope?: TransactionScope;
 };

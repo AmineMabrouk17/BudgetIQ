@@ -1,18 +1,69 @@
-import { getTransactions, getTransactionsPage } from "@/lib/transactions";
-import { computeSummary, groupExpensesByCategory } from "@/lib/summary";
+import {
+  getTransactions,
+  getTransactionsBetween,
+  getTransactionsPage,
+  type TransactionScopeFilter,
+} from "@/lib/transactions";
+import {
+  computeSummary,
+  getPayCycleBounds,
+  groupExpensesByCategory,
+  type Summary,
+} from "@/lib/summary";
+import { getProfile } from "@/lib/profiles";
 import SummaryCards from "@/components/dashboard/SummaryCards";
-import LazyCategoryChart from "@/components/dashboard/LazyCategoryChart";
+import ScopeFilter from "@/components/dashboard/ScopeFilter";
 import TransactionTable from "@/components/dashboard/TransactionTable";
+import LazyCategoryChart from "@/components/dashboard/LazyCategoryChart";
 import AddTransactionModal from "@/components/dashboard/AddTransactionModal";
 import ChatDrawer from "@/components/ai/ChatDrawer";
 
-export default async function DashboardPage() {
-  const [transactions, page] = await Promise.all([
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const resolved = await searchParams;
+  const rawScope = resolved.scope;
+  const scope: TransactionScopeFilter =
+    rawScope === "business" || rawScope === "personal" ? rawScope : null;
+
+  const [transactions, page, profile] = await Promise.all([
     getTransactions(),
-    getTransactionsPage(),
+    getTransactionsPage(undefined, scope),
+    getProfile(),
   ]);
-  const summary = computeSummary(transactions);
-  const categories = groupExpensesByCategory(transactions);
+
+  const payday = profile?.payday ?? null;
+  const expectedIncome = profile?.expected_income ?? null;
+  const isCycleEligible =
+    payday !== null &&
+    expectedIncome !== null &&
+    (profile?.income_type === "salaried" || profile?.income_type === "hourly");
+  const isFreelancer = profile?.income_type === "freelancer";
+  const isBusiness = profile?.income_type === "business";
+
+  let summary: Summary;
+  if (isCycleEligible) {
+    const bounds = getPayCycleBounds(payday);
+    const cycleTransactions = await getTransactionsBetween(
+      bounds.previousStart.toISOString(),
+      bounds.currentEnd.toISOString()
+    );
+    summary = computeSummary(transactions, new Date(), {
+      payCycle: { payday, expectedIncome, cycleTransactions },
+    });
+  } else if (isFreelancer) {
+    summary = computeSummary(transactions, new Date(), { freelance: {} });
+  } else if (isBusiness) {
+    summary = computeSummary(transactions, new Date(), { business: true });
+  } else {
+    summary = computeSummary(transactions);
+  }
+
+  const categories = groupExpensesByCategory(
+    scope ? await getTransactions(scope) : transactions
+  );
 
   return (
     <ChatDrawer>
@@ -24,11 +75,16 @@ export default async function DashboardPage() {
         <SummaryCards
           summary={summary}
           hasTransactions={transactions.length > 0}
+          incomeType={profile?.income_type ?? "salaried"}
         />
+        <div className="flex items-center justify-end">
+          <ScopeFilter scope={scope} />
+        </div>
         <LazyCategoryChart categories={categories} />
         <TransactionTable
           transactions={page.transactions}
           nextCursor={page.nextCursor}
+          scope={scope}
         />
       </main>
     </ChatDrawer>
