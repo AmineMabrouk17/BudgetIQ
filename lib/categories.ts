@@ -61,3 +61,58 @@ export function filterCategories(
   if (q.length === 0) return allOptions;
   return allOptions.filter((cat) => cat.toLowerCase().includes(q));
 }
+
+const KEYWORD_MAP: { keywords: string[]; label: string }[] = [
+  {
+    keywords: ["uber", "lyft", "gas", "fuel", "transit", "metro", "bus", "taxi", "parking", "toll"],
+    label: "Transportation",
+  },
+  {
+    keywords: ["netflix", "spotify", "hulu", "disney", "subscription", "membership", "patreon"],
+    label: "Subscriptions",
+  },
+  {
+    keywords: ["rent", "mortgage", "apartment", "landlord", "hoa", "lease"],
+    label: "Housing & Rent",
+  },
+  {
+    keywords: ["electric", "electricity", "water", "internet", "wifi", "phone", "bill", "gas bill"],
+    label: "Utilities & Bills",
+  },
+  {
+    keywords: ["grocery", "groceries", "walmart", "costco", "trader joe", "whole foods", "aldi", "safeway"],
+    label: "Groceries",
+  },
+  {
+    keywords: ["restaurant", "food", "dining", "pizza", "burger", "coffee", "starbucks", "mcdonald", "chipotle", "doordash", "grubhub", "uber eats", "takeout", "lunch", "dinner", "breakfast"],
+    label: "Food & Dining",
+  },
+  {
+    keywords: ["movie", "cinema", "concert", "game", "steam", "psn", "xbox", "nintendo", "ticket", "show", "theater"],
+    label: "Entertainment & Leisure",
+  },
+  {
+    keywords: ["doctor", "hospital", "pharmacy", "medical", "health", "insurance", "dental", "vision", "therapy", "gym", "fitness"],
+    label: "Health & Medical",
+  },
+  {
+    keywords: ["salary", "invoice", "client", "office", "freelance", "business", "supplies", "software", "saas"],
+    label: "Work & Business",
+  },
+  {
+    keywords: ["amazon", "ebay", "shopping", "clothes", "clothing", "shoes", "target", "store", "purchase"],
+    label: "Shopping & Other",
+  },
+];
+
+export function suggestCategory(title: string): string | null {
+  const lower = title.toLowerCase();
+  for (const entry of KEYWORD_MAP) {
+    for (const keyword of entry.keywords) {
+      if (lower.includes(keyword)) {
+        return entry.label;
+      }
+    }
+  }
+  return null;
+}
