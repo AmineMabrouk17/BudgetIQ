@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useSearchParams } from "next/navigation";
 import { verifyTurnstile } from "@/app/actions/auth";
 import { Loader2, Globe, Mail, Send } from "lucide-react";
+import { checkLoginRateLimit } from "@/app/actions/auth";
 
 const TURNSTILE_SCRIPT_URL =
   "https://challenges.cloudflare.com/turnstile/v0/api.js";
@@ -239,6 +240,13 @@ export default function LoginPage() {
     if (!verification.ok) {
       setError(verification.error);
       resetTurnstile();
+      setPendingEmail(false);
+      return;
+    }
+
+    const limitCheck = await checkLoginRateLimit(email);
+    if (!limitCheck.ok) {
+      setError(limitCheck.error);
       setPendingEmail(false);
       return;
     }
