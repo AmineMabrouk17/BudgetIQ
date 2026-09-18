@@ -149,7 +149,7 @@ describe("SummaryCards", () => {
       <SummaryCards summary={salariedSummary} hasTransactions incomeType="salaried" />
     );
 
-    await screen.findByText("Custom KPIs");
+    await screen.findByText(/add a 1-click preset/i);
 
     expect(screen.getByText("Net Balance")).toBeInTheDocument();
     expect(screen.getByText("Income")).toBeInTheDocument();
@@ -171,7 +171,7 @@ describe("SummaryCards", () => {
       <SummaryCards summary={salariedSummary} hasTransactions incomeType="hourly" />
     );
 
-    await screen.findByText("Custom KPIs");
+    await screen.findByText(/add a 1-click preset/i);
 
     expect(screen.getByText("Net Balance")).toBeInTheDocument();
     expect(screen.getByText("Income")).toBeInTheDocument();
@@ -194,7 +194,7 @@ describe("SummaryCards", () => {
       />
     );
 
-    await screen.findByText("Custom KPIs");
+    await screen.findByText(/add a 1-click preset/i);
 
     expect(screen.getByText("Net Balance")).toBeInTheDocument();
     expect(screen.getByText("Rolling Income Averages")).toBeInTheDocument();
@@ -220,7 +220,7 @@ describe("SummaryCards", () => {
       />
     );
 
-    await screen.findByText("Custom KPIs");
+    await screen.findByText(/add a 1-click preset/i);
 
     expect(screen.getByText("Net Balance")).toBeInTheDocument();
     expect(screen.getByText("Profit")).toBeInTheDocument();
@@ -258,7 +258,7 @@ describe("SummaryCards", () => {
     );
 
     expect(
-      await screen.findByText(/no custom kpis yet/i)
+      await screen.findByText(/add a 1-click preset/i)
     ).toBeInTheDocument();
   });
 
@@ -306,7 +306,7 @@ describe("SummaryCards", () => {
       expect(deleteCustomKPI).toHaveBeenCalledWith("kpi-1");
     });
 
-    expect(await screen.findByText(/no custom kpis yet/i)).toBeInTheDocument();
+    expect(await screen.findByText(/add a 1-click preset/i)).toBeInTheDocument();
   });
 
   it("creates a KPI via the add modal and reloads", async () => {
@@ -345,7 +345,7 @@ describe("SummaryCards", () => {
     const { container } = render(
       <SummaryCards summary={salariedSummary} hasTransactions incomeType="salaried" />
     );
-    await screen.findByText(/no custom kpis yet/i);
+    await screen.findByText(/add a 1-click preset/i);
     expect(container).toMatchSnapshot();
   });
 
@@ -357,7 +357,7 @@ describe("SummaryCards", () => {
         incomeType="freelancer"
       />
     );
-    await screen.findByText(/no custom kpis yet/i);
+    await screen.findByText(/add a 1-click preset/i);
     expect(container).toMatchSnapshot();
   });
 
@@ -369,7 +369,7 @@ describe("SummaryCards", () => {
         incomeType="business"
       />
     );
-    await screen.findByText(/no custom kpis yet/i);
+    await screen.findByText(/add a 1-click preset/i);
     expect(container).toMatchSnapshot();
   });
 

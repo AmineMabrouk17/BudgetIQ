@@ -6,6 +6,40 @@ exports[`SummaryCards > matches the business snapshot 1`] = `
     aria-label="Financial summary"
   >
     <div
+      class="mb-4 flex items-center justify-between"
+    >
+      <h2
+        class="text-lg font-semibold text-base-content"
+      >
+        Financial Summary
+      </h2>
+      <button
+        class="btn btn-outline btn-sm gap-1"
+      >
+        <svg
+          aria-hidden="true"
+          class="lucide lucide-plus h-4 w-4"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M5 12h14"
+          />
+          <path
+            d="M12 5v14"
+          />
+        </svg>
+        Add KPI
+      </button>
+    </div>
+    <div
       class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
     >
       <div
@@ -153,19 +187,116 @@ exports[`SummaryCards > matches the business snapshot 1`] = `
       </div>
     </div>
     <div
-      class="mt-6 flex items-center justify-between"
+      class="mt-4 rounded-box border border-dashed border-base-content/20 bg-base-100/50 p-4 text-center"
+    >
+      <p
+        class="text-sm font-medium text-base-content/70"
+      >
+        Track metrics your way — add a 1-click preset:
+      </p>
+      <div
+        class="mt-3 flex flex-wrap justify-center gap-2"
+      >
+        <button
+          class="btn btn-outline btn-sm gap-1.5"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-plus h-3.5 w-3.5"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M5 12h14"
+            />
+            <path
+              d="M12 5v14"
+            />
+          </svg>
+          Fixed Expenses Ratio
+        </button>
+        <button
+          class="btn btn-outline btn-sm gap-1.5"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-plus h-3.5 w-3.5"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M5 12h14"
+            />
+            <path
+              d="M12 5v14"
+            />
+          </svg>
+          Discretionary Burn Rate
+        </button>
+        <button
+          class="btn btn-outline btn-sm gap-1.5"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-plus h-3.5 w-3.5"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M5 12h14"
+            />
+            <path
+              d="M12 5v14"
+            />
+          </svg>
+          Emergency Fund Runway
+        </button>
+      </div>
+    </div>
+  </section>
+</div>
+`;
+
+exports[`SummaryCards > matches the freelancer snapshot 1`] = `
+<div>
+  <section
+    aria-label="Financial summary"
+  >
+    <div
+      class="mb-4 flex items-center justify-between"
     >
       <h2
         class="text-lg font-semibold text-base-content"
       >
-        Custom KPIs
+        Financial Summary
       </h2>
       <button
-        class="btn btn-outline btn-sm"
+        class="btn btn-outline btn-sm gap-1"
       >
         <svg
           aria-hidden="true"
-          class="lucide lucide-plus"
+          class="lucide lucide-plus h-4 w-4"
           fill="none"
           height="24"
           stroke="currentColor"
@@ -186,20 +317,6 @@ exports[`SummaryCards > matches the business snapshot 1`] = `
         Add KPI
       </button>
     </div>
-    <div
-      class="mt-3 rounded-box border border-dashed border-base-content/30 p-6 text-center text-sm text-base-content/60"
-    >
-      No custom KPIs yet — add one to track a metric your way.
-    </div>
-  </section>
-</div>
-`;
-
-exports[`SummaryCards > matches the freelancer snapshot 1`] = `
-<div>
-  <section
-    aria-label="Financial summary"
-  >
     <div
       class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
     >
@@ -342,19 +459,116 @@ exports[`SummaryCards > matches the freelancer snapshot 1`] = `
       </div>
     </div>
     <div
-      class="mt-6 flex items-center justify-between"
+      class="mt-4 rounded-box border border-dashed border-base-content/20 bg-base-100/50 p-4 text-center"
+    >
+      <p
+        class="text-sm font-medium text-base-content/70"
+      >
+        Track metrics your way — add a 1-click preset:
+      </p>
+      <div
+        class="mt-3 flex flex-wrap justify-center gap-2"
+      >
+        <button
+          class="btn btn-outline btn-sm gap-1.5"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-plus h-3.5 w-3.5"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M5 12h14"
+            />
+            <path
+              d="M12 5v14"
+            />
+          </svg>
+          Fixed Expenses Ratio
+        </button>
+        <button
+          class="btn btn-outline btn-sm gap-1.5"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-plus h-3.5 w-3.5"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M5 12h14"
+            />
+            <path
+              d="M12 5v14"
+            />
+          </svg>
+          Discretionary Burn Rate
+        </button>
+        <button
+          class="btn btn-outline btn-sm gap-1.5"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-plus h-3.5 w-3.5"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M5 12h14"
+            />
+            <path
+              d="M12 5v14"
+            />
+          </svg>
+          Emergency Fund Runway
+        </button>
+      </div>
+    </div>
+  </section>
+</div>
+`;
+
+exports[`SummaryCards > matches the salaried snapshot 1`] = `
+<div>
+  <section
+    aria-label="Financial summary"
+  >
+    <div
+      class="mb-4 flex items-center justify-between"
     >
       <h2
         class="text-lg font-semibold text-base-content"
       >
-        Custom KPIs
+        Financial Summary
       </h2>
       <button
-        class="btn btn-outline btn-sm"
+        class="btn btn-outline btn-sm gap-1"
       >
         <svg
           aria-hidden="true"
-          class="lucide lucide-plus"
+          class="lucide lucide-plus h-4 w-4"
           fill="none"
           height="24"
           stroke="currentColor"
@@ -375,20 +589,6 @@ exports[`SummaryCards > matches the freelancer snapshot 1`] = `
         Add KPI
       </button>
     </div>
-    <div
-      class="mt-3 rounded-box border border-dashed border-base-content/30 p-6 text-center text-sm text-base-content/60"
-    >
-      No custom KPIs yet — add one to track a metric your way.
-    </div>
-  </section>
-</div>
-`;
-
-exports[`SummaryCards > matches the salaried snapshot 1`] = `
-<div>
-  <section
-    aria-label="Financial summary"
-  >
     <div
       class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
     >
@@ -569,43 +769,92 @@ exports[`SummaryCards > matches the salaried snapshot 1`] = `
       </div>
     </div>
     <div
-      class="mt-6 flex items-center justify-between"
+      class="mt-4 rounded-box border border-dashed border-base-content/20 bg-base-100/50 p-4 text-center"
     >
-      <h2
-        class="text-lg font-semibold text-base-content"
+      <p
+        class="text-sm font-medium text-base-content/70"
       >
-        Custom KPIs
-      </h2>
-      <button
-        class="btn btn-outline btn-sm"
+        Track metrics your way — add a 1-click preset:
+      </p>
+      <div
+        class="mt-3 flex flex-wrap justify-center gap-2"
       >
-        <svg
-          aria-hidden="true"
-          class="lucide lucide-plus"
-          fill="none"
-          height="24"
-          stroke="currentColor"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          width="24"
-          xmlns="http://www.w3.org/2000/svg"
+        <button
+          class="btn btn-outline btn-sm gap-1.5"
         >
-          <path
-            d="M5 12h14"
-          />
-          <path
-            d="M12 5v14"
-          />
-        </svg>
-        Add KPI
-      </button>
-    </div>
-    <div
-      class="mt-3 rounded-box border border-dashed border-base-content/30 p-6 text-center text-sm text-base-content/60"
-    >
-      No custom KPIs yet — add one to track a metric your way.
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-plus h-3.5 w-3.5"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M5 12h14"
+            />
+            <path
+              d="M12 5v14"
+            />
+          </svg>
+          Fixed Expenses Ratio
+        </button>
+        <button
+          class="btn btn-outline btn-sm gap-1.5"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-plus h-3.5 w-3.5"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M5 12h14"
+            />
+            <path
+              d="M12 5v14"
+            />
+          </svg>
+          Discretionary Burn Rate
+        </button>
+        <button
+          class="btn btn-outline btn-sm gap-1.5"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-plus h-3.5 w-3.5"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M5 12h14"
+            />
+            <path
+              d="M12 5v14"
+            />
+          </svg>
+          Emergency Fund Runway
+        </button>
+      </div>
     </div>
   </section>
 </div>
