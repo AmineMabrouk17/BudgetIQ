@@ -73,9 +73,7 @@ export const CARD_REGISTRY: CardDefinition[] = [
     iconClass: "text-success",
     renderValue: ({ summary, format }) => format(summary.monthlyIncome),
     renderSubtitle: ({ summary, format }) =>
-      summary.payCycle?.enabled
-        ? `of ${format(summary.payCycle.expectedIncome)} this pay cycle`
-        : `vs last month ${formatMoneyDelta(summary.deltas.income, format)}`,
+      `vs last month ${formatMoneyDelta(summary.deltas.income, format)}`,
   },
   {
     id: "spending",

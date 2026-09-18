@@ -475,7 +475,7 @@ exports[`SummaryCards > matches the salaried snapshot 1`] = `
         <div
           class="stat-desc"
         >
-          of $5,000.00 this pay cycle
+          vs last month +$1,000.00 (+25.0%)
         </div>
       </div>
       <div
