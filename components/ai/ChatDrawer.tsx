@@ -18,10 +18,15 @@ export default function ChatDrawer({
 }: {
   children: React.ReactNode;
 }) {
+  const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isPending, setIsPending] = useState(false);
+
   const listRef = useRef<HTMLDivElement>(null);
+  const openButtonRef = useRef<HTMLButtonElement>(null);
+  const drawerPanelRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     listRef.current?.scrollTo({
@@ -29,6 +34,63 @@ export default function ChatDrawer({
       behavior: "smooth",
     });
   }, [messages, isPending]);
+
+  function closeDrawer() {
+    setIsOpen(false);
+    openButtonRef.current?.focus();
+  }
+
+  // Focus trap and Escape key listener
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const panel = drawerPanelRef.current;
+    if (!panel) return;
+
+    // Focus chat input on drawer open
+    const focusTimer = setTimeout(() => {
+      inputRef.current?.focus();
+    }, 50);
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeDrawer();
+        return;
+      }
+
+      if (e.key !== "Tab") return;
+
+      const focusables = Array.from(
+        panel?.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        ) ?? []
+      ).filter((el) => el.offsetParent !== null);
+
+      if (focusables.length === 0) return;
+
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      clearTimeout(focusTimer);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen]);
 
   async function handleSend() {
     const text = input.trim();
@@ -86,36 +148,55 @@ export default function ChatDrawer({
 
   return (
     <div className="drawer drawer-end">
-      <input id="chat-drawer" type="checkbox" className="drawer-toggle" />
+      <input
+        id="chat-drawer"
+        type="checkbox"
+        className="drawer-toggle"
+        checked={isOpen}
+        onChange={(e) => setIsOpen(e.target.checked)}
+      />
       <div className="drawer-content">
         {children}
-        <label
-          htmlFor="chat-drawer"
+        <button
+          ref={openButtonRef}
+          type="button"
+          onClick={() => setIsOpen(true)}
           className="btn btn-primary btn-circle fixed bottom-6 right-6 z-40 shadow-lg"
           aria-label="Open AI assistant"
+          aria-expanded={isOpen}
+          aria-controls="chat-drawer-panel"
         >
           <Bot />
-        </label>
+        </button>
       </div>
       <div className="drawer-side z-50">
         <label
           htmlFor="chat-drawer"
           aria-label="Close AI assistant"
-          className="drawer-overlay"
+          className="drawer-overlay !bg-black/40 backdrop-blur-sm"
+          onClick={closeDrawer}
         />
-        <div className="flex h-full w-80 max-w-[85vw] flex-col bg-base-100">
+        <div
+          id="chat-drawer-panel"
+          ref={drawerPanelRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="BudgetIQ Assistant"
+          className="flex h-full w-80 max-w-[85vw] flex-col bg-base-100 shadow-xl"
+        >
           <div className="flex items-center justify-between border-b border-base-200 p-4">
             <div className="flex items-center gap-2">
               <Bot className="h-5 w-5 text-primary" />
               <h2 className="font-bold">BudgetIQ Assistant</h2>
             </div>
-            <label
-              htmlFor="chat-drawer"
+            <button
+              type="button"
+              onClick={closeDrawer}
               className="btn btn-ghost btn-sm"
               aria-label="Close assistant"
             >
               <X />
-            </label>
+            </button>
           </div>
 
           <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto p-4">
@@ -153,6 +234,7 @@ export default function ChatDrawer({
             }}
           >
             <input
+              ref={inputRef}
               className="input input-bordered flex-1"
               value={input}
               onChange={(event) => setInput(event.target.value)}
