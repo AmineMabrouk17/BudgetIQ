@@ -34,9 +34,14 @@ export default function AddTransactionModal() {
 
   useEffect(() => {
     let active = true;
+    if (displayCurrency === BASE_CURRENCY) return;
+
     loadRates().then((loaded) => {
-      if (active) setRates(loaded);
+      if (active) {
+        setRates(loaded);
+      }
     });
+
     return () => {
       active = false;
     };
@@ -44,7 +49,10 @@ export default function AddTransactionModal() {
 
   const isNonUsd = displayCurrency !== BASE_CURRENCY;
   const rateToUsd = rates?.[displayCurrency] ?? null;
-  const canSave = !isNonUsd || (rateToUsd !== null && rateToUsd > 0);
+  const isLoadingRates = isNonUsd && rates === null;
+  const isRateUnavailable =
+    !isLoadingRates && isNonUsd && (rateToUsd === null || rateToUsd <= 0);
+  const canSave = !isRateUnavailable;
 
   function open() {
     setError(null);
@@ -66,8 +74,16 @@ export default function AddTransactionModal() {
   function handleSubmit(formData: FormData) {
     startTransition(async () => {
       let rawAmount = Number(formData.get("amount"));
-      if (isNonUsd && rateToUsd !== null && rateToUsd > 0) {
-        rawAmount = rawAmount / rateToUsd;
+      if (isNonUsd) {
+        const activeRates = rates ?? (await loadRates());
+        const rate = activeRates?.[displayCurrency] ?? null;
+        if (!rate || rate <= 0) {
+          setError(
+            `Exchange rate for ${displayCurrency} is unavailable. Saving transactions in this currency is unavailable.`
+          );
+          return;
+        }
+        rawAmount = rawAmount / rate;
       }
       const result = await createTransaction({
         type: formData.get("type") as TransactionType,
@@ -97,7 +113,12 @@ export default function AddTransactionModal() {
           <form action={handleSubmit} className="flex flex-col gap-3">
             <label className="form-control w-full">
               <span className="label-text mb-1">Type</span>
-              <select className="select select-bordered w-full" name="type" defaultValue="expense" required>
+              <select
+                className="select select-bordered w-full"
+                name="type"
+                defaultValue="expense"
+                required
+              >
                 {TYPES.map((t) => (
                   <option key={t.value} value={t.value}>
                     {t.label}
@@ -136,11 +157,15 @@ export default function AddTransactionModal() {
               </div>
             </label>
 
-            {isNonUsd && rateToUsd === null && (
+            {isRateUnavailable && (
               <div className="alert alert-warning">
-                <span>Exchange rate for {displayCurrency} is unavailable. Please try again later.</span>
+                <span>
+                  Exchange rate for {displayCurrency} is unavailable. Saving
+                  transactions in {displayCurrency} is unavailable.
+                </span>
               </div>
             )}
+
             <label className="form-control w-full">
               <span className="label-text mb-1">Scope</span>
               <select
@@ -175,7 +200,10 @@ export default function AddTransactionModal() {
               >
                 Cancel
               </button>
-              <button className="btn btn-primary" disabled={isPending || !canSave}>
+              <button
+                className="btn btn-primary"
+                disabled={isPending || !canSave}
+              >
                 {isPending ? <Loader2 className="animate-spin" /> : null}
                 Save
               </button>
