@@ -1,6 +1,6 @@
 "use client";
 
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import type { CategoryTotal } from "@/lib/summary";
 import { useCurrencyFormatter } from "@/lib/currency/use-display-currency";
 
@@ -47,11 +47,8 @@ export default function CategoryChart({
                 dataKey="amount"
                 nameKey="category"
                 cx="50%"
-                cy="50%"
-                outerRadius={90}
-                label={({ name, value }) =>
-                  `${name}: ${format(Number(value))}`
-                }
+                cy="45%"
+                outerRadius={80}
               >
                 {categories.map((entry, index) => (
                   <Cell
@@ -63,6 +60,11 @@ export default function CategoryChart({
               <Tooltip
                 formatter={(value) => format(Number(value))}
                 labelFormatter={(label) => label}
+              />
+              <Legend
+                formatter={(value) => (
+                  <span className="text-xs text-base-content/80">{value}</span>
+                )}
               />
             </PieChart>
           </ResponsiveContainer>
