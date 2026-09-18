@@ -1,6 +1,7 @@
 import type { Delta } from "@/lib/summary";
 
 const DATE_FALLBACK = "—";
+const DEFAULT_LOCALE = "en-US";
 
 function formatSign(value: number): string {
   return value > 0 ? "+" : value < 0 ? "−" : "";
@@ -20,7 +21,10 @@ export function formatRateDelta(delta: Delta): string {
   return `${formatSign(delta.value)}${Math.abs(delta.value * 100).toFixed(1)} pp`;
 }
 
-export function formatDate(value: string, locale?: string): string {
+export function formatDate(
+  value: string,
+  locale: string = DEFAULT_LOCALE
+): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return DATE_FALLBACK;
   return date.toLocaleDateString(locale, {
