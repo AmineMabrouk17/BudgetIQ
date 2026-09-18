@@ -99,7 +99,7 @@ export default function KpiModal({
         scope: form.scope,
         timeframe: form.timeframe,
         operation: form.operation,
-        operand: Number(form.operand),
+        operand: form.operation === "sum" ? 1 : Number(form.operand),
       });
       if (result.ok) {
         onClose();
@@ -217,18 +217,25 @@ export default function KpiModal({
             </select>
           </label>
 
-          <label className="form-control w-full">
-            <span className="label-text mb-1">Operand</span>
-            <input
-              className="input input-bordered w-full"
-              type="number"
-              name="operand"
-              step="any"
-              required
-              value={form.operand}
-              onChange={(e) => setField("operand", e.target.value)}
-            />
-          </label>
+          {form.operation !== "sum" && (
+            <label className="form-control w-full">
+              <span className="label-text mb-1">
+                {form.operation === "percentage"
+                  ? "Target % (e.g. 0.15 = 15%)"
+                  : "Budget limit"}
+              </span>
+              <input
+                className="input input-bordered w-full"
+                type="number"
+                name="operand"
+                step="any"
+                placeholder={form.operation === "percentage" ? "0.15" : "600"}
+                required
+                value={form.operand}
+                onChange={(e) => setField("operand", e.target.value)}
+              />
+            </label>
+          )}
 
           {error && (
             <div className="alert alert-error">
