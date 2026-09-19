@@ -25,6 +25,18 @@ export function needsOnboarding(
   return !profile?.income_type;
 }
 
+export async function getAllProfiles(): Promise<Profile[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("profiles")
+    .select(
+      "id, email, full_name, avatar_url, income_type, payday, expected_income"
+    )
+    .order("created_at", { ascending: false });
+
+  return data ?? [];
+}
+
 export async function getProfile(): Promise<Profile | null> {
   const supabase = await createClient();
   const {
