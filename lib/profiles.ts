@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export const INCOME_TYPES = [
   "salaried",
@@ -26,7 +27,7 @@ export function needsOnboarding(
 }
 
 export async function getAllProfiles(): Promise<Profile[]> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data } = await supabase
     .from("profiles")
     .select(
