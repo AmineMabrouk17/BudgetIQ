@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Loader2, Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import type { Summary } from "@/lib/summary";
 import type { IncomeType } from "@/lib/profiles";
 import { useCurrencyFormatter } from "@/lib/currency/use-display-currency";
@@ -12,38 +12,9 @@ import {
 import {
   deleteCustomKPI,
   listCustomKPIs,
-  upsertCustomKPI,
-  type UpsertCustomKPIInput,
 } from "@/app/actions/kpis";
 import type { EvaluatedKPI } from "@/lib/kpi-calculator";
 import KpiModal from "@/components/dashboard/KPIModal";
-
-const KPI_PRESETS: UpsertCustomKPIInput[] = [
-  {
-    title: "Fixed Expenses Ratio",
-    source_type: "expense",
-    scope: "personal",
-    timeframe: "this_month",
-    operation: "percentage",
-    operand: 0.5,
-  },
-  {
-    title: "Discretionary Burn Rate",
-    source_type: "expense",
-    scope: "personal",
-    timeframe: "this_month",
-    operation: "sum",
-    operand: 1,
-  },
-  {
-    title: "Emergency Fund Runway",
-    source_type: "balance",
-    scope: "all",
-    timeframe: "all_time",
-    operation: "sum",
-    operand: 1,
-  },
-];
 
 export default function SummaryCards({
   summary,
@@ -62,7 +33,6 @@ export default function SummaryCards({
   const [reloadKey, setReloadKey] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<EvaluatedKPI | null>(null);
-  const [isPendingPreset, setIsPendingPreset] = useState(false);
 
   const reload = useCallback(() => setReloadKey((k) => k + 1), []);
 
@@ -82,11 +52,6 @@ export default function SummaryCards({
       active = false;
     };
   }, [reloadKey]);
-
-  function openCreate() {
-    setEditing(null);
-    setModalOpen(true);
-  }
 
   function openEdit(kpi: EvaluatedKPI) {
     setEditing(kpi);
@@ -108,35 +73,12 @@ export default function SummaryCards({
     reload();
   }
 
-  async function handleCreatePreset(preset: UpsertCustomKPIInput) {
-    setIsPendingPreset(true);
-    setKpiError(null);
-    const result = await upsertCustomKPI(preset);
-    setIsPendingPreset(false);
-    if (!result.ok) {
-      setKpiError(result.error);
-    } else {
-      reload();
-    }
-  }
-
-  const existingTitles = new Set(
-    kpis?.map((k) => k.kpi.title.toLowerCase()) ?? []
-  );
-  const availablePresets = KPI_PRESETS.filter(
-    (preset) => !existingTitles.has(preset.title.toLowerCase())
-  );
-
   return (
     <section aria-label="Financial summary">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-base-content">
           Financial Summary
         </h2>
-        <button className="btn btn-outline btn-sm gap-1" onClick={openCreate}>
-          <Plus className="h-4 w-4" />
-          Add KPI
-        </button>
       </div>
 
       {kpiError && <p className="mb-3 text-sm text-error">{kpiError}</p>}
@@ -190,50 +132,6 @@ export default function SummaryCards({
           No transactions yet — add your first one and your summary will update
           live.
         </p>
-      )}
-
-      {/* 1-click presets empty state */}
-      {kpis !== null && kpis.length === 0 && (
-        <div className="mt-4 rounded-box border border-dashed border-base-content/20 bg-base-100/50 p-4 text-center">
-          <p className="text-sm font-medium text-base-content/70">
-            Track metrics your way — add a 1-click preset:
-          </p>
-          <div className="mt-3 flex flex-wrap justify-center gap-2">
-            {KPI_PRESETS.map((preset) => (
-              <button
-                key={preset.title}
-                className="btn btn-outline btn-sm gap-1.5"
-                disabled={isPendingPreset}
-                onClick={() => handleCreatePreset(preset)}
-              >
-                {isPendingPreset ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <Plus className="h-3.5 w-3.5" />
-                )}
-                {preset.title}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Preset suggestions when KPIs exist */}
-      {kpis && kpis.length > 0 && availablePresets.length > 0 && (
-        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-base-content/60">
-          <span>Preset suggestions:</span>
-          {availablePresets.map((preset) => (
-            <button
-              key={preset.title}
-              className="btn btn-ghost btn-xs text-primary gap-1"
-              disabled={isPendingPreset}
-              onClick={() => handleCreatePreset(preset)}
-            >
-              <Plus className="h-3 w-3" />
-              {preset.title}
-            </button>
-          ))}
-        </div>
       )}
 
       {modalOpen && (
