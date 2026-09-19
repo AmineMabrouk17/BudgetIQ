@@ -5,12 +5,10 @@ import type { Summary } from "@/lib/summary";
 import type { EvaluatedKPI } from "@/lib/kpi-calculator";
 
 const listCustomKPIs = vi.fn();
-const upsertCustomKPI = vi.fn();
 const deleteCustomKPI = vi.fn();
 
 vi.mock("@/app/actions/kpis", () => ({
   listCustomKPIs: (...args: unknown[]) => listCustomKPIs(...args),
-  upsertCustomKPI: (...args: unknown[]) => upsertCustomKPI(...args),
   deleteCustomKPI: (...args: unknown[]) => deleteCustomKPI(...args),
 }));
 
@@ -138,7 +136,6 @@ const businessSummary: Summary = makeSummary({
 
 beforeEach(() => {
   listCustomKPIs.mockReset();
-  upsertCustomKPI.mockReset();
   deleteCustomKPI.mockReset();
   listCustomKPIs.mockResolvedValue({ ok: true, kpis: [] });
 });
@@ -148,8 +145,6 @@ describe("SummaryCards", () => {
     render(
       <SummaryCards summary={salariedSummary} hasTransactions incomeType="salaried" />
     );
-
-    await screen.findByText(/add a 1-click preset/i);
 
     expect(screen.getByText("Net Balance")).toBeInTheDocument();
     expect(screen.getByText("Income")).toBeInTheDocument();
@@ -171,8 +166,6 @@ describe("SummaryCards", () => {
       <SummaryCards summary={salariedSummary} hasTransactions incomeType="hourly" />
     );
 
-    await screen.findByText(/add a 1-click preset/i);
-
     expect(screen.getByText("Net Balance")).toBeInTheDocument();
     expect(screen.getByText("Income")).toBeInTheDocument();
     expect(screen.getByText("Spending")).toBeInTheDocument();
@@ -193,8 +186,6 @@ describe("SummaryCards", () => {
         incomeType="freelancer"
       />
     );
-
-    await screen.findByText(/add a 1-click preset/i);
 
     expect(screen.getByText("Net Balance")).toBeInTheDocument();
     expect(screen.getByText("Rolling Income Averages")).toBeInTheDocument();
@@ -219,8 +210,6 @@ describe("SummaryCards", () => {
         incomeType="business"
       />
     );
-
-    await screen.findByText(/add a 1-click preset/i);
 
     expect(screen.getByText("Net Balance")).toBeInTheDocument();
     expect(screen.getByText("Profit")).toBeInTheDocument();
@@ -252,14 +241,14 @@ describe("SummaryCards", () => {
     expect(kpiValue).toBeInTheDocument();
   });
 
-  it("shows the KPI empty state when there are no KPIs", async () => {
+  it("renders no KPI cards when there are no KPIs", async () => {
     render(
       <SummaryCards summary={salariedSummary} hasTransactions incomeType="salaried" />
     );
 
-    expect(
-      await screen.findByText(/add a 1-click preset/i)
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Net Balance")).toBeInTheDocument();
+    expect(screen.queryByText("My Metric")).not.toBeInTheDocument();
+    expect(screen.queryByText(/add a 1-click preset/i)).not.toBeInTheDocument();
   });
 
   it("pre-fills the edit modal with the selected KPI", async () => {
@@ -306,50 +295,21 @@ describe("SummaryCards", () => {
       expect(deleteCustomKPI).toHaveBeenCalledWith("kpi-1");
     });
 
-    expect(await screen.findByText(/add a 1-click preset/i)).toBeInTheDocument();
-  });
-
-  it("creates a KPI via the add modal and reloads", async () => {
-    listCustomKPIs
-      .mockResolvedValueOnce({ ok: true, kpis: [] })
-      .mockResolvedValueOnce({
-        ok: true,
-        kpis: [makeEvaluatedKPI()],
-      });
-    upsertCustomKPI.mockResolvedValue({ ok: true });
-
-    render(
-      <SummaryCards summary={salariedSummary} hasTransactions incomeType="salaried" />
-    );
-
-    fireEvent.click(
-      await screen.findByRole("button", { name: /add kpi/i })
-    );
-
-    const titleInput = screen.getByPlaceholderText(
-      "e.g. Groceries this month"
-    ) as HTMLInputElement;
-    fireEvent.change(titleInput, { target: { value: "New Metric" } });
-    fireEvent.click(screen.getByRole("button", { name: /save/i }));
-
     await waitFor(() => {
-      expect(upsertCustomKPI).toHaveBeenCalledWith(
-        expect.objectContaining({ title: "New Metric" })
-      );
+      expect(
+        screen.queryByRole("button", { name: /delete my metric/i })
+      ).not.toBeInTheDocument();
     });
-
-    expect(await screen.findByText("My Metric")).toBeInTheDocument();
   });
 
-  it("matches the salaried snapshot", async () => {
+  it("matches the salaried snapshot", () => {
     const { container } = render(
       <SummaryCards summary={salariedSummary} hasTransactions incomeType="salaried" />
     );
-    await screen.findByText(/add a 1-click preset/i);
     expect(container).toMatchSnapshot();
   });
 
-  it("matches the freelancer snapshot", async () => {
+  it("matches the freelancer snapshot", () => {
     const { container } = render(
       <SummaryCards
         summary={freelancerSummary}
@@ -357,11 +317,10 @@ describe("SummaryCards", () => {
         incomeType="freelancer"
       />
     );
-    await screen.findByText(/add a 1-click preset/i);
     expect(container).toMatchSnapshot();
   });
 
-  it("matches the business snapshot", async () => {
+  it("matches the business snapshot", () => {
     const { container } = render(
       <SummaryCards
         summary={businessSummary}
@@ -369,7 +328,6 @@ describe("SummaryCards", () => {
         incomeType="business"
       />
     );
-    await screen.findByText(/add a 1-click preset/i);
     expect(container).toMatchSnapshot();
   });
 
