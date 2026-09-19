@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import {
   ArrowDown,
   ArrowUp,
@@ -8,6 +8,7 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  Database,
   Loader2,
   Search,
   Trash2,
@@ -25,15 +26,25 @@ import {
 import { useCurrencyFormatter } from "@/lib/currency/use-display-currency";
 import { formatDate } from "@/lib/format";
 
-const TYPE_BADGES: Record<TransactionType, string> = {
-  income: "badge-success",
-  expense: "badge-error",
-  asset: "badge-info",
-};
-
-const SCOPE_BADGES: Record<Transaction["scope"], string> = {
-  business: "badge-secondary",
-  personal: "badge-ghost",
+const TYPE_CONFIG: Record<
+  TransactionType,
+  { label: string; dotClass: string; badgeClass: string }
+> = {
+  income: {
+    label: "Income",
+    dotClass: "bg-emerald-500 ring-emerald-500/20",
+    badgeClass: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+  },
+  expense: {
+    label: "Expense",
+    dotClass: "bg-rose-500 ring-rose-500/20",
+    badgeClass: "text-rose-600 dark:text-rose-400 bg-rose-500/10 border-rose-500/20",
+  },
+  asset: {
+    label: "Asset",
+    dotClass: "bg-sky-500 ring-sky-500/20",
+    badgeClass: "text-sky-600 dark:text-sky-400 bg-sky-500/10 border-sky-500/20",
+  },
 };
 
 type SortField = "title" | "category" | "type" | "amount" | "created_at";
@@ -49,6 +60,8 @@ export default function TransactionTable({
   scope: TransactionScope | null;
 }) {
   const format = useCurrencyFormatter();
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
   const [transactions, setTransactions] =
     useState<Transaction[]>(initialTransactions);
   const [nextCursor, setNextCursor] = useState<string | null>(initialCursor);
@@ -56,7 +69,7 @@ export default function TransactionTable({
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  // Search & Sorting & Pagination state
+  // Search, Sort & Pagination state
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<SortField>("created_at");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
@@ -100,7 +113,7 @@ export default function TransactionTable({
     setCurrentPage(1);
   }
 
-  // Filter transactions based on search query
+  // Live filter query
   const filtered = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return transactions;
@@ -109,11 +122,12 @@ export default function TransactionTable({
         t.title.toLowerCase().includes(q) ||
         t.category.toLowerCase().includes(q) ||
         t.type.toLowerCase().includes(q) ||
+        t.scope.toLowerCase().includes(q) ||
         t.amount.toString().includes(q)
     );
   }, [transactions, searchQuery]);
 
-  // Sort filtered transactions
+  // Sorting
   const sorted = useMemo(() => {
     return [...filtered].sort((a, b) => {
       let cmp = 0;
@@ -133,7 +147,7 @@ export default function TransactionTable({
     });
   }, [filtered, sortField, sortOrder]);
 
-  // Paginate transactions
+  // Pagination calculation
   const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
   const pageIndex = Math.min(currentPage, totalPages);
   const paginated = useMemo(() => {
@@ -146,188 +160,260 @@ export default function TransactionTable({
 
   function renderSortIcon(field: SortField) {
     if (sortField !== field) {
-      return <ArrowUpDown className="h-3.5 w-3.5 opacity-40" />;
+      return (
+        <ArrowUpDown className="h-3 w-3 opacity-30 transition-transform duration-200 group-hover/th:opacity-70" />
+      );
     }
     return sortOrder === "asc" ? (
-      <ArrowUp className="h-3.5 w-3.5 text-primary" />
+      <ArrowUp className="h-3 w-3 text-primary transition-all duration-200" />
     ) : (
-      <ArrowDown className="h-3.5 w-3.5 text-primary" />
+      <ArrowDown className="h-3 w-3 text-primary transition-all duration-200" />
     );
   }
 
   return (
-    <div className="card w-full border border-base-content/5 bg-base-100 shadow-sm">
-      <div className="card-body p-6">
-        {/* Header & Search Bar Toolbar */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-lg font-bold text-base-content">
-              Transactions
-            </h2>
-            <p className="text-xs text-base-content/60">
-              Manage, search, and track all your logged records
-            </p>
+    <div className="card w-full overflow-hidden border border-base-content/10 bg-base-100 shadow-sm transition-all duration-200 hover:shadow-md">
+      {/* Top Toolbar */}
+      <div className="border-b border-base-content/5 p-5 sm:p-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          {/* Header Title + Stats Count Badge */}
+          <div className="flex items-center gap-3">
+            <div>
+              <div className="flex items-center gap-2.5">
+                <h2 className="text-base font-bold tracking-tight text-base-content">
+                  Transactions
+                </h2>
+                <span className="inline-flex items-center rounded-full bg-base-200/80 px-2 py-0.5 text-xs font-semibold text-base-content/70">
+                  {transactions.length}
+                </span>
+              </div>
+              <p className="mt-0.5 text-xs text-base-content/50">
+                View, filter, and inspect your latest transactions
+              </p>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Search Input */}
-            <div className="relative w-full sm:w-64">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-base-content/40" />
+          {/* Search + Page Size Controls */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Search Input Bar */}
+            <div className="relative flex-1 sm:w-72 sm:flex-initial">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-base-content/40" />
               <input
+                ref={searchInputRef}
                 type="text"
-                placeholder="Search title, category..."
+                placeholder="Search transactions..."
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="input input-bordered input-sm w-full pl-9 pr-8"
+                className="input input-sm w-full rounded-full border-base-content/15 bg-base-200/40 pl-8.5 pr-8 text-xs transition-all duration-200 placeholder:text-base-content/40 focus:border-primary focus:bg-base-100 focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
-              {searchQuery && (
+              {searchQuery ? (
                 <button
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-base-content/40 hover:text-base-content"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-base-content/40 transition hover:text-base-content"
                   onClick={() => {
                     setSearchQuery("");
                     setCurrentPage(1);
+                    searchInputRef.current?.focus();
                   }}
                   aria-label="Clear search"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
+              ) : (
+                <kbd className="pointer-events-none absolute right-2.5 top-1/2 hidden -translate-y-1/2 rounded border border-base-content/10 bg-base-100 px-1.5 py-0.5 text-[10px] font-medium text-base-content/40 sm:inline-block">
+                  /
+                </kbd>
               )}
             </div>
 
-            {/* Page Size Selector */}
-            <select
-              value={pageSize}
-              onChange={(e) => {
-                setPageSize(Number(e.target.value));
-                setCurrentPage(1);
-              }}
-              className="select select-bordered select-sm text-xs"
-              aria-label="Rows per page"
-            >
-              <option value={10}>10 / page</option>
-              <option value={25}>25 / page</option>
-              <option value={50}>50 / page</option>
-            </select>
+            {/* Segmented Page Size Pills */}
+            <div className="flex items-center rounded-full border border-base-content/10 bg-base-200/40 p-0.5 text-xs">
+              {[10, 25, 50].map((size) => (
+                <button
+                  key={size}
+                  onClick={() => {
+                    setPageSize(size);
+                    setCurrentPage(1);
+                  }}
+                  className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition-all duration-150 ${
+                    pageSize === size
+                      ? "bg-base-100 text-base-content shadow-sm ring-1 ring-base-content/5"
+                      : "text-base-content/50 hover:text-base-content"
+                  }`}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
         {error && (
-          <div className="alert alert-error mt-3 py-2 text-sm">
+          <div className="alert alert-error mt-4 py-2 text-xs">
             <span>{error}</span>
           </div>
         )}
+      </div>
 
+      {/* Main Table Content */}
+      <div className="overflow-x-auto">
         {transactions.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 py-12 text-center">
-            <p className="text-sm text-base-content/60">
-              No transactions yet. Add your first income, expense, or asset.
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="rounded-full bg-base-200/60 p-3.5 text-base-content/40">
+              <Database className="h-6 w-6" />
+            </div>
+            <h3 className="mt-3 text-sm font-semibold text-base-content">
+              No transactions recorded
+            </h3>
+            <p className="mt-1 text-xs text-base-content/50 max-w-xs">
+              Add your first income, expense, or asset to see it tracked here live.
             </p>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 py-10 text-center">
-            <p className="text-sm font-medium text-base-content/70">
-              No transactions matching &quot;{searchQuery}&quot;
+          <div className="flex flex-col items-center justify-center py-14 text-center">
+            <div className="rounded-full bg-base-200/50 p-3 text-base-content/40">
+              <Search className="h-5 w-5" />
+            </div>
+            <p className="mt-2 text-xs font-semibold text-base-content">
+              No results found
+            </p>
+            <p className="text-[11px] text-base-content/50">
+              No transactions matching &ldquo;{searchQuery}&rdquo;
             </p>
             <button
-              className="btn btn-ghost btn-xs text-primary"
+              className="btn btn-ghost btn-xs mt-3 text-primary hover:underline"
               onClick={() => setSearchQuery("")}
             >
-              Reset search
+              Reset filters
             </button>
           </div>
         ) : (
-          <div className="mt-4 overflow-x-auto">
-            <table className="table table-zebra w-full text-left">
-              <thead>
-                <tr className="border-b border-base-content/10 text-xs font-semibold text-base-content/70">
-                  <th
-                    className="cursor-pointer select-none transition hover:text-base-content"
-                    onClick={() => handleSort("title")}
+          <table className="table w-full text-left text-xs">
+            <thead>
+              <tr className="border-b border-base-content/10 bg-base-200/30 text-[11px] font-medium tracking-wider uppercase text-base-content/50">
+                <th
+                  className="group/th cursor-pointer select-none py-3.5 pl-6 transition-colors hover:text-base-content"
+                  onClick={() => handleSort("title")}
+                >
+                  <div className="flex items-center gap-1.5">
+                    Title {renderSortIcon("title")}
+                  </div>
+                </th>
+                <th
+                  className="group/th cursor-pointer select-none py-3.5 transition-colors hover:text-base-content"
+                  onClick={() => handleSort("category")}
+                >
+                  <div className="flex items-center gap-1.5">
+                    Category {renderSortIcon("category")}
+                  </div>
+                </th>
+                <th
+                  className="group/th cursor-pointer select-none py-3.5 transition-colors hover:text-base-content"
+                  onClick={() => handleSort("type")}
+                >
+                  <div className="flex items-center gap-1.5">
+                    Type {renderSortIcon("type")}
+                  </div>
+                </th>
+                <th className="py-3.5">Scope</th>
+                <th
+                  className="group/th cursor-pointer select-none py-3.5 transition-colors hover:text-base-content"
+                  onClick={() => handleSort("amount")}
+                >
+                  <div className="flex items-center gap-1.5">
+                    Amount {renderSortIcon("amount")}
+                  </div>
+                </th>
+                <th
+                  className="group/th cursor-pointer select-none py-3.5 transition-colors hover:text-base-content"
+                  onClick={() => handleSort("created_at")}
+                >
+                  <div className="flex items-center gap-1.5">
+                    Date {renderSortIcon("created_at")}
+                  </div>
+                </th>
+                <th className="py-3.5 pr-6 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody
+              key={`${pageIndex}-${sortField}-${sortOrder}-${searchQuery}`}
+              className="divide-y divide-base-content/5"
+            >
+              {paginated.map((t, idx) => {
+                const typeCfg = TYPE_CONFIG[t.type] ?? TYPE_CONFIG.expense;
+                return (
+                  <tr
+                    key={t.id}
+                    className="group transition-all duration-150 hover:bg-base-200/40 animate-in fade-in slide-in-from-bottom-1"
+                    style={{ animationDelay: `${idx * 15}ms` }}
                   >
-                    <div className="flex items-center gap-1.5">
-                      Title {renderSortIcon("title")}
-                    </div>
-                  </th>
-                  <th
-                    className="cursor-pointer select-none transition hover:text-base-content"
-                    onClick={() => handleSort("category")}
-                  >
-                    <div className="flex items-center gap-1.5">
-                      Category {renderSortIcon("category")}
-                    </div>
-                  </th>
-                  <th
-                    className="cursor-pointer select-none transition hover:text-base-content"
-                    onClick={() => handleSort("type")}
-                  >
-                    <div className="flex items-center gap-1.5">
-                      Type {renderSortIcon("type")}
-                    </div>
-                  </th>
-                  <th>Scope</th>
-                  <th
-                    className="cursor-pointer select-none transition hover:text-base-content"
-                    onClick={() => handleSort("amount")}
-                  >
-                    <div className="flex items-center gap-1.5">
-                      Amount {renderSortIcon("amount")}
-                    </div>
-                  </th>
-                  <th
-                    className="cursor-pointer select-none transition hover:text-base-content"
-                    onClick={() => handleSort("created_at")}
-                  >
-                    <div className="flex items-center gap-1.5">
-                      Date {renderSortIcon("created_at")}
-                    </div>
-                  </th>
-                  <th className="text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginated.map((t) => (
-                  <tr key={t.id} className="hover:bg-base-200/40">
-                    <td className="font-medium text-base-content">{t.title}</td>
-                    <td>{t.category}</td>
-                    <td>
-                      <span
-                        className={`badge badge-sm uppercase font-semibold text-[10px] ${TYPE_BADGES[t.type]}`}
-                      >
-                        {t.type}
+                    {/* Title */}
+                    <td className="py-3.5 pl-6 font-medium text-base-content">
+                      {t.title}
+                    </td>
+
+                    {/* Category */}
+                    <td className="py-3.5 text-base-content/70">
+                      <span className="inline-flex items-center rounded-md bg-base-200/70 px-2 py-0.5 text-[11px] font-normal text-base-content/80">
+                        {t.category}
                       </span>
                     </td>
-                    <td>
+
+                    {/* Type pill with glowing dot */}
+                    <td className="py-3.5">
                       <span
-                        className={`badge badge-sm uppercase font-semibold text-[10px] ${SCOPE_BADGES[t.scope]}`}
+                        className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-semibold tracking-wide uppercase ${typeCfg.badgeClass}`}
+                      >
+                        <span
+                          className={`h-1.5 w-1.5 rounded-full ring-2 ${typeCfg.dotClass}`}
+                        />
+                        {typeCfg.label}
+                      </span>
+                    </td>
+
+                    {/* Scope */}
+                    <td className="py-3.5">
+                      <span
+                        className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+                          t.scope === "business"
+                            ? "bg-secondary/10 text-secondary border border-secondary/20"
+                            : "bg-base-200/60 text-base-content/60"
+                        }`}
                       >
                         {t.scope}
                       </span>
                     </td>
+
+                    {/* Amount */}
                     <td
-                      className={`font-semibold ${
+                      className={`py-3.5 font-mono text-sm font-semibold tracking-tight tabular-nums ${
                         t.type === "expense"
-                          ? "text-error"
+                          ? "text-rose-600 dark:text-rose-400"
                           : t.type === "income"
-                            ? "text-success"
-                            : "text-info"
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : "text-sky-600 dark:text-sky-400"
                       }`}
                     >
+                      {t.type === "expense" ? "-" : "+"}
                       {format(t.amount)}
                     </td>
-                    <td className="whitespace-nowrap text-xs text-base-content/70">
+
+                    {/* Date */}
+                    <td className="whitespace-nowrap py-3.5 text-[11px] text-base-content/50">
                       {formatDate(t.created_at)}
                     </td>
-                    <td className="text-right">
+
+                    {/* Action buttons */}
+                    <td className="py-3.5 pr-6 text-right">
                       {confirmId === t.id ? (
-                        <div className="flex items-center justify-end gap-1.5">
-                          <span className="text-xs text-base-content/70">
+                        <div className="flex items-center justify-end gap-1.5 animate-in fade-in zoom-in-95 duration-150">
+                          <span className="text-[11px] text-base-content/60">
                             Delete?
                           </span>
                           <button
-                            className="btn btn-error btn-xs"
+                            className="btn btn-error btn-xs rounded-full px-2"
                             onClick={() => handleDelete(t.id)}
                             disabled={isPending}
                             aria-label={`Confirm delete of ${t.title}`}
@@ -340,7 +426,7 @@ export default function TransactionTable({
                             Yes
                           </button>
                           <button
-                            className="btn btn-ghost btn-xs"
+                            className="btn btn-ghost btn-xs rounded-full px-1.5"
                             onClick={() => setConfirmId(null)}
                             disabled={isPending}
                             aria-label="Cancel delete"
@@ -350,47 +436,49 @@ export default function TransactionTable({
                         </div>
                       ) : (
                         <button
-                          className="btn btn-ghost btn-xs btn-circle text-base-content/50 hover:text-error"
+                          className="btn btn-ghost btn-xs btn-circle text-base-content/30 opacity-70 transition-all duration-150 group-hover:opacity-100 hover:bg-error/10 hover:text-error"
                           onClick={() => {
                             setConfirmId(t.id);
                             setError(null);
                           }}
                           aria-label={`Delete ${t.title}`}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       )}
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                );
+              })}
+            </tbody>
+          </table>
         )}
+      </div>
 
-        {/* Pagination & Footer Controls */}
-        {filtered.length > 0 && (
-          <div className="mt-5 flex flex-col items-center justify-between gap-3 pt-3 sm:flex-row border-t border-base-content/10">
-            <span className="text-xs text-base-content/60">
-              Showing <span className="font-semibold">{startIndex}</span>–
-              <span className="font-semibold">{endIndex}</span> of{" "}
-              <span className="font-semibold">{sorted.length}</span>{" "}
-              transactions
-            </span>
+      {/* Modern Bottom Pagination Bar */}
+      {filtered.length > 0 && (
+        <div className="flex flex-col items-center justify-between gap-3 border-t border-base-content/5 bg-base-200/20 px-6 py-3.5 sm:flex-row">
+          <p className="text-xs text-base-content/50">
+            Showing <span className="font-semibold text-base-content">{startIndex}</span>
+            –<span className="font-semibold text-base-content">{endIndex}</span> of{" "}
+            <span className="font-semibold text-base-content">{sorted.length}</span>{" "}
+            transactions
+          </p>
 
-            <div className="flex items-center gap-3">
-              {/* Pagination buttons */}
-              {totalPages > 1 && (
-                <div className="join">
-                  <button
-                    className="btn btn-outline btn-xs join-item"
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    disabled={pageIndex === 1}
-                    aria-label="Previous page"
-                  >
-                    <ChevronLeft className="h-3.5 w-3.5" />
-                  </button>
+          <div className="flex items-center gap-3">
+            {/* Page buttons */}
+            {totalPages > 1 && (
+              <div className="flex items-center gap-1">
+                <button
+                  className="btn btn-ghost btn-xs btn-square rounded-full transition hover:bg-base-200"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={pageIndex === 1}
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                </button>
 
+                <div className="flex items-center gap-1 px-1">
                   {Array.from({ length: totalPages }, (_, i) => i + 1)
                     .filter(
                       (p) =>
@@ -401,20 +489,17 @@ export default function TransactionTable({
                     .map((p, idx, arr) => {
                       const prev = arr[idx - 1];
                       return (
-                        <span key={p} className="flex">
+                        <span key={p} className="flex items-center">
                           {prev && p - prev > 1 && (
-                            <button
-                              disabled
-                              className="btn btn-outline btn-xs join-item"
-                            >
-                              ...
-                            </button>
+                            <span className="px-1.5 text-xs text-base-content/30">
+                              •••
+                            </span>
                           )}
                           <button
-                            className={`btn btn-xs join-item ${
+                            className={`h-6 min-w-6 rounded-full px-1.5 text-[11px] font-semibold transition-all duration-150 ${
                               p === pageIndex
-                                ? "btn-primary"
-                                : "btn-outline"
+                                ? "bg-primary text-primary-content shadow-sm shadow-primary/30"
+                                : "text-base-content/60 hover:bg-base-200 hover:text-base-content"
                             }`}
                             onClick={() => setCurrentPage(p)}
                           >
@@ -423,35 +508,39 @@ export default function TransactionTable({
                         </span>
                       );
                     })}
-
-                  <button
-                    className="btn btn-outline btn-xs join-item"
-                    onClick={() =>
-                      setCurrentPage((p) => Math.min(totalPages, p + 1))
-                    }
-                    disabled={pageIndex === totalPages}
-                    aria-label="Next page"
-                  >
-                    <ChevronRight className="h-3.5 w-3.5" />
-                  </button>
                 </div>
-              )}
 
-              {/* Load older from DB button */}
-              {nextCursor && (
                 <button
-                  className="btn btn-ghost btn-xs text-primary gap-1"
-                  onClick={handleLoadMore}
-                  disabled={isPending}
+                  className="btn btn-ghost btn-xs btn-square rounded-full transition hover:bg-base-200"
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
+                  disabled={pageIndex === totalPages}
+                  aria-label="Next page"
                 >
-                  {isPending && <Loader2 className="h-3 w-3 animate-spin" />}
-                  Fetch older batch
+                  <ChevronRight className="h-3.5 w-3.5" />
                 </button>
-              )}
-            </div>
+              </div>
+            )}
+
+            {/* Load more from database */}
+            {nextCursor && (
+              <button
+                className="btn btn-ghost btn-xs rounded-full text-primary transition hover:bg-primary/10 gap-1.5"
+                onClick={handleLoadMore}
+                disabled={isPending}
+              >
+                {isPending ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Database className="h-3 w-3" />
+                )}
+                Fetch older records
+              </button>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
