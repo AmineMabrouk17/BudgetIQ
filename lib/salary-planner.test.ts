@@ -1,9 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { computeBudgetTargets } from "@/lib/salary-planner";
-
-vi.mock("@/lib/supabase/server", () => ({
-  createClient: vi.fn(),
-}));
 
 describe("computeBudgetTargets", () => {
   it("allocates 60% essentials / 20% lifestyle for a salary without dependents", () => {

@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { getUser } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { getSalaryPlan } from "@/lib/salary-planner";
+import { getSalaryPlan } from "@/lib/salary-planner-data";
 import SalaryPlannerView from "@/components/salary-planner/SalaryPlannerView";
 
 export const metadata: Metadata = {
