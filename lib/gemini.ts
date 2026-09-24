@@ -252,7 +252,7 @@ Context for this user:
 Instructions:
 - When the user tells you about their expenses (e.g., "I spend 1500 on rent and 400 on dining out"), extract and update the numbers into "extractedActuals". Only include categories the user mentioned or updated.
 - Compare their actual values with the benchmark KPIs.
-- In "message", reply in natural, motivating Arabic (or English if they spoke English), highlighting whether they are over/under budget, and advise how to adjust.
+- In "message", reply in the same language the user wrote in (natural, motivating Arabic, English, French, or any other language), highlighting whether they are over/under budget, and advise how to adjust.
 - In "adviceSummary", write a concise 1-2 sentence recommendation.`;
 
   const conversationContext = params.history
