@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useCurrencyFormatter } from "@/lib/currency/use-display-currency";
 import { computeBudgetTargets } from "@/lib/salary-planner";
 import { saveSalaryPlanAction, clearAdvisorChatAction } from "@/app/actions/salary-planner";
+import MarkdownMessage from "@/components/ai/MarkdownMessage";
 import type { SalaryPlan, PlannerChatMessage } from "@/types/salary-planner";
 import {
   ShieldAlert,
@@ -190,6 +191,19 @@ export default function SalaryPlannerView({ initialPlan }: { initialPlan: Salary
       </div>
 
       {/* KPI Cards Grid */}
+      {salary <= 0 && (
+        <div className="alert alert-warning shadow-sm flex items-start gap-3">
+          <ShieldAlert className="h-5 w-5 shrink-0 mt-0.5" />
+          <div className="text-sm">
+            <span className="font-bold block">Add your salary to see targets</span>
+            <span className="text-base-content/70">
+              Every pillar below shows 0% until a monthly salary is set. Type it in
+              above, or just tell the assistant — they&rsquo;ll fill it in for you.
+            </span>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* 1. Essentials */}
         <div className="card bg-base-100 border border-base-200 shadow-sm">
@@ -410,7 +424,7 @@ export default function SalaryPlannerView({ initialPlan }: { initialPlan: Salary
             <div className="flex items-center gap-2">
               <Bot className="h-5 w-5 text-primary" />
               <div>
-                <h2 className="font-bold text-sm">Your AI Financial Advisor (Gemini)</h2>
+                <h2 className="font-bold text-sm">Your AI Financial Advisor</h2>
                 <p className="text-[11px] text-base-content/60">
                   Chat about your spending — it will categorize it and advise against your targets
                 </p>
@@ -456,7 +470,7 @@ export default function SalaryPlannerView({ initialPlan }: { initialPlan: Salary
                       m.role === "user" ? "chat-bubble-primary" : "chat-bubble-neutral"
                     }`}
                   >
-                    {m.text}
+                    {m.role === "user" ? m.text : <MarkdownMessage text={m.text} />}
                   </div>
                 </div>
               ))

@@ -2,6 +2,7 @@
 
 import type { ParsedTransactionAction } from "@/lib/gemini";
 import TransactionActionCard from "@/components/ai/TransactionActionCard";
+import MarkdownMessage from "@/components/ai/MarkdownMessage";
 
 export default function MessageBubble({
   role,
@@ -29,7 +30,7 @@ export default function MessageBubble({
           error ? "chat-bubble-error" : "chat-bubble-secondary"
         }`}
       >
-        {text}
+        {error ? text : <MarkdownMessage text={text} />}
       </div>
       {action && <TransactionActionCard action={action} />}
     </div>

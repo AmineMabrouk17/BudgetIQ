@@ -33,6 +33,9 @@
   themes: light --default, dark --prefersdark, cupcake, emerald, corporate, synthwave;
 }
 
+/* Chat bubbles render assistant prose, so they need real Markdown styling. */
+@plugin "@tailwindcss/typography";
+
 :root,
 [data-theme="light"] {
   --color-primary: #0099ff;
