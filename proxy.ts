@@ -21,7 +21,9 @@ function contentSecurityPolicy(nonce: string): string {
     "frame-src https://challenges.cloudflare.com",
     "frame-ancestors 'self'",
     `connect-src 'self' ${supabaseOrigin.origin} ${supabaseWssUrl} https://challenges.cloudflare.com`,
-    "upgrade-insecure-requests",
+    // Only meaningful on HTTPS sites; on plain-HTTP dev servers it breaks every
+    // subresource (CSS/JS) by force-upgrading it to https.
+    ...(isDev ? [] : ["upgrade-insecure-requests"]),
   ].join("; ");
 }
 

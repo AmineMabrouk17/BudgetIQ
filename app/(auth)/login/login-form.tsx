@@ -228,7 +228,12 @@ export default function LoginPage() {
     setMessage(null);
 
     const turnstileTokenValue = turnstileTokenRef.current;
-    if (!turnstileTokenValue) {
+    // Turnstile is a hardening layer once configured. On local/dev runs with no
+    // keys set it is not enforced (so the app stays testable without
+    // Cloudflare); in production builds we always require it to fail loudly if
+    // the env is misconfigured.
+    const turnstileEnforced = Boolean(turnstileSiteKey) || process.env.NODE_ENV === "production";
+    if (turnstileEnforced && !turnstileTokenValue) {
       setError("Please complete the security check before submitting.");
       resetTurnstile();
       return;
@@ -236,12 +241,14 @@ export default function LoginPage() {
 
     setPendingEmail(true);
 
-    const verification = await verifyTurnstile(turnstileTokenValue);
-    if (!verification.ok) {
-      setError(verification.error);
-      resetTurnstile();
-      setPendingEmail(false);
-      return;
+    if (turnstileTokenValue) {
+      const verification = await verifyTurnstile(turnstileTokenValue);
+      if (!verification.ok) {
+        setError(verification.error);
+        resetTurnstile();
+        setPendingEmail(false);
+        return;
+      }
     }
 
     const limitCheck = await checkLoginRateLimit(email);

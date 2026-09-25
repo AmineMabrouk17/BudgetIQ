@@ -23,10 +23,10 @@ export default async function Navbar() {
 
   return (
     <header className="navbar sticky top-0 z-30 border-b border-base-300/50 bg-base-100/80 backdrop-blur">
-      <div className="navbar-start">
+      <div className="navbar-start gap-4">
         <Link
           href="/"
-          className="flex items-center gap-2 px-4 text-xl font-bold"
+          className="flex items-center gap-2 px-2 text-xl font-bold"
         >
           <Image
             src="/logo-icon-light.png"
@@ -37,6 +37,15 @@ export default async function Navbar() {
           />
           BudgetIQ
         </Link>
+
+        {user && (
+          <Link
+            href="/salary-planner"
+            className="btn btn-ghost btn-sm font-medium hover:bg-base-200"
+          >
+            Salary Planner
+          </Link>
+        )}
       </div>
       <div className="navbar-end gap-2 pr-3">
         <CurrencySelect />

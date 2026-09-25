@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { BudgetAdvisorResponse } from "@/types/salary-planner";
 
 const INTERACTIONS_ENDPOINT =
   "https://generativelanguage.googleapis.com/v1beta/interactions";
@@ -197,4 +198,102 @@ export async function askGemini(message: string): Promise<ChatActionResponse> {
 
   const payload = await response.json();
   return parseEnvelope(extractText(payload));
+}
+
+const ADVISOR_RESPONSE_SCHEMA = {
+  type: "object",
+  properties: {
+    message: { type: "string" },
+    adviceSummary: { type: "string" },
+    extractedActuals: {
+      type: "object",
+      properties: {
+        essentials: { type: "number" },
+        lifestyle: { type: "number" },
+        emergencyFund: { type: "number" },
+        investments: { type: "number" },
+      },
+    },
+  },
+  required: ["message"],
+} as const;
+
+export async function askBudgetAdvisor(params: {
+  userInput: string;
+  monthlySalary: number;
+  hasDependents: boolean;
+  actuals: {
+    essentials: number;
+    lifestyle: number;
+    emergencyFund: number;
+    investments: number;
+  };
+  history: { role: string; text: string }[];
+}): Promise<BudgetAdvisorResponse> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error("GEMINI_API_KEY is not configured");
+
+  const systemInstruction = `You are the BudgetIQ Financial Strategist.
+Your goal is to guide the user to allocate their monthly salary according to these 4 strict golden rules:
+1. Essentials (Rent, car loans, utility bills, groceries): Maximum 60% of monthly salary.
+2. Lifestyle / Wants (Travel, restaurants, cafes, delivery apps): Maximum 20% of monthly salary.
+3. Emergency Fund: Target pool equal to 3-6 months of essential expenses (or 12 months if they support a family/dependents). Once reached, stop adding funds.
+4. Investments / Wealth: The rest (10% to 20%+). Lowering lifestyle to raise investments accelerates financial independence.
+
+Context for this user:
+- Monthly Salary: ${params.monthlySalary}
+- Supports Dependents/Family: ${params.hasDependents ? "Yes (12 months emergency target)" : "No (3-6 months emergency target)"}
+- Current Actuals:
+  * Essentials: ${params.actuals.essentials}
+  * Lifestyle: ${params.actuals.lifestyle}
+  * Emergency Fund: ${params.actuals.emergencyFund}
+  * Investments: ${params.actuals.investments}
+
+Instructions:
+- When the user tells you about their expenses (e.g., "I spend 1500 on rent and 400 on dining out"), extract and update the numbers into "extractedActuals". Only include categories the user mentioned or updated.
+- Compare their actual values with the benchmark KPIs.
+- In "message", reply in the same language the user wrote in (natural, motivating Arabic, English, French, or any other language), highlighting whether they are over/under budget, and advise how to adjust.
+- In "adviceSummary", write a concise 1-2 sentence recommendation.`;
+
+  const conversationContext = params.history
+    .slice(-6)
+    .map((h) => `${h.role === "user" ? "User" : "Assistant"}: ${h.text}`)
+    .join("\n");
+
+  const promptInput = conversationContext
+    ? `${conversationContext}\nUser: ${params.userInput}`
+    : params.userInput;
+
+  const response = await fetch(INTERACTIONS_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "x-goog-api-key": apiKey,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      input: promptInput,
+      system_instruction: systemInstruction,
+      response_format: {
+        type: "text",
+        mime_type: "application/json",
+        schema: ADVISOR_RESPONSE_SCHEMA,
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    throw new GeminiApiError(response.status, `Gemini API error: ${response.status}`);
+  }
+
+  const payload = await response.json();
+  const rawText = extractText(payload);
+
+  try {
+    return JSON.parse(rawText) as BudgetAdvisorResponse;
+  } catch {
+    return {
+      message: rawText || "Your data has been analyzed successfully.",
+    };
+  }
 }
