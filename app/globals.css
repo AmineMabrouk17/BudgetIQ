@@ -33,6 +33,33 @@
   themes: light --default, dark --prefersdark, cupcake, emerald, corporate, synthwave;
 }
 
+/* Chat bubbles render assistant prose, so they need real Markdown styling. */
+@plugin "@tailwindcss/typography";
+
+/* Inside a chat bubble the bubble's own theme already picks the text colour, so
+   the typography plugin must not impose one of its own. Left alone it sets a
+   dark background while the text stays on the light-theme value, which lands
+   near-black text on a near-black bubble at 1.1:1. Pointing every prose colour
+   at currentColor makes headings, bold and links inherit the bubble instead. */
+.prose-in-bubble {
+  --tw-prose-body: currentColor;
+  --tw-prose-bold: currentColor;
+  --tw-prose-headings: currentColor;
+  --tw-prose-links: currentColor;
+  --tw-prose-bold-links: currentColor;
+  --tw-prose-counters: currentColor;
+  --tw-prose-bullets: currentColor;
+  --tw-prose-quotes: currentColor;
+  --tw-prose-quote-borders: currentColor;
+  --tw-prose-captions: currentColor;
+  --tw-prose-code: currentColor;
+  --tw-prose-pre-code: currentColor;
+  --tw-prose-pre-bg: transparent;
+  --tw-prose-th-borders: currentColor;
+  --tw-prose-td-borders: currentColor;
+  --tw-prose-hr: currentColor;
+}
+
 :root,
 [data-theme="light"] {
   --color-primary: #0099ff;
