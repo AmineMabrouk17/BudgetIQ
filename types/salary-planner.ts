@@ -29,15 +29,27 @@ export type BudgetTargets = {
   targetInvestmentIdeal: number; // 20%+
 };
 
-export type ExtractedActuals = {
-  essentials?: number;
-  lifestyle?: number;
-  emergencyFund?: number;
-  investments?: number;
+export const ADVISOR_BUCKETS = [
+  "essentials",
+  "lifestyle",
+  "emergencyFund",
+  "investments",
+] as const;
+
+export type AdvisorBucket = (typeof ADVISOR_BUCKETS)[number];
+
+export type AdvisorLineItem = {
+  label: string;
+  amount: number;
+  bucket: AdvisorBucket;
 };
+
+export type BucketActuals = Record<AdvisorBucket, number>;
 
 export type BudgetAdvisorResponse = {
   message: string;
-  extractedActuals?: ExtractedActuals;
   adviceSummary?: string;
+  monthlySalary?: number;
+  lineItems?: AdvisorLineItem[];
+  replaceActuals?: boolean;
 };
