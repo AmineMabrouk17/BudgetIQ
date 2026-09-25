@@ -74,4 +74,60 @@ describe("SalaryPlannerView", () => {
     expect(essentialsPct).toBeInTheDocument();
     expect(lifestylePct).toBeInTheDocument();
   });
+
+  describe("advisor replies", () => {
+    const withReply = (text: string): SalaryPlan => ({
+      ...initialPlan,
+      chat_messages: [
+        { id: "m1", role: "assistant", text, timestamp: "2026-01-01T00:00:00.000Z" },
+      ],
+    });
+
+    it("renders the advisor's markdown as formatting, not as literal asterisks", () => {
+      render(
+        <SalaryPlannerView
+          initialPlan={withReply(
+            "Your salary is **$1,700**.\n\n- **Essentials:** $1,010\n- **Lifestyle:** $60"
+          )}
+        />
+      );
+
+      const bubble = screen.getByText(/Your salary is/).closest("div")!;
+      // The bold run becomes a <strong>, so no raw ** survives anywhere.
+      expect(bubble.querySelector("strong")).not.toBeNull();
+      expect(bubble.textContent).not.toContain("**");
+      // Each bullet becomes a list item, so the literal "- " prefix is gone.
+      expect(bubble.querySelectorAll("li")).toHaveLength(2);
+      expect(bubble.textContent).not.toContain("- **");
+    });
+
+    it("does not execute markup smuggled through a reply", () => {
+      render(
+        <SalaryPlannerView
+          initialPlan={withReply('<img src=x onerror="window.__pwned = true">')}
+        />
+      );
+
+      expect(screen.queryByRole("img")).not.toBeInTheDocument();
+      expect((window as unknown as Record<string, unknown>).__pwned).toBeUndefined();
+    });
+  });
+
+  it("invites the user to set a salary instead of showing a wall of zeros", () => {
+    render(
+      <SalaryPlannerView
+        initialPlan={{ ...initialPlan, monthly_salary: 0, actual_essentials: 1010, actual_lifestyle: 60 }}
+      />
+    );
+
+    // Distinct from the hero copy, which also says "set your monthly salary".
+    expect(screen.getByText(/add your salary to see targets/i)).toBeInTheDocument();
+  });
+
+  it("does not name a single provider in the advisor heading", () => {
+    render(<SalaryPlannerView initialPlan={initialPlan} />);
+
+    const heading = screen.getByRole("heading", { name: /AI Financial Advisor/i });
+    expect(heading.textContent).not.toMatch(/gemini|openrouter/i);
+  });
 });
