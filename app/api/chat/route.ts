@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUser } from "@/lib/supabase/server";
-import { askGemini, GeminiApiError } from "@/lib/gemini";
+import { askGemini } from "@/lib/gemini";
 import { rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
@@ -9,32 +9,6 @@ const CHAT_RATE_LIMIT = 20;
 const CHAT_RATE_WINDOW = 60;
 
 const MAX_MESSAGE_LENGTH = 1000;
-
-const MAX_RETRIES = 2;
-const BASE_RETRY_DELAY_MS = 200;
-
-function isRetryable(e: unknown): boolean {
-  if (!(e instanceof GeminiApiError)) return false;
-  return e.status === 429 || e.status >= 500;
-}
-
-async function callGeminiWithRetry(
-  message: string
-): Promise<ReturnType<typeof askGemini>> {
-  let lastError: unknown;
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    try {
-      return await askGemini(message);
-    } catch (e) {
-      lastError = e;
-      if (!isRetryable(e) || attempt === MAX_RETRIES) throw e;
-      await new Promise((resolve) =>
-        setTimeout(resolve, BASE_RETRY_DELAY_MS * 2 ** attempt)
-      );
-    }
-  }
-  throw lastError;
-}
 
 export async function POST(request: NextRequest) {
   const user = await getUser();
@@ -80,7 +54,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const response = await callGeminiWithRetry(message);
+    const response = await askGemini(message);
     return NextResponse.json(response);
   } catch (error) {
     console.error("Gemini chat failed:", error);

@@ -92,11 +92,15 @@ export default function SalaryPlannerView({ initialPlan }: { initialPlan: Salary
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to consult AI");
+      if (!res.ok) {
+        const detail = await res.json().catch(() => null);
+        throw new Error(detail?.error ?? "The advisor could not be reached.");
+      }
 
       const data = await res.json();
       setMessages(data.messages);
       if (data.adviceSummary) setAdvice(data.adviceSummary);
+      if (typeof data.updatedSalary === "number") setSalary(data.updatedSalary);
       if (data.updatedActuals) {
         setActuals({
           essentials: data.updatedActuals.actual_essentials,
@@ -105,13 +109,16 @@ export default function SalaryPlannerView({ initialPlan }: { initialPlan: Salary
           investments: data.updatedActuals.actual_investments,
         });
       }
-    } catch {
+    } catch (error) {
+      const reason =
+        error instanceof Error ? error.message : "Please try again.";
+      console.error("Salary planner chat failed:", error);
       setMessages((prev) => [
         ...prev,
         {
           id: crypto.randomUUID(),
           role: "assistant",
-          text: "Sorry, something went wrong while processing your message. Please try again.",
+          text: `Sorry, something went wrong while processing your message. ${reason}`,
           timestamp: new Date().toISOString(),
         },
       ]);

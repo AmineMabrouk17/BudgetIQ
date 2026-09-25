@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseEnvelope } from "@/lib/gemini";
+import { parseAdvisorEnvelope, parseEnvelope } from "@/lib/gemini";
 
 describe("parseEnvelope amount parsing", () => {
   function envelope(amount: unknown) {
@@ -107,5 +107,114 @@ describe("parseEnvelope response shape regression", () => {
       "title",
       "amount",
     ]);
+  });
+});
+
+describe("parseAdvisorEnvelope", () => {
+  const BREAKDOWN = JSON.stringify({
+    message: "Rent is high but you are saving.",
+    adviceSummary: "Trim lifestyle by 40.",
+    monthlySalary: 1700,
+    replaceActuals: true,
+    lineItems: [
+      { label: "House rent", amount: 450, bucket: "essentials" },
+      { label: "Internet subscription", amount: 110, bucket: "essentials" },
+      { label: "Daily expenses", amount: 450, bucket: "essentials" },
+      { label: "Sport membership", amount: 60, bucket: "lifestyle" },
+      { label: "Investment", amount: 200, bucket: "investments" },
+    ],
+  });
+
+  it("keeps a stated salary and every extracted line item", () => {
+    const result = parseAdvisorEnvelope(BREAKDOWN);
+
+    expect(result.monthlySalary).toBe(1700);
+    expect(result.replaceActuals).toBe(true);
+    expect(result.lineItems).toHaveLength(5);
+    expect(result.lineItems?.[0]).toEqual({
+      label: "House rent",
+      amount: 450,
+      bucket: "essentials",
+    });
+  });
+
+  it("accepts numeric strings for amounts", () => {
+    const result = parseAdvisorEnvelope(
+      JSON.stringify({
+        message: "ok",
+        lineItems: [{ label: "Rent", amount: "450", bucket: "essentials" }],
+      })
+    );
+
+    expect(result.lineItems?.[0]?.amount).toBe(450);
+  });
+
+  it("omits absent optional fields instead of emitting undefined", () => {
+    const result = parseAdvisorEnvelope(
+      JSON.stringify({ message: "How can I save more?" })
+    );
+
+    expect(result).toEqual({ message: "How can I save more?" });
+    expect("lineItems" in result).toBe(false);
+    expect("monthlySalary" in result).toBe(false);
+  });
+
+  it("drops a whole invalid line item rather than trusting its amount", () => {
+    const result = parseAdvisorEnvelope(
+      JSON.stringify({
+        message: "ok",
+        lineItems: [
+          { label: "Rent", amount: 450, bucket: "essentials" },
+          { label: "Ghost", amount: -900, bucket: "essentials" },
+        ],
+      })
+    );
+
+    expect(result.lineItems).toHaveLength(1);
+    expect(result.lineItems?.[0]?.amount).toBe(450);
+  });
+
+  it("drops items with an unknown bucket", () => {
+    const result = parseAdvisorEnvelope(
+      JSON.stringify({
+        message: "ok",
+        lineItems: [
+          { label: "Rent", amount: 450, bucket: "essentials" },
+          { label: "Salary", amount: 1700, bucket: "income" },
+        ],
+      })
+    );
+
+    expect(result.lineItems).toEqual([
+      { label: "Rent", amount: 450, bucket: "essentials" },
+    ]);
+  });
+
+  it("drops a non-numeric salary rather than storing it", () => {
+    const result = parseAdvisorEnvelope(
+      JSON.stringify({ message: "ok", monthlySalary: "a lot" })
+    );
+
+    expect("monthlySalary" in result).toBe(false);
+  });
+
+  it("keeps the message when the rest of the envelope is malformed", () => {
+    const result = parseAdvisorEnvelope(
+      JSON.stringify({ message: "Spend less on dining.", adviceSummary: 42 })
+    );
+
+    expect(result.message).toBe("Spend less on dining.");
+  });
+
+  it("treats non-JSON output as plain text instead of throwing", () => {
+    const result = parseAdvisorEnvelope("Your budget looks reasonable.");
+
+    expect(result).toEqual({ message: "Your budget looks reasonable." });
+  });
+
+  it("never returns an empty message", () => {
+    const result = parseAdvisorEnvelope("   ");
+
+    expect(result.message.length).toBeGreaterThan(0);
   });
 });

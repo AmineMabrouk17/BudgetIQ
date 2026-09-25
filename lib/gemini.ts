@@ -1,10 +1,10 @@
 import { z } from "zod";
-import type { BudgetAdvisorResponse } from "@/types/salary-planner";
-
-const INTERACTIONS_ENDPOINT =
-  "https://generativelanguage.googleapis.com/v1beta/interactions";
-
-const MODEL = "gemini-3.6-flash";
+import { completeJson, LlmError } from "@/lib/llm";
+import { isAdvisorBucket } from "@/lib/salary-planner";
+import type {
+  AdvisorLineItem,
+  BudgetAdvisorResponse,
+} from "@/types/salary-planner";
 
 export type TransactionActionType = "income" | "expense" | "asset";
 
@@ -21,17 +21,7 @@ export type ChatActionResponse = {
   transaction?: ParsedTransactionAction;
 };
 
-export type GeminiErrorStatus = number;
-
-export class GeminiApiError extends Error {
-  readonly status: number;
-
-  constructor(status: number, message?: string) {
-    super(message ?? `Gemini API error: ${status}`);
-    this.name = "GeminiApiError";
-    this.status = status;
-  }
-}
+export { LlmError };
 
 const TRANSACTION_TYPES = [
   "income",
@@ -40,6 +30,18 @@ const TRANSACTION_TYPES = [
 ] as const satisfies readonly TransactionActionType[];
 
 const INVALID_AMOUNT = "Gemini response has an invalid transaction amount";
+
+/** A money figure that may legitimately be 0 (a salary the user has not stated). */
+const nonNegativeAmount = z
+  .union([z.number(), z.string()])
+  .transform((value, ctx): number => {
+    const text = typeof value === "number" ? String(value) : value.trim();
+    if (!/^\d+(\.\d+)?$/.test(text)) {
+      ctx.addIssue({ code: "custom", message: "invalid amount" });
+      return z.NEVER;
+    }
+    return Number(text);
+  });
 
 const strictAmount = z
   .union([z.number(), z.string()])
@@ -144,79 +146,115 @@ export function parseEnvelope(raw: string): ChatActionResponse {
   };
 }
 
-function extractText(payload: unknown): string {
-  if (typeof payload !== "object" || payload === null) {
-    throw new Error("Unexpected Gemini response shape");
-  }
-  const steps = (payload as Record<string, unknown>).steps;
-  if (!Array.isArray(steps)) {
-    throw new Error("Gemini response is missing steps");
-  }
-  for (const step of steps) {
-    if (typeof step !== "object" || step === null) continue;
-    const content = (step as Record<string, unknown>).content;
-    if (!Array.isArray(content)) continue;
-    for (const part of content) {
-      if (typeof part !== "object" || part === null) continue;
-      const text = (part as Record<string, unknown>).text;
-      if (typeof text === "string" && text.trim().length > 0) return text;
-    }
-  }
-  throw new Error("Gemini response contains no text");
-}
-
 export async function askGemini(message: string): Promise<ChatActionResponse> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is not configured");
-  }
-
-  const response = await fetch(INTERACTIONS_ENDPOINT, {
-    method: "POST",
-    headers: {
-      "x-goog-api-key": apiKey,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      input: message,
-      system_instruction: SYSTEM_PROMPT,
-      response_format: {
-        type: "text",
-        mime_type: "application/json",
-        schema: RESPONSE_SCHEMA,
-      },
-    }),
+  const { text } = await completeJson({
+    systemInstruction: SYSTEM_PROMPT,
+    prompt: message,
+    schema: RESPONSE_SCHEMA,
   });
-
-  if (!response.ok) {
-    throw new GeminiApiError(
-      response.status,
-      `Gemini API error: ${response.status}`
-    );
-  }
-
-  const payload = await response.json();
-  return parseEnvelope(extractText(payload));
+  return parseEnvelope(text);
 }
 
+// Every extraction field is required: Gemini fills required fields reliably
+// and silently omits optional ones, which would drop the user's whole
+// breakdown. "No figures" is expressed as 0 / false / [].
 const ADVISOR_RESPONSE_SCHEMA = {
   type: "object",
   properties: {
     message: { type: "string" },
     adviceSummary: { type: "string" },
-    extractedActuals: {
-      type: "object",
-      properties: {
-        essentials: { type: "number" },
-        lifestyle: { type: "number" },
-        emergencyFund: { type: "number" },
-        investments: { type: "number" },
+    monthlySalary: { type: "number" },
+    replaceActuals: { type: "boolean" },
+    lineItems: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          label: { type: "string" },
+          amount: { type: "number" },
+          bucket: {
+            type: "string",
+            enum: ["essentials", "lifestyle", "emergencyFund", "investments"],
+          },
+        },
+        required: ["label", "amount", "bucket"],
       },
     },
   },
-  required: ["message"],
+  required: ["message", "adviceSummary", "monthlySalary", "replaceActuals", "lineItems"],
 } as const;
+
+const advisorLineItemSchema = z.object({
+  label: z.string().trim().min(1),
+  amount: z.union([z.number(), z.string()]).transform((value, ctx): number => {
+    const text = typeof value === "number" ? String(value) : value.trim();
+    if (!/^\d+(\.\d+)?$/.test(text)) {
+      ctx.addIssue({ code: "custom", message: "invalid line item amount" });
+      return z.NEVER;
+    }
+    return Number(text);
+  }),
+  bucket: z.string().refine(isAdvisorBucket, {
+    message: "invalid line item bucket",
+  }),
+});
+
+/** One malformed item must not cost the user the rest of their breakdown. */
+function parseAdvisorLineItems(value: unknown): AdvisorLineItem[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const items = value
+    .map((item) => advisorLineItemSchema.safeParse(item))
+    .filter((result) => result.success)
+    .map((result) => result.data);
+  return items.length > 0 ? items : undefined;
+}
+
+const advisorEnvelopeSchema = z.object({
+  message: z
+    .string()
+    .trim()
+    .min(1, { message: "Gemini response is missing a message" }),
+  adviceSummary: z.string().trim().min(1).optional(),
+  monthlySalary: nonNegativeAmount.optional(),
+  replaceActuals: z.boolean().optional(),
+});
+
+/**
+ * Validates the advisor envelope. Never throws: a malformed response degrades
+ * to its plain-text message so a bad extraction can't corrupt stored figures.
+ */
+export function parseAdvisorEnvelope(raw: string): BudgetAdvisorResponse {
+  let data: unknown;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    return { message: raw.trim() || "Your data has been analyzed successfully." };
+  }
+
+  const parsed = advisorEnvelopeSchema.safeParse(data);
+  if (!parsed.success) {
+    const fallback =
+      typeof (data as { message?: unknown })?.message === "string"
+        ? ((data as { message: string }).message ?? "")
+        : "";
+    return {
+      message: fallback.trim() || "Your data has been analyzed successfully.",
+    };
+  }
+
+  const { message, adviceSummary, monthlySalary, replaceActuals } = parsed.data;
+  const lineItems = parseAdvisorLineItems(
+    (data as { lineItems?: unknown }).lineItems
+  );
+
+  return {
+    message,
+    ...(adviceSummary ? { adviceSummary } : {}),
+    ...(monthlySalary !== undefined ? { monthlySalary } : {}),
+    ...(replaceActuals !== undefined ? { replaceActuals } : {}),
+    ...(lineItems ? { lineItems } : {}),
+  };
+}
 
 export async function askBudgetAdvisor(params: {
   userInput: string;
@@ -230,13 +268,10 @@ export async function askBudgetAdvisor(params: {
   };
   history: { role: string; text: string }[];
 }): Promise<BudgetAdvisorResponse> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("GEMINI_API_KEY is not configured");
-
   const systemInstruction = `You are the BudgetIQ Financial Strategist.
 Your goal is to guide the user to allocate their monthly salary according to these 4 strict golden rules:
-1. Essentials (Rent, car loans, utility bills, groceries): Maximum 60% of monthly salary.
-2. Lifestyle / Wants (Travel, restaurants, cafes, delivery apps): Maximum 20% of monthly salary.
+1. Essentials (Rent, car loans, utility bills, groceries, subscriptions you need to work): Maximum 60% of monthly salary.
+2. Lifestyle / Wants (Travel, restaurants, cafes, delivery apps, gym memberships): Maximum 20% of monthly salary.
 3. Emergency Fund: Target pool equal to 3-6 months of essential expenses (or 12 months if they support a family/dependents). Once reached, stop adding funds.
 4. Investments / Wealth: The rest (10% to 20%+). Lowering lifestyle to raise investments accelerates financial independence.
 
@@ -249,9 +284,14 @@ Context for this user:
   * Emergency Fund: ${params.actuals.emergencyFund}
   * Investments: ${params.actuals.investments}
 
-Instructions:
-- When the user tells you about their expenses (e.g., "I spend 1500 on rent and 400 on dining out"), extract and update the numbers into "extractedActuals". Only include categories the user mentioned or updated.
-- Compare their actual values with the benchmark KPIs.
+How to read the user's numbers:
+- If the user states their income, salary, wage or net monthly pay, set "monthlySalary" to that number. Otherwise set it to 0, which means "unchanged".
+- List every expense the user names as its own "lineItems" entry, one entry per distinct thing. Never merge two items into one entry and never skip an item. When the user names no amounts, set "lineItems" to an empty array.
+- Set "bucket" per item: "essentials" (rent, utilities, internet, groceries, daily living costs), "lifestyle" (gym, sport memberships, eating out, entertainment, travel), "emergencyFund" (money set aside for emergencies), "investments" (savings accounts, stocks, crypto, pension contributions).
+- Set "replaceActuals" to true when the user gives a complete picture of what they pay this month (e.g. "here is everything I pay"), because those figures are the new totals. Set it to false when the user only adds or corrects something ("I also spend 50 on coffee"), so the amounts are added to what is already recorded.
+- Use the recorded salary when the user does not state one; never invent figures.
+
+Replies:
 - In "message", reply in the same language the user wrote in (natural, motivating Arabic, English, French, or any other language), highlighting whether they are over/under budget, and advise how to adjust.
 - In "adviceSummary", write a concise 1-2 sentence recommendation.`;
 
@@ -264,36 +304,15 @@ Instructions:
     ? `${conversationContext}\nUser: ${params.userInput}`
     : params.userInput;
 
-  const response = await fetch(INTERACTIONS_ENDPOINT, {
-    method: "POST",
-    headers: {
-      "x-goog-api-key": apiKey,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      input: promptInput,
-      system_instruction: systemInstruction,
-      response_format: {
-        type: "text",
-        mime_type: "application/json",
-        schema: ADVISOR_RESPONSE_SCHEMA,
-      },
-    }),
+  const { text, provider } = await completeJson({
+    systemInstruction,
+    prompt: promptInput,
+    schema: ADVISOR_RESPONSE_SCHEMA,
   });
 
-  if (!response.ok) {
-    throw new GeminiApiError(response.status, `Gemini API error: ${response.status}`);
+  if (provider === "openrouter") {
+    console.info(`[llm] advisor answered via fallback provider: ${provider}`);
   }
 
-  const payload = await response.json();
-  const rawText = extractText(payload);
-
-  try {
-    return JSON.parse(rawText) as BudgetAdvisorResponse;
-  } catch {
-    return {
-      message: rawText || "Your data has been analyzed successfully.",
-    };
-  }
+  return parseAdvisorEnvelope(text);
 }
