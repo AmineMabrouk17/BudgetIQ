@@ -43,7 +43,7 @@ export default async function Navbar() {
             href="/salary-planner"
             className="btn btn-ghost btn-sm font-medium hover:bg-base-200"
           >
-            مخطط الراتب (Salary Planner)
+            Salary Planner
           </Link>
         )}
       </div>

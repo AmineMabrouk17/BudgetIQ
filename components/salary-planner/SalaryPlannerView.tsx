@@ -111,7 +111,7 @@ export default function SalaryPlannerView({ initialPlan }: { initialPlan: Salary
         {
           id: crypto.randomUUID(),
           role: "assistant",
-          text: "عذراً، حدث خطأ أثناء معالجة رسالتك. يرجى المحاولة مرة أخرى.",
+          text: "Sorry, something went wrong while processing your message. Please try again.",
           timestamp: new Date().toISOString(),
         },
       ]);
@@ -128,11 +128,12 @@ export default function SalaryPlannerView({ initialPlan }: { initialPlan: Salary
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold flex items-center gap-2">
-                <span>مخطط الراتب الذكي</span>
-                <span className="badge badge-primary badge-outline text-xs">قاعدة الـ 4 مسارات</span>
+                <span>Smart Salary Planner</span>
+                <span className="badge badge-primary badge-outline text-xs">4-Pillar Rule</span>
               </h1>
               <p className="text-sm text-base-content/70 mt-1">
-                حدد راتبك الشهري لتوزيع ميزانيتك بحسب القواعد المالية وحافظ على استقرارك واستثمارك للمستقبل.
+                Set your monthly salary and the planner allocates your budget across the 4 financial
+                pillars — keeping you stable while you build for the future.
               </p>
             </div>
 
@@ -142,21 +143,21 @@ export default function SalaryPlannerView({ initialPlan }: { initialPlan: Salary
               className="btn btn-primary btn-sm self-start md:self-auto"
             >
               {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-              حفظ الخطة
+              Save Plan
             </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-base-200">
             <div className="form-control">
               <label className="label">
-                <span className="label-text font-semibold">الراتب الشهري (Monthly Salary)</span>
+                <span className="label-text font-semibold">Monthly Salary</span>
               </label>
               <input
                 type="number"
                 min="0"
                 value={salary || ""}
                 onChange={(e) => setSalary(Number(e.target.value))}
-                placeholder="أدخل راتبك الشهري (مثلاً 5000)"
+                placeholder="Enter your monthly salary (e.g. 5000)"
                 className="input input-bordered w-full font-bold text-lg"
               />
             </div>
@@ -170,9 +171,9 @@ export default function SalaryPlannerView({ initialPlan }: { initialPlan: Salary
                   onChange={(e) => setHasDependents(e.target.checked)}
                 />
                 <div>
-                  <span className="label-text font-semibold">هل تعيل أسرة أو لديك التزامات عائلية؟</span>
+                  <span className="label-text font-semibold">Do you support a family or have family commitments?</span>
                   <p className="text-xs text-base-content/60">
-                    يرفع سقف صندوق الطوارئ من 3–6 أشهر إلى سنة كاملة (12 شهراً).
+                    Raises the emergency fund target from 3–6 months to a full year (12 months).
                   </p>
                 </div>
               </label>
@@ -183,25 +184,25 @@ export default function SalaryPlannerView({ initialPlan }: { initialPlan: Salary
 
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* 1. الالتزامات الأساسية */}
+        {/* 1. Essentials */}
         <div className="card bg-base-100 border border-base-200 shadow-sm">
           <div className="card-body p-5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-base-content/60">
-                1. الالتزامات الأساسية
+                1. Essentials
               </span>
               <ShieldAlert className="h-5 w-5 text-warning" />
             </div>
             <div className="mt-2">
               <div className="text-xl font-black">{format(actuals.essentials)}</div>
               <div className="text-xs text-base-content/60 mt-0.5">
-                الهدف: لا يتجاوز 60% ({format(targets.maxEssentials)})
+                Target: no more than 60% ({format(targets.maxEssentials)})
               </div>
             </div>
 
             <div className="mt-3">
               <div className="flex justify-between text-xs mb-1">
-                <span>النسبة الحالية:</span>
+                <span>Current share:</span>
                 <span className={essentialsPct > 60 ? "text-error font-bold" : "text-success font-bold"}>
                   {essentialsPct.toFixed(1)}%
                 </span>
@@ -213,30 +214,30 @@ export default function SalaryPlannerView({ initialPlan }: { initialPlan: Salary
               />
             </div>
             <p className="text-[11px] text-base-content/60 mt-2">
-              تشمل: إيجار البيت، أقساط السيارة، الفواتير، ومصاريف المعيشة الأساسية.
+              Includes: rent, car payments, bills, and basic living costs.
             </p>
           </div>
         </div>
 
-        {/* 2. الكماليات ونمط الحياة */}
+        {/* 2. Lifestyle */}
         <div className="card bg-base-100 border border-base-200 shadow-sm">
           <div className="card-body p-5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-base-content/60">
-                2. الكماليات ونمط الحياة
+                2. Lifestyle
               </span>
               <HeartHandshake className="h-5 w-5 text-secondary" />
             </div>
             <div className="mt-2">
               <div className="text-xl font-black">{format(actuals.lifestyle)}</div>
               <div className="text-xs text-base-content/60 mt-0.5">
-                الهدف: لا يتجاوز 20% ({format(targets.maxLifestyle)})
+                Target: no more than 20% ({format(targets.maxLifestyle)})
               </div>
             </div>
 
             <div className="mt-3">
               <div className="flex justify-between text-xs mb-1">
-                <span>النسبة الحالية:</span>
+                <span>Current share:</span>
                 <span className={lifestylePct > 20 ? "text-error font-bold" : "text-success font-bold"}>
                   {lifestylePct.toFixed(1)}%
                 </span>
@@ -248,32 +249,32 @@ export default function SalaryPlannerView({ initialPlan }: { initialPlan: Salary
               />
             </div>
             <p className="text-[11px] text-base-content/60 mt-2">
-              تشمل: السفر، المطاعم، المقاهي، وتطبيقات التوصيل.
+              Includes: travel, restaurants, cafés, and delivery apps.
             </p>
           </div>
         </div>
 
-        {/* 3. صندوق الطوارئ */}
+        {/* 3. Emergency Fund */}
         <div className="card bg-base-100 border border-base-200 shadow-sm">
           <div className="card-body p-5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-base-content/60">
-                3. صندوق الطوارئ
+                3. Emergency Fund
               </span>
               <Sparkles className="h-5 w-5 text-info" />
             </div>
             <div className="mt-2">
               <div className="text-xl font-black">{format(actuals.emergencyFund)}</div>
               <div className="text-xs text-base-content/60 mt-0.5">
-                السقف المستهدف: {format(targets.targetEmergencyFundMax)}
+                Target cap: {format(targets.targetEmergencyFundMax)}
               </div>
             </div>
 
             <div className="mt-3">
               <div className="flex justify-between text-xs mb-1">
-                <span>تغطية الأشهر:</span>
+                <span>Months covered:</span>
                 <span className="font-bold text-info">
-                  {emergencyCoverage.toFixed(1)} أشهر / {hasDependents ? "12 شهر" : "6 أشهر"}
+                  {emergencyCoverage.toFixed(1)} months / {hasDependents ? "12 months" : "6 months"}
                 </span>
               </div>
               <progress
@@ -283,30 +284,30 @@ export default function SalaryPlannerView({ initialPlan }: { initialPlan: Salary
               />
             </div>
             <p className="text-[11px] text-base-content/60 mt-2">
-              مخصص للأزمات غير المتوقعة (له سقف يتم التوقف عنده عند اكتماله).
+              For unexpected crises — it&apos;s capped, so you stop adding once it&apos;s full.
             </p>
           </div>
         </div>
 
-        {/* 4. الاستثمار والنمو */}
+        {/* 4. Investments & Wealth */}
         <div className="card bg-base-100 border border-base-200 shadow-sm">
           <div className="card-body p-5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-base-content/60">
-                4. الاستثمار وبناء الثروة
+                4. Investments & Wealth
               </span>
               <TrendingUp className="h-5 w-5 text-success" />
             </div>
             <div className="mt-2">
               <div className="text-xl font-black">{format(actuals.investments)}</div>
               <div className="text-xs text-base-content/60 mt-0.5">
-                الهدف: 10%–20%+ ({format(targets.targetInvestmentIdeal)})
+                Target: 10%–20%+ ({format(targets.targetInvestmentIdeal)})
               </div>
             </div>
 
             <div className="mt-3">
               <div className="flex justify-between text-xs mb-1">
-                <span>النسبة الحالية:</span>
+                <span>Current share:</span>
                 <span className={investmentsPct >= 20 ? "text-success font-bold" : "text-base-content/80 font-bold"}>
                   {investmentsPct.toFixed(1)}%
                 </span>
@@ -318,7 +319,7 @@ export default function SalaryPlannerView({ initialPlan }: { initialPlan: Salary
               />
             </div>
             <p className="text-[11px] text-base-content/60 mt-2">
-              النسبة المتبقية؛ وكلما رفعتها كلما وصلت للاستقلال المالي أسرع.
+              The remainder — the higher it is, the faster you reach financial independence.
             </p>
           </div>
         </div>
@@ -329,7 +330,7 @@ export default function SalaryPlannerView({ initialPlan }: { initialPlan: Salary
         <div className="alert alert-info shadow-sm flex items-start gap-3">
           <Bot className="h-5 w-5 shrink-0 mt-0.5" />
           <div className="flex-1 text-sm">
-            <span className="font-bold block mb-0.5">نصيحة المساعد المالي الذكي:</span>
+            <span className="font-bold block mb-0.5">AI financial advisor says:</span>
             <span>{advice}</span>
           </div>
         </div>
@@ -342,15 +343,15 @@ export default function SalaryPlannerView({ initialPlan }: { initialPlan: Salary
           <div className="card-body p-5">
             <h2 className="card-title text-base flex items-center gap-2">
               <RotateCcw className="h-4 w-4" />
-              تعديل القيم الفعلية يدوياً
+              Manually adjust your actuals
             </h2>
             <p className="text-xs text-base-content/60 mb-3">
-              يمكنك كتابة أرقامك مباشرة أو إخبار الذكاء الاصطناعي بها ليصنفها نيابة عنك.
+              Type your numbers directly, or tell the AI and it&apos;ll categorize them for you.
             </p>
 
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-semibold block mb-1">الأساسيات (إيجار، فواتير، تموين)</label>
+                <label className="text-xs font-semibold block mb-1">Essentials (rent, bills, groceries)</label>
                 <input
                   type="number"
                   min="0"
@@ -361,7 +362,7 @@ export default function SalaryPlannerView({ initialPlan }: { initialPlan: Salary
               </div>
 
               <div>
-                <label className="text-xs font-semibold block mb-1">الكماليات (مطاعم، مقاهي، تطبيقات)</label>
+                <label className="text-xs font-semibold block mb-1">Lifestyle (restaurants, cafés, apps)</label>
                 <input
                   type="number"
                   min="0"
@@ -372,7 +373,7 @@ export default function SalaryPlannerView({ initialPlan }: { initialPlan: Salary
               </div>
 
               <div>
-                <label className="text-xs font-semibold block mb-1">المحفوظ في صندوق الطوارئ</label>
+                <label className="text-xs font-semibold block mb-1">Saved in emergency fund</label>
                 <input
                   type="number"
                   min="0"
@@ -383,7 +384,7 @@ export default function SalaryPlannerView({ initialPlan }: { initialPlan: Salary
               </div>
 
               <div>
-                <label className="text-xs font-semibold block mb-1">الاستثمار الشهري الحالي</label>
+                <label className="text-xs font-semibold block mb-1">Current monthly investments</label>
                 <input
                   type="number"
                   min="0"
@@ -402,9 +403,9 @@ export default function SalaryPlannerView({ initialPlan }: { initialPlan: Salary
             <div className="flex items-center gap-2">
               <Bot className="h-5 w-5 text-primary" />
               <div>
-                <h2 className="font-bold text-sm">مستشارك المالي الذكي (Gemini)</h2>
+                <h2 className="font-bold text-sm">Your AI Financial Advisor (Gemini)</h2>
                 <p className="text-[11px] text-base-content/60">
-                  تحدث معه عن مصاريفك، وسيقوم بتوزيعها وإعطائك نصائح مقارنة بالأهداف
+                  Chat about your spending — it will categorize it and advise against your targets
                 </p>
               </div>
             </div>
@@ -418,10 +419,10 @@ export default function SalaryPlannerView({ initialPlan }: { initialPlan: Salary
                   setAdvice(null);
                 })}
                 className="btn btn-ghost btn-xs text-error gap-1"
-                title="مسح المحادثة"
+                title="Clear conversation"
               >
                 <Trash2 className="h-3.5 w-3.5" />
-                مسح
+                Clear
               </button>
             )}
           </div>
@@ -431,9 +432,10 @@ export default function SalaryPlannerView({ initialPlan }: { initialPlan: Salary
             {messages.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-6 text-base-content/60">
                 <Bot className="h-10 w-10 text-primary/40 mb-2" />
-                <p className="text-sm font-semibold">مرحباً بك! أنا مستشارك المالي الذكي.</p>
+                <p className="text-sm font-semibold">Hi there! I&apos;m your AI financial advisor.</p>
                 <p className="text-xs max-w-sm mt-1">
-                  يمكنك أن تكتب لي مثلاً: &ldquo;أدفع 1800 إيجار، 400 فواتير، 600 مطاعم وتوصيل، ومعي 3000 ريال طوارئ&rdquo;.
+                  Try something like: &ldquo;I pay 1800 rent, 400 bills, 600 on restaurants and delivery,
+                  and I&apos;ve set aside 3000 for emergencies.&rdquo;
                 </p>
               </div>
             ) : (
@@ -456,7 +458,7 @@ export default function SalaryPlannerView({ initialPlan }: { initialPlan: Salary
               <div className="chat chat-start">
                 <div className="chat-bubble chat-bubble-neutral text-sm flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                  <span>جاري تحليل ميزانيتك ومقارنة الـ KPIs...</span>
+                  <span>Analyzing your budget and comparing against your KPIs...</span>
                 </div>
               </div>
             )}
@@ -468,7 +470,7 @@ export default function SalaryPlannerView({ initialPlan }: { initialPlan: Salary
               type="text"
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
-              placeholder="اكتب تفاصيل مصاريفك أو استفسارك هنا..."
+              placeholder="Describe your spending or ask a question..."
               className="input input-bordered input-sm flex-1"
               disabled={isChatLoading}
             />

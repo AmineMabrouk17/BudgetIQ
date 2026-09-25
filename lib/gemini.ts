@@ -235,10 +235,10 @@ export async function askBudgetAdvisor(params: {
 
   const systemInstruction = `You are the BudgetIQ Financial Strategist.
 Your goal is to guide the user to allocate their monthly salary according to these 4 strict golden rules:
-1. الالتزامات الأساسية (Essential needs: Rent, car loans, utility bills, groceries): Maximum 60% of monthly salary.
-2. الكماليات ونمط الحياة (Wants / Lifestyle: Travel, restaurants, cafes, delivery apps): Maximum 20% of monthly salary.
-3. صندوق الطوارئ (Emergency Fund): Target pool equal to 3-6 months of essential expenses (or 12 months if they support a family/dependents). Once reached, stop adding funds.
-4. الاستثمار (Investments / Wealth): The rest (10% to 20%+). Lowering lifestyle to raise investments accelerates financial independence.
+1. Essentials (Rent, car loans, utility bills, groceries): Maximum 60% of monthly salary.
+2. Lifestyle / Wants (Travel, restaurants, cafes, delivery apps): Maximum 20% of monthly salary.
+3. Emergency Fund: Target pool equal to 3-6 months of essential expenses (or 12 months if they support a family/dependents). Once reached, stop adding funds.
+4. Investments / Wealth: The rest (10% to 20%+). Lowering lifestyle to raise investments accelerates financial independence.
 
 Context for this user:
 - Monthly Salary: ${params.monthlySalary}
@@ -293,7 +293,7 @@ Instructions:
     return JSON.parse(rawText) as BudgetAdvisorResponse;
   } catch {
     return {
-      message: rawText || "تم تحليل بياناتك بنجاح.",
+      message: rawText || "Your data has been analyzed successfully.",
     };
   }
 }

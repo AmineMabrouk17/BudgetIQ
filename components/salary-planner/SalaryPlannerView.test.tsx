@@ -31,13 +31,13 @@ describe("SalaryPlannerView", () => {
     render(<SalaryPlannerView initialPlan={initialPlan} />);
 
     expect(
-      screen.getByRole("heading", { name: /مخطط الراتب الذكي/i })
+      screen.getByRole("heading", { name: /Smart Salary Planner/i })
     ).toBeInTheDocument();
 
-    expect(screen.getByText(/1\. الالتزامات الأساسية/i)).toBeInTheDocument();
-    expect(screen.getByText(/2\. الكماليات ونمط الحياة/i)).toBeInTheDocument();
-    expect(screen.getByText(/3\. صندوق الطوارئ/i)).toBeInTheDocument();
-    expect(screen.getByText(/4\. الاستثمار وبناء الثروة/i)).toBeInTheDocument();
+    expect(screen.getByText(/1\. Essentials/i)).toBeInTheDocument();
+    expect(screen.getByText(/2\. Lifestyle/i)).toBeInTheDocument();
+    expect(screen.getByText(/3\. Emergency Fund/i)).toBeInTheDocument();
+    expect(screen.getByText(/4\. Investments & Wealth/i)).toBeInTheDocument();
   });
 
   it("saves the plan via the server action with the current values", async () => {
@@ -45,7 +45,7 @@ describe("SalaryPlannerView", () => {
 
     render(<SalaryPlannerView initialPlan={initialPlan} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /حفظ الخطة/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Save Plan/i }));
 
     await waitFor(() => {
       expect(saveSalaryPlanAction).toHaveBeenCalledWith({
@@ -63,7 +63,7 @@ describe("SalaryPlannerView", () => {
     render(<SalaryPlannerView initialPlan={initialPlan} />);
 
     const salaryInput = screen.getByPlaceholderText(
-      "أدخل راتبك الشهري (مثلاً 5000)"
+      "Enter your monthly salary (e.g. 5000)"
     ) as HTMLInputElement;
     expect(salaryInput.value).toBe("5000");
 
