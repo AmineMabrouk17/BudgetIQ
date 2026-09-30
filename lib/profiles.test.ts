@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import { needsOnboarding, updateIncomeProfileInDb } from "@/lib/profiles";
+import {
+  isOnboardedFromSession,
+  needsOnboarding,
+  updateIncomeProfileInDb,
+} from "@/lib/profiles";
 import { createClient } from "@/lib/supabase/server";
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -39,6 +43,33 @@ function mockUpdate(assertPayload: (payload: Record<string, unknown>) => void) {
   } as never);
   return update;
 }
+
+describe("isOnboardedFromSession", () => {
+  it("returns false without a user", () => {
+    expect(isOnboardedFromSession(null)).toBe(false);
+  });
+
+  it("returns false when the flag has not been set", () => {
+    expect(isOnboardedFromSession({ user_metadata: {} })).toBe(false);
+  });
+
+  it("only trusts a strict boolean true", () => {
+    // The value is attacker-reachable if the signature is ever skipped, so a
+    // truthy-but-not-true value must not count as onboarded.
+    expect(isOnboardedFromSession({ user_metadata: { onboarded: "yes" } })).toBe(
+      false
+    );
+    expect(isOnboardedFromSession({ user_metadata: { onboarded: 1 } })).toBe(
+      false
+    );
+  });
+
+  it("returns true once the token carries the flag", () => {
+    expect(
+      isOnboardedFromSession({ user_metadata: { onboarded: true } })
+    ).toBe(true);
+  });
+});
 
 describe("needsOnboarding", () => {
   it("returns true for a missing profile", () => {
