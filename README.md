@@ -174,6 +174,25 @@ A non-exhaustive set of ideas for the future — feel free to open these as GitH
 
 ---
 
+## ⚡ Performance & Architecture Engineering
+
+In a recent performance refactor, the `/dashboard` route's initial server response (TTFB) was reduced by **71%** (from **2.51s to 717ms**) using full-stack system design principles:
+
+- **RSC Streaming (`<Suspense>`)**: Decomposed monolithic page data fetching into asynchronous streaming boundaries with skeleton fallbacks.
+- **Request-Scoped Memoization (`React.cache`)**: Wrapped Supabase `getUser()` and `getProfile()` to eliminate redundant auth lookups per request.
+- **In-flight Promise Deduplication**: Merged concurrent client-side calls to `/api/currency-rates` from 4 network requests down to 1.
+- **Infrastructure Co-location**: Aligned Vercel serverless function execution region (`dub1` Dublin, Ireland) with the Supabase database region (`eu-west-1`), eliminating transatlantic network round-trips.
+
+### Results
+
+| Metric | Baseline | Optimized | Delta |
+|---|---|---|---|
+| **TTFB (Time to First Byte)** | 2,510 ms | **717 ms** | **-71.4% (3.5x faster)** |
+| **Total Shell Duration** | 2,740 ms | **797 ms** | **Sub-second load** |
+| **Redundant Rate Requests** | 4 | **1** | **-75%** |
+
+---
+
 ## 📁 Project Structure
 
 ```
