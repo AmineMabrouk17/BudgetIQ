@@ -191,6 +191,35 @@ In a recent performance refactor, the `/dashboard` route's initial server respon
 | **Total Shell Duration** | 2,740 ms | **797 ms** | **Sub-second load** |
 | **Redundant Rate Requests** | 4 | **1** | **-75%** |
 
+### Zero-Round-Trip Auth Shell
+
+A second pass removed the last two blocking calls from the dashboard shell, so a
+warm `/dashboard` request now flushes HTML without waiting on the network:
+
+- **Local JWT Verification**: `getUser()` verifies the access token's signature
+  against the project's JWKS via `supabase.auth.getClaims()` instead of
+  round-tripping to `/auth/v1/user`. Because the app builds a client per
+  request, the library's own per-instance JWKS cache would be useless, so
+  [`lib/auth/jwks.ts`](lib/auth/jwks.ts) holds the key set in module scope —
+  one download per process rather than per request. Tokens that cannot be
+  verified locally (expired, symmetric, tampered) still fall back to the Auth
+  API, which stays the authority on whether a session is real.
+- **Onboarding Flag in the Token**: completing onboarding writes `onboarded: true`
+  to `user_metadata`, so the layout gates on the verified token instead of
+  querying `profiles` on every load. Migration
+  [`0009`](supabase/migrations/0009_onboarded_flag_backfill.sql) backfills the
+  flag for users who onboarded earlier; only a token predating that migration
+  falls back to the profile row.
+- **Pushed-Down Data Access**: the navbar's income-profile editor moved behind a
+  `<Suspense>` boundary — it is a collapsed dropdown, and reading the profile
+  there was holding back the entire document.
+
+> **Note on Supavisor**: not applicable. BudgetIQ reaches the database through
+> PostgREST over HTTPS via `supabase-js`; it never opens a direct Postgres
+> connection, so there is no connection string to point at the transaction
+> pooler on port 6543. Supabase manages that connection pooling behind
+> PostgREST already.
+
 ---
 
 ## 📁 Project Structure
