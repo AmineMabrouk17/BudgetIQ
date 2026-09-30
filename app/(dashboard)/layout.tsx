@@ -13,10 +13,15 @@ export default async function DashboardLayout({
   const user = await getUser();
   if (!user) redirect("/login");
 
-  const profile = await getProfile();
-  if (needsOnboarding(profile)) redirect("/onboarding");
+  // Both checks are independent — the profile query needs the (now memoised)
+  // session, and the admin check reads a cookie directly. Awaiting them one
+  // after another put a second round-trip between the shell and the page.
+  const [profile, isAdmin] = await Promise.all([
+    getProfile(),
+    verifyAdminSession(),
+  ]);
 
-  const isAdmin = await verifyAdminSession();
+  if (needsOnboarding(profile)) redirect("/onboarding");
 
   return (
     <>

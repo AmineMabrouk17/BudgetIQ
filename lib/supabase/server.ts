@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies, headers } from "next/headers";
+import { cache } from "react";
 import { env } from "@/lib/env";
 import { getPreviewMockSession } from "@/lib/auth/preview-bypass";
 
@@ -28,7 +29,7 @@ export async function createClient() {
   );
 }
 
-export async function getUser() {
+async function fetchUser() {
   // Preview QA bypass: a signed synthetic session short-circuits the Supabase
   // session so the app renders authenticated pages without real credentials.
   // Inert unless a valid HMAC header is present on preview environments.
@@ -41,3 +42,18 @@ export async function getUser() {
   } = await supabase.auth.getUser();
   return user;
 }
+
+/**
+ * Request-scoped memo of the Supabase session lookup.
+ *
+ * `supabase.auth.getUser()` validates the session against the Supabase Auth API,
+ * so every call is a network round-trip. Layouts, pages and data loaders all
+ * need the same user, and without memoisation they each pay for it again —
+ * serially, because every consumer awaits the result before starting its own
+ * work. `cache()` scopes the memo to a single server request: concurrent
+ * consumers share one lookup, and nothing is ever shared across requests.
+ *
+ * Outside a React render (unit tests, scripts) there is no request scope, so
+ * React falls back to invoking the function directly — behaviour is unchanged.
+ */
+export const getUser = cache(fetchUser);

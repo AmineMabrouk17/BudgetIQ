@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { computeSummary } from "@/lib/summary";
+import {
+  computeSummary,
+  summaryOptionsFor,
+  summaryPlanFor,
+} from "@/lib/summary";
 import type { Transaction, TransactionScope } from "@/types/transaction";
 
 const NOW = new Date(2026, 2, 15);
@@ -468,5 +472,73 @@ describe("computeSummary with business", () => {
     );
 
     expect(summary.business).toBeNull();
+  });
+});
+
+describe("summaryPlanFor", () => {
+  it("plans a pay cycle for salaried and hourly profiles that set a payday", () => {
+    expect(
+      summaryPlanFor({ income_type: "salaried", payday: 28, expected_income: 5000 })
+    ).toEqual({ kind: "payCycle", payday: 28, expectedIncome: 5000 });
+    expect(
+      summaryPlanFor({ income_type: "hourly", payday: 15, expected_income: 3200 })
+    ).toEqual({ kind: "payCycle", payday: 15, expectedIncome: 3200 });
+  });
+
+  it("falls back when the payday or expected income is still unknown", () => {
+    expect(
+      summaryPlanFor({ income_type: "salaried", payday: null, expected_income: 5000 })
+    ).toEqual({ kind: "plain" });
+    expect(
+      summaryPlanFor({ income_type: "hourly", payday: 15, expected_income: null })
+    ).toEqual({ kind: "plain" });
+  });
+
+  it("plans the freelancer and business personas", () => {
+    expect(
+      summaryPlanFor({ income_type: "freelancer", payday: null, expected_income: null })
+    ).toEqual({ kind: "freelance" });
+    expect(
+      summaryPlanFor({ income_type: "business", payday: null, expected_income: null })
+    ).toEqual({ kind: "business" });
+  });
+
+  it("plans a plain summary for a missing or unset profile", () => {
+    expect(summaryPlanFor(null)).toEqual({ kind: "plain" });
+    expect(
+      summaryPlanFor({ income_type: null, payday: null, expected_income: null })
+    ).toEqual({ kind: "plain" });
+  });
+});
+
+describe("summaryOptionsFor", () => {
+  const cycleTransaction: Transaction = {
+    id: "cycle-1",
+    user_id: "user-1",
+    type: "income",
+    title: "Salary",
+    amount: 5000,
+    category: "Salary",
+    created_at: at(2026, 1, 28),
+    scope: "personal",
+  };
+
+  it("passes the pay-cycle window through to computeSummary", () => {
+    const options = summaryOptionsFor(
+      { kind: "payCycle", payday: 28, expectedIncome: 5000 },
+      [cycleTransaction]
+    );
+
+    expect(options.payCycle).toEqual({
+      payday: 28,
+      expectedIncome: 5000,
+      cycleTransactions: [cycleTransaction],
+    });
+  });
+
+  it("maps the remaining plans to their computeSummary options", () => {
+    expect(summaryOptionsFor({ kind: "freelance" }, [])).toEqual({ freelance: {} });
+    expect(summaryOptionsFor({ kind: "business" }, [])).toEqual({ business: true });
+    expect(summaryOptionsFor({ kind: "plain" }, [])).toEqual({});
   });
 });

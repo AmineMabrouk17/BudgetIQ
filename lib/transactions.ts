@@ -1,4 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
+import { cache } from "react";
+import { createClient, getUser } from "@/lib/supabase/server";
 import type {
   CreateTransactionInput,
   Transaction,
@@ -35,6 +36,21 @@ const SELECT_COLS =
 
 export const TRANSACTION_PAGE_SIZE = 100;
 
+/**
+ * Resolves the caller from the request-scoped session memo.
+ *
+ * Every loader below used to call `supabase.auth.getUser()` itself, which
+ * revalidates the session against the Auth API on each call. The dashboard
+ * fires four of these loaders per view, so that was four identical round-trips
+ * per page render. They all share the memoised `getUser()` instead, and
+ * because it is `cache()`-wrapped, concurrent loaders share one lookup.
+ */
+async function requireUserId(): Promise<string> {
+  const user = await getUser();
+  if (!user) throw new Error("Unauthorized");
+  return user.id;
+}
+
 export type TransactionPage = {
   transactions: Transaction[];
   nextCursor: string | null;
@@ -65,14 +81,12 @@ function decodeCursor(raw: string): PageCursor {
 
 export type TransactionScopeFilter = TransactionScope | null;
 
-export async function getTransactions(
+async function fetchTransactions(
   scope: TransactionScopeFilter = null
 ): Promise<Transaction[]> {
+  await requireUserId();
+
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
 
   let query = supabase
     .from("transactions")
@@ -87,15 +101,22 @@ export async function getTransactions(
   return (data ?? []).map(toTransaction);
 }
 
+/**
+ * The full transaction list, memoised per request.
+ *
+ * The summary cards and the analytics charts both need every transaction and
+ * both read only — memoising keeps that to one unbounded query per request
+ * even though they resolve inside separate Suspense boundaries.
+ */
+export const getTransactions = cache(fetchTransactions);
+
 export async function getTransactionsPage(
   cursor?: string,
   scope: TransactionScopeFilter = null
 ): Promise<TransactionPage> {
+  await requireUserId();
+
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
 
   let query = supabase
     .from("transactions")
@@ -138,11 +159,9 @@ export async function getTransactionsBetween(
   endISO: string,
   limit = 500
 ): Promise<Transaction[]> {
+  await requireUserId();
+
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
 
   const { data, error } = await supabase
     .from("transactions")
@@ -159,14 +178,11 @@ export async function getTransactionsBetween(
 export async function insertTransaction(
   input: CreateTransactionInput
 ): Promise<Transaction> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
+  const userId = await requireUserId();
 
+  const supabase = await createClient();
   const row = {
-    user_id: user.id,
+    user_id: userId,
     type: input.type,
     title: input.title,
     amount: input.amount,

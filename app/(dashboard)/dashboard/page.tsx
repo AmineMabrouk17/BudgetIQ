@@ -1,65 +1,34 @@
-import {
-  getTransactions,
-  getTransactionsBetween,
-  getTransactionsPage,
-  type TransactionScopeFilter,
-} from "@/lib/transactions";
-import {
-  computeSummary,
-  getPayCycleBounds,
-  type Summary,
-} from "@/lib/summary";
-import { getProfile } from "@/lib/profiles";
-import SummaryCards from "@/components/dashboard/SummaryCards";
+import { Suspense } from "react";
+import type { TransactionScopeFilter } from "@/lib/transactions";
 import ScopeFilter from "@/components/dashboard/ScopeFilter";
-import TransactionTable from "@/components/dashboard/TransactionTable";
-import LazyAnalyticsContainer from "@/components/dashboard/LazyAnalyticsContainer";
 import AddTransactionModal from "@/components/dashboard/AddTransactionModal";
 import ChatDrawer from "@/components/ai/ChatDrawer";
+import DashboardSummary from "@/components/dashboard/DashboardSummary";
+import DashboardAnalytics from "@/components/dashboard/DashboardAnalytics";
+import DashboardTransactions from "@/components/dashboard/DashboardTransactions";
+import {
+  AnalyticsSkeleton,
+  SummaryCardsSkeleton,
+  TransactionTableSkeleton,
+} from "@/components/dashboard/DashboardSkeletons";
+
+function parseScope(
+  raw: string | string[] | undefined
+): TransactionScopeFilter {
+  return raw === "business" || raw === "personal" ? raw : null;
+}
 
 export default async function DashboardPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const resolved = await searchParams;
-  const rawScope = resolved.scope;
-  const scope: TransactionScopeFilter =
-    rawScope === "business" || rawScope === "personal" ? rawScope : null;
+  const scope = parseScope((await searchParams).scope);
 
-  const [transactions, page, profile] = await Promise.all([
-    getTransactions(),
-    getTransactionsPage(undefined, scope),
-    getProfile(),
-  ]);
-
-  const payday = profile?.payday ?? null;
-  const expectedIncome = profile?.expected_income ?? null;
-  const isCycleEligible =
-    payday !== null &&
-    expectedIncome !== null &&
-    (profile?.income_type === "salaried" || profile?.income_type === "hourly");
-  const isFreelancer = profile?.income_type === "freelancer";
-  const isBusiness = profile?.income_type === "business";
-
-  let summary: Summary;
-  if (isCycleEligible) {
-    const bounds = getPayCycleBounds(payday);
-    const cycleTransactions = await getTransactionsBetween(
-      bounds.previousStart.toISOString(),
-      bounds.currentEnd.toISOString()
-    );
-    summary = computeSummary(transactions, new Date(), {
-      payCycle: { payday, expectedIncome, cycleTransactions },
-    });
-  } else if (isFreelancer) {
-    summary = computeSummary(transactions, new Date(), { freelance: {} });
-  } else if (isBusiness) {
-    summary = computeSummary(transactions, new Date(), { business: true });
-  } else {
-    summary = computeSummary(transactions);
-  }
-
+  // No data is awaited here on purpose. The heading, filters and skeletons are
+  // the shell, and each section streams in behind its own boundary as its
+  // queries resolve — so the document is flushed before the transaction reads
+  // finish instead of waiting on all of them.
   return (
     <ChatDrawer>
       <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 p-6">
@@ -67,20 +36,18 @@ export default async function DashboardPage({
           <h1 className="text-3xl font-bold text-base-content">Dashboard</h1>
           <AddTransactionModal />
         </header>
-        <SummaryCards
-          summary={summary}
-          hasTransactions={transactions.length > 0}
-          incomeType={profile?.income_type ?? "salaried"}
-        />
+        <Suspense fallback={<SummaryCardsSkeleton />}>
+          <DashboardSummary />
+        </Suspense>
         <div className="flex items-center justify-end">
           <ScopeFilter scope={scope} />
         </div>
-        <LazyAnalyticsContainer transactions={transactions} />
-        <TransactionTable
-          transactions={page.transactions}
-          nextCursor={page.nextCursor}
-          scope={scope}
-        />
+        <Suspense fallback={<AnalyticsSkeleton />}>
+          <DashboardAnalytics />
+        </Suspense>
+        <Suspense fallback={<TransactionTableSkeleton />}>
+          <DashboardTransactions scope={scope} />
+        </Suspense>
       </main>
     </ChatDrawer>
   );
