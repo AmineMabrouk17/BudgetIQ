@@ -1,11 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getTransactionsPage } from "@/lib/transactions";
+import {
+  getTransactions,
+  getTransactionsPage,
+} from "@/lib/transactions";
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn(),
+  getUser: vi.fn(),
 }));
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 
 type MockChain = {
   select: ReturnType<typeof vi.fn>;
@@ -44,6 +48,7 @@ function makeQuery(rows: unknown[]): { chain: MockChain; calls: string[] } {
 
 function mockClient(chain: MockChain) {
   const user = { id: "user-1" };
+  vi.mocked(getUser).mockResolvedValue(user as never);
   vi.mocked(createClient).mockResolvedValue({
     auth: { getUser: vi.fn().mockResolvedValue({ data: { user } }) },
     from: vi.fn().mockReturnValue(chain),
@@ -96,5 +101,35 @@ describe("getTransactionsPage", () => {
       amount: 1000,
       scope: "business",
     });
+  });
+});
+
+describe("session lookups", () => {
+  it("reads the user through the memoised helper, never the Auth API", async () => {
+    const { chain } = makeQuery([]);
+    const authGetUser = vi.fn();
+    vi.mocked(getUser).mockResolvedValue({ id: "user-1" } as never);
+    vi.mocked(createClient).mockResolvedValue({
+      auth: { getUser: authGetUser },
+      from: vi.fn().mockReturnValue(chain),
+    } as never);
+
+    await getTransactions();
+    await getTransactionsPage();
+
+    // Every loader used to call `supabase.auth.getUser()` itself, which is a
+    // network round-trip per loader. They now share one request-scoped memo,
+    // so the Auth API is not consulted here at all.
+    expect(authGetUser).not.toHaveBeenCalled();
+  });
+
+  it("rejects unauthenticated reads without querying", async () => {
+    const { chain } = makeQuery([]);
+    const from = vi.fn().mockReturnValue(chain);
+    vi.mocked(getUser).mockResolvedValue(null as never);
+    vi.mocked(createClient).mockResolvedValue({ from } as never);
+
+    await expect(getTransactions()).rejects.toThrow("Unauthorized");
+    expect(from).not.toHaveBeenCalled();
   });
 });

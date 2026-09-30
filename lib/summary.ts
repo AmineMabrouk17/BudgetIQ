@@ -1,4 +1,5 @@
 import type { Transaction } from "@/types/transaction";
+import type { Profile } from "@/lib/profiles";
 
 export type Delta = {
   value: number;
@@ -132,6 +133,64 @@ export function getPayCycleBounds(
     payday
   );
   return { currentStart, currentEnd, previousStart };
+}
+
+/**
+ * Which persona branch a profile's summary should be computed under.
+ *
+ * A pay-cycle summary needs an extra window of transactions loaded alongside
+ * the full list, so callers have to know the branch *before* they fetch rather
+ * than after. Resolving it from the profile alone keeps that decision out of
+ * the render path.
+ */
+export type SummaryPlan =
+  | { kind: "payCycle"; payday: number; expectedIncome: number }
+  | { kind: "freelance" }
+  | { kind: "business" }
+  | { kind: "plain" };
+
+export function summaryPlanFor(
+  profile: Pick<Profile, "income_type" | "payday" | "expected_income"> | null
+): SummaryPlan {
+  const incomeType = profile?.income_type ?? null;
+  const payday = profile?.payday ?? null;
+  const expectedIncome = profile?.expected_income ?? null;
+
+  const earnsOnPayday =
+    incomeType === "salaried" || incomeType === "hourly";
+
+  if (earnsOnPayday && payday !== null && expectedIncome !== null) {
+    return { kind: "payCycle", payday, expectedIncome };
+  }
+  if (incomeType === "freelancer") return { kind: "freelance" };
+  if (incomeType === "business") return { kind: "business" };
+  return { kind: "plain" };
+}
+
+export function summaryOptionsFor(
+  plan: SummaryPlan,
+  cycleTransactions: Transaction[]
+): {
+  payCycle?: PayCycleConfig;
+  freelance?: FreelanceConfig;
+  business?: boolean;
+} {
+  switch (plan.kind) {
+    case "payCycle":
+      return {
+        payCycle: {
+          payday: plan.payday,
+          expectedIncome: plan.expectedIncome,
+          cycleTransactions,
+        },
+      };
+    case "freelance":
+      return { freelance: {} };
+    case "business":
+      return { business: true };
+    default:
+      return {};
+  }
 }
 
 export function groupExpensesByCategory(
