@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { env } from "@/lib/env";
+import { readSessionUser } from "@/lib/auth/session";
 
 const isDev = process.env.NODE_ENV === "development";
 
@@ -59,9 +60,10 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Runs on every request, so the Auth API round-trip this used to make was
+  // the first thing in the TTFB budget. The cookie already holds a signed
+  // access token, so the user is resolved locally against the cached JWKS.
+  const user = await readSessionUser(supabase);
 
   const { pathname } = request.nextUrl;
 

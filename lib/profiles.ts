@@ -1,5 +1,9 @@
 import { cache } from "react";
-import { createClient, getUser } from "@/lib/supabase/server";
+import {
+  createClient,
+  getUser,
+  type SessionUser,
+} from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const INCOME_TYPES = [
@@ -25,6 +29,22 @@ export function needsOnboarding(
   profile: Pick<Profile, "income_type"> | null
 ): boolean {
   return !profile?.income_type;
+}
+
+/**
+ * Whether the user has finished onboarding, read from the verified session
+ * token rather than the `profiles` table.
+ *
+ * The flag is written to `user_metadata` when onboarding completes, which puts
+ * it in the access token the user already carries — so the dashboard layout
+ * can gate on it without a query. Tokens are signed and verified before their
+ * claims are read (see `readSessionUser`), so this is not a client-controlled
+ * value.
+ */
+export function isOnboardedFromSession(
+  user: Pick<SessionUser, "user_metadata"> | null
+): boolean {
+  return user?.user_metadata?.onboarded === true;
 }
 
 export async function getAllProfiles(): Promise<Profile[]> {

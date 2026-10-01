@@ -3,6 +3,9 @@ import { cookies, headers } from "next/headers";
 import { cache } from "react";
 import { env } from "@/lib/env";
 import { getPreviewMockSession } from "@/lib/auth/preview-bypass";
+import { readSessionUser, type SessionUser } from "@/lib/auth/session";
+
+export type { SessionUser };
 
 export async function createClient() {
   const cookieStore = await cookies();
@@ -37,23 +40,23 @@ async function fetchUser() {
   if (mock) return mock.user;
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  return user;
+  return readSessionUser(supabase);
 }
 
 /**
- * Request-scoped memo of the Supabase session lookup.
+ * Request-scoped memo of the session lookup.
  *
- * `supabase.auth.getUser()` validates the session against the Supabase Auth API,
- * so every call is a network round-trip. Layouts, pages and data loaders all
- * need the same user, and without memoisation they each pay for it again —
- * serially, because every consumer awaits the result before starting its own
- * work. `cache()` scopes the memo to a single server request: concurrent
- * consumers share one lookup, and nothing is ever shared across requests.
+ * Layouts, pages and data loaders all need the same user, and without
+ * memoisation they each pay for the lookup again — serially, because every
+ * consumer awaits the result before starting its own work. `cache()` scopes
+ * the memo to a single server request: concurrent consumers share one
+ * verification, and nothing is ever shared across requests.
+ *
+ * The lookup itself verifies the access token's signature against the cached
+ * JWKS, so it costs no network round-trip on a warm request.
  *
  * Outside a React render (unit tests, scripts) there is no request scope, so
  * React falls back to invoking the function directly — behaviour is unchanged.
  */
 export const getUser = cache(fetchUser);
+

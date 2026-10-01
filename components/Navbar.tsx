@@ -1,12 +1,22 @@
+import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { LogOut, SlidersHorizontal } from "lucide-react";
 import { getUser } from "@/lib/supabase/server";
-import { getProfile } from "@/lib/profiles";
 import { signOut } from "@/app/actions/auth";
 import ThemeToggle from "@/components/ThemeToggle";
 import CurrencySelect from "@/components/CurrencySelect";
-import IncomeProfilePicker from "@/components/IncomeProfilePicker";
+import NavbarIncomeSettings from "@/components/NavbarIncomeSettings";
+
+/** Matches the height of the real editor so the swap causes no layout shift. */
+function IncomeSettingsSkeleton() {
+  return (
+    <div className="space-y-2 px-1 py-1" aria-hidden>
+      <div className="h-9 w-full animate-pulse rounded-btn bg-base-300/60" />
+      <div className="h-9 w-full animate-pulse rounded-btn bg-base-300/60" />
+    </div>
+  );
+}
 
 function initials(name: string): string {
   return name
@@ -18,8 +28,9 @@ function initials(name: string): string {
 }
 
 export default async function Navbar() {
+  // Signature check only — the session's claims come from the verified token,
+  // so this costs no network round-trip.
   const user = await getUser();
-  const profile = await getProfile();
 
   return (
     <header className="navbar sticky top-0 z-30 border-b border-base-300/50 bg-base-100/80 backdrop-blur">
@@ -107,12 +118,9 @@ export default async function Navbar() {
                   <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden />
                   <span>Income profile</span>
                 </div>
-                <IncomeProfilePicker
-                  variant="menu"
-                  initialIncomeType={profile?.income_type ?? null}
-                  initialPayday={profile?.payday ?? null}
-                  initialExpectedIncome={profile?.expected_income ?? null}
-                />
+                <Suspense fallback={<IncomeSettingsSkeleton />}>
+                  <NavbarIncomeSettings />
+                </Suspense>
               </div>
 
               <div className="divider my-1" />
