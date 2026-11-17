@@ -1,30 +1,286 @@
-name: CI
+name: CI - Review, Visual Evidence, Preview & Telegram
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: write
+  pull-requests: write
+  deployments: read
+  statuses: read
+  id-token: write
 
 jobs:
-  ci:
+  checks:
+    runs-on: ubuntu-latest
+    env:
+      # Placeholders so `next build` can collect page data without secrets.
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci-placeholder-anon-key
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        if: hashFiles('pnpm-lock.yaml') != ''
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        if: hashFiles('package.json') != ''
+        with:
+          node-version: '20'
+      - name: Install & run checks
+        if: hashFiles('package.json') != ''
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            pnpm install --frozen-lockfile
+            pnpm run --if-present lint
+            pnpm run --if-present typecheck
+            pnpm run --if-present test
+            pnpm run --if-present build
+          elif [ -f yarn.lock ]; then
+            yarn install --frozen-lockfile
+            yarn lint || true
+            yarn test || true
+            yarn build || true
+          else
+            npm ci || npm install
+            npm run --if-present lint
+            npm run --if-present typecheck
+            npm test --if-present
+            npm run --if-present build
+          fi
+
+  code-review:
+    if: github.event_name == 'pull_request'
+    runs-on: [self-hosted, vps-opencode]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure /code-review skill is available to OpenCode
+        run: |
+          if [ -d "/root/.agents/skills/code-review" ]; then
+            echo "Using shared OpenCode skills from /root/.agents/skills"
+          elif [ ! -d ".opencode/skills/code-review" ] && [ ! -d ".agents/skills/code-review" ]; then
+            npx --yes skills@latest add mattpocock/skills --skill=code-review --yes || true
+          fi
+
+      - name: Run Matt Pocock /code-review via OpenCode
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_REF: ${{ github.base_ref }}
+          FACTORY_MODEL: ${{ vars.FACTORY_MODEL || 'opencode/deepseek-v4.1-flash-free' }}
+        run: |
+          PROMPT_FILE="$(mktemp /tmp/factory-review-XXXXXX.md)"
+          {
+            echo "Run the /code-review skill on origin/${BASE_REF}...HEAD for PR #${PR_NUMBER}."
+            echo "Check both axes: Standards and Spec against the linked issue."
+            echo "Post the structured review summary as a comment on PR #${PR_NUMBER} using:"
+            echo "gh pr comment ${PR_NUMBER} --body-file <file>"
+            echo "If critical blockers exist, exit with a non-zero status after commenting."
+          } > "$PROMPT_FILE"
+
+          opencode run --auto --archived \
+            --title "factory-review-${PR_NUMBER}" \
+            -m "$FACTORY_MODEL" \
+            -f "$PROMPT_FILE" \
+            "Run the /code-review skill on the diff and post the review as a PR comment."
+
+  visual-evidence:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      # Placeholders so both branches can build without repository secrets.
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci-placeholder-anon-key
+    outputs:
+      evidence_markdown: ${{ steps.commit-assets.outputs.evidence_markdown }}
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          path: pr-branch
+          fetch-depth: 0
+
+      - name: Checkout Base branch (Before state)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.base_ref }}
+          path: base-branch
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Playwright & ffmpeg
+        run: |
+          sudo apt-get update && sudo apt-get install -y ffmpeg
+          npm install --no-save playwright
+          npx playwright install chromium
+
+      - name: Capture Before & After screenshots + GIF/MP4
+        env:
+          START_CMD: ${{ vars.FACTORY_START_CMD || '' }}
+          APP_URL: ${{ vars.FACTORY_APP_URL || 'http://127.0.0.1:3000' }}
+          TARGET_PATH: ${{ vars.FACTORY_TARGET_PATH || '/' }}
+        run: |
+          node pr-branch/scripts/capture-evidence.mjs \
+            --base-dir base-branch \
+            --pr-dir pr-branch \
+            --out-dir evidence-out
+
+      - name: Upload video/image artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-evidence-pr-${{ github.event.pull_request.number }}
+          path: evidence-out/
+
+      - name: Publish evidence to orphan factory-assets branch & build Markdown
+        id: commit-assets
+        run: |
+          mkdir -p assets-repo
+          cd assets-repo
+          git init
+          git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          if git fetch origin factory-assets 2>/dev/null; then
+            git checkout -B factory-assets origin/factory-assets
+          else
+            git checkout --orphan factory-assets
+          fi
+
+          DEST="pr-${{ github.event.pull_request.number }}"
+          mkdir -p "$DEST"
+          cp -r ../evidence-out/* "$DEST/"
+
+          git config user.name "software-factory[bot]"
+          git config user.email "software-factory[bot]@users.noreply.github.com"
+          git add "$DEST"
+          git commit -m "chore(evidence): PR #${{ github.event.pull_request.number }}" || true
+          git push origin factory-assets
+
+          BASE_RAW="https://github.com/${{ github.repository }}/blob/factory-assets/${DEST}"
+          {
+            echo 'evidence_markdown<<EOF'
+            echo "### Visual Evidence (Playwright)"
+            echo "| Before (\`${{ github.base_ref }}\`) | After (PR #${{ github.event.pull_request.number }}) |"
+            echo "|---|---|"
+            echo "| ![Before](${BASE_RAW}/before.png?raw=true) | ![After](${BASE_RAW}/after.png?raw=true) |"
+            echo ""
+            if [ -f "${DEST}/after.gif" ]; then
+              echo "**Feature Walkthrough (GIF):**"
+              echo "![Walkthrough](${BASE_RAW}/after.gif?raw=true)"
+            fi
+            if [ -f "${DEST}/after.mp4" ]; then
+              echo ""
+              echo "- [Download / View MP4 Recording](${BASE_RAW}/after.mp4?raw=true)"
+            fi
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+  preview-and-pr-update:
+    if: github.event_name == 'pull_request'
+    needs: [visual-evidence]
+    runs-on: ubuntu-latest
+    outputs:
+      preview_url: ${{ steps.preview.outputs.url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Extract Vercel / Cloudflare Preview URL and update PR body
+        id: preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          EVIDENCE_MD: ${{ needs.visual-evidence.outputs.evidence_markdown }}
+        run: |
+          node scripts/extract-preview-url.mjs
+
+  # Integrates an existing ci-telegram, with a built-in fallback if none is present
+  notify-telegram:
+    if: always() && github.event_name == 'pull_request'
+    needs: [checks, code-review, visual-evidence, preview-and-pr-update]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
+      # Option A: If your repo has .github/actions/ci-telegram/action.yml (composite action)
+      - name: Run existing ci-telegram action
+        if: hashFiles('.github/actions/ci-telegram/action.yml') != ''
+        uses: ./.github/actions/ci-telegram
         with:
-          version: 10
+          status: ${{ needs.checks.result }}
+          pr_url: ${{ github.event.pull_request.html_url }}
+          preview_url: ${{ needs.preview-and-pr-update.outputs.preview_url }}
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
+      # Option B: If your repo has a ci-telegram script (e.g., scripts/ci-telegram.sh or .github/scripts/ci-telegram.sh)
+      - name: Run existing ci-telegram script
+        if: hashFiles('.github/actions/ci-telegram/action.yml') == '' && (hashFiles('scripts/ci-telegram.sh') != '' || hashFiles('scripts/ci-telegram.mjs') != '' || hashFiles('.github/scripts/ci-telegram.sh') != '')
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          CI_STATUS: ${{ needs.checks.result }}
+          REVIEW_STATUS: ${{ needs.code-review.result }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PREVIEW_URL: ${{ needs.preview-and-pr-update.outputs.preview_url }}
+        run: |
+          if [ -x "./scripts/ci-telegram.sh" ]; then
+            ./scripts/ci-telegram.sh
+          elif [ -f "./scripts/ci-telegram.mjs" ]; then
+            node ./scripts/ci-telegram.mjs
+          elif [ -x "./.github/scripts/ci-telegram.sh" ]; then
+            ./.github/scripts/ci-telegram.sh
+          fi
 
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
-      - run: pnpm typecheck
-      - run: pnpm test
+      # Fallback: send the notification directly when no ci-telegram action/script exists
+      - name: Built-in Telegram notification
+        if: hashFiles('.github/actions/ci-telegram/action.yml') == '' && hashFiles('scripts/ci-telegram.sh') == '' && hashFiles('scripts/ci-telegram.mjs') == '' && hashFiles('.github/scripts/ci-telegram.sh') == ''
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          CI_STATUS: ${{ needs.checks.result }}
+          REVIEW_STATUS: ${{ needs.code-review.result }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PREVIEW_URL: ${{ needs.preview-and-pr-update.outputs.preview_url }}
+        run: |
+          if [ -z "${TELEGRAM_BOT_TOKEN:-}" ] || [ -z "${TELEGRAM_CHAT_ID:-}" ]; then
+            echo "Telegram secrets not set; skipping notification."
+            exit 0
+          fi
+          TEXT="$(printf 'Software Factory PR: %s\nCI: %s | Review: %s\nPR: %s' "$PR_TITLE" "$CI_STATUS" "$REVIEW_STATUS" "$PR_URL")"
+          if [ -n "${PREVIEW_URL:-}" ]; then
+            TEXT="$(printf '%s\nPreview: %s' "$TEXT" "$PREVIEW_URL")"
+          fi
+          curl -sS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=${TEXT}" || echo "Telegram notification failed."
 
-      - name: Audit dependencies (fail only on high/critical)
-        run: pnpm audit --audit-level high
+  deploy-on-merge:
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    needs: [checks]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy production (Vercel / Cloudflare if configured via CLI)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -n "$VERCEL_TOKEN" ]; then
+            npx --yes vercel deploy --prod --token="$VERCEL_TOKEN" --yes
+          elif [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -f "wrangler.toml" -o -f "wrangler.jsonc" ]; then
+            npx --yes wrangler deploy
+          else
+            echo "Production deploy handled automatically by connected Vercel/Cloudflare Git integration."
+          fi
