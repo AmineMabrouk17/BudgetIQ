@@ -28,13 +28,14 @@ describe("FaqSection", () => {
     }
   });
 
-  it("answers honestly that there is no budget feature yet", () => {
+  it("answers honestly that BudgetIQ does not set or enforce budgets", () => {
     render(<FaqSection />);
 
     expect(
       screen.getByText(
-        /not yet — budgetiq tracks income, expenses, and assets; budgets are on the roadmap/i
+        /budgetiq tracks income, expenses, and assets\. it doesn't set or enforce budgets/i
       )
     ).toBeInTheDocument();
+    expect(screen.queryByText(/on the roadmap/i)).not.toBeInTheDocument();
   });
 });

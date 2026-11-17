@@ -149,7 +149,7 @@ function validateUpsertInput(input: unknown):
   if (!KPI_OPERATIONS.includes(operation as KpiOperation)) {
     return {
       ok: false,
-      error: "Operation must be sum, percentage, or budget_remaining.",
+      error: "Operation must be Sum, Percentage, or Amount under target.",
     };
   }
 

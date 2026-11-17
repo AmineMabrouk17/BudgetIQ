@@ -243,10 +243,10 @@ describe("evaluateKPI", () => {
       const transactions = [tx("expense", 200, at(2026, 2, 5))];
       const result = evaluateKPI(k, transactions, NOW);
       expect(result.value).toBe(400);
-      expect(result.subtitle).toBe("Remaining of 600 limit");
+      expect(result.subtitle).toBe("Amount under 600 target");
     });
 
-    it("budget_remaining returns negative when over budget", () => {
+    it("budget_remaining returns negative when the target is exceeded", () => {
       const k = kpi({
         source_type: "expense",
         operation: "budget_remaining",
@@ -255,7 +255,7 @@ describe("evaluateKPI", () => {
       const transactions = [tx("expense", 500, at(2026, 2, 5))];
       const result = evaluateKPI(k, transactions, NOW);
       expect(result.value).toBe(-200);
-      expect(result.subtitle).toBe("Remaining of 300 limit");
+      expect(result.subtitle).toBe("Amount under 300 target");
     });
 
     it("budget_remaining returns operand when no expenses", () => {
@@ -266,7 +266,7 @@ describe("evaluateKPI", () => {
       });
       const result = evaluateKPI(k, [], NOW);
       expect(result.value).toBe(600);
-      expect(result.subtitle).toBe("Remaining of 600 limit");
+      expect(result.subtitle).toBe("Amount under 600 target");
     });
   });
 

@@ -26,7 +26,7 @@ const faqs: FaqData[] = [
   {
     question: "Is there a budget feature?",
     answer:
-      "Not yet — BudgetIQ tracks income, expenses, and assets; budgets are on the roadmap.",
+      "BudgetIQ tracks income, expenses, and assets. It doesn't set or enforce budgets — the Salary Planner is a separate planning view.",
   },
   {
     question: "Which devices does BudgetIQ support?",

@@ -91,7 +91,7 @@ function applyOperation(
 
     case "budget_remaining": {
       const value = operand - base;
-      return { value, subtitle: `Remaining of ${operand} limit` };
+      return { value, subtitle: `Amount under ${operand} target` };
     }
   }
 }

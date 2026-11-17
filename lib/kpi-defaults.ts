@@ -21,7 +21,7 @@ export const DEFAULT_KPIS: CreateCustomKPIInput[] = [
     sort_order: 1,
   },
   {
-    title: "Budget Remaining",
+    title: "Amount Under Target",
     source_type: "expense",
     operation: "budget_remaining",
     operand: 600,

@@ -5,7 +5,7 @@ import { getSalaryPlan } from "@/lib/salary-planner-data";
 import SalaryPlannerView from "@/components/salary-planner/SalaryPlannerView";
 
 export const metadata: Metadata = {
-  title: "Salary & Budget Planner | BudgetIQ",
+  title: "Salary Planner | BudgetIQ",
   description: "Plan your salary across the 4 key financial pillars with AI guidance",
 };
 

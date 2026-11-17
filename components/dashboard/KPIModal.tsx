@@ -35,7 +35,7 @@ const TIMEFRAMES: { value: KpiTimeframe; label: string }[] = [
 const OPERATIONS: { value: KpiOperation; label: string }[] = [
   { value: "sum", label: "Sum" },
   { value: "percentage", label: "Percentage" },
-  { value: "budget_remaining", label: "Budget remaining" },
+  { value: "budget_remaining", label: "Amount under target" },
 ];
 
 type KpiForm = {
@@ -222,7 +222,7 @@ export default function KpiModal({
               <span className="label-text mb-1">
                 {form.operation === "percentage"
                   ? "Target % (e.g. 0.15 = 15%)"
-                  : "Budget limit"}
+                  : "Target amount"}
               </span>
               <input
                 className="input input-bordered w-full"
