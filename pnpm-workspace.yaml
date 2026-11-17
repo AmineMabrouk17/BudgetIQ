@@ -1,6 +1,7 @@
 allowBuilds:
   unrs-resolver: true
 ignoredBuiltDependencies:
+  - "@openrouter/sdk"
   - sharp
   - unrs-resolver
 overrides:

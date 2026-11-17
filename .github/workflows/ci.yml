@@ -16,8 +16,16 @@ permissions:
 jobs:
   checks:
     runs-on: ubuntu-latest
+    env:
+      # Placeholders so `next build` can collect page data without secrets.
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci-placeholder-anon-key
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        if: hashFiles('pnpm-lock.yaml') != ''
+        with:
+          version: 10
       - uses: actions/setup-node@v4
         if: hashFiles('package.json') != ''
         with:
@@ -26,7 +34,7 @@ jobs:
         if: hashFiles('package.json') != ''
         run: |
           if [ -f pnpm-lock.yaml ]; then
-            corepack enable && pnpm install --frozen-lockfile
+            pnpm install --frozen-lockfile
             pnpm run --if-present lint
             pnpm run --if-present typecheck
             pnpm test --if-present
@@ -85,6 +93,10 @@ jobs:
   visual-evidence:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    env:
+      # Placeholders so both branches can build without repository secrets.
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci-placeholder-anon-key
     outputs:
       evidence_markdown: ${{ steps.commit-assets.outputs.evidence_markdown }}
     steps:
