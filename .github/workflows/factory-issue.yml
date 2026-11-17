@@ -1,0 +1,136 @@
+name: Software Factory - Issue to PR (manual fallback)
+
+# The normal path is human-in-the-loop: create the issue, then run /factory <number>
+# in OpenCode on the VPS. This workflow is the optional manual fallback from the
+# Actions UI when you want the same result without driving OpenCode yourself.
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: GitHub issue number to implement
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  id-token: write
+
+concurrency:
+  group: factory-issue-${{ github.event.inputs.issue_number }}
+  cancel-in-progress: false
+
+jobs:
+  implement-issue:
+    runs-on: [self-hosted, vps-opencode]
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies (if package.json exists)
+        if: hashFiles('package.json') != ''
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            corepack enable && pnpm install --frozen-lockfile
+          elif [ -f yarn.lock ]; then
+            yarn install --frozen-lockfile
+          elif [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: Read issue and ensure skills are available to OpenCode
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.inputs.issue_number }}
+        run: |
+          gh issue view "$ISSUE_NUMBER" --json title,body > /tmp/factory-issue.json
+          if [ -d "/root/.agents/skills/implement" ] && [ -d "/root/.agents/skills/code-review" ]; then
+            echo "Using shared OpenCode skills from /root/.agents/skills"
+          elif [ ! -d ".opencode/skills/implement" ] && [ ! -d ".agents/skills/implement" ]; then
+            npx --yes skills@latest add mattpocock/skills \
+              --skill=implement \
+              --skill=tdd \
+              --skill=code-review \
+              --skill=pr \
+              --yes || true
+          fi
+
+      - name: Create feature branch for issue
+        id: branch
+        run: |
+          BRANCH="factory/issue-${{ github.event.inputs.issue_number }}"
+          git config user.name "software-factory[bot]"
+          git config user.email "software-factory[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          echo "name=$BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Run /implement via OpenCode
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.inputs.issue_number }}
+          BRANCH: ${{ steps.branch.outputs.name }}
+          FACTORY_MODEL: ${{ vars.FACTORY_MODEL || 'opencode/deepseek-v4.1-flash-free' }}
+        run: |
+          PROMPT_FILE="$(mktemp /tmp/factory-implement-XXXXXX.md)"
+          {
+            echo "You are running inside an automated Software Factory for GitHub Issue #${ISSUE_NUMBER}."
+            echo
+            echo "Issue:"
+            cat /tmp/factory-issue.json
+            echo
+            echo "Instructions:"
+            echo "1. Load and follow the /implement skill (and /tdd where tests apply) to implement this issue completely on branch ${BRANCH}."
+            echo "2. Run the project's tests, typecheck, and linter to ensure everything passes."
+            echo "3. Commit all changes with a Conventional Commits message referencing Closes #${ISSUE_NUMBER}."
+            echo "4. Do NOT open the PR yet; ensure all changes are committed cleanly to ${BRANCH}."
+          } > "$PROMPT_FILE"
+
+          opencode run --auto --archived \
+            --title "factory-issue-${ISSUE_NUMBER}" \
+            -m "$FACTORY_MODEL" \
+            -f "$PROMPT_FILE" \
+            "Follow the attached specification using the /implement and /tdd skills. Commit all changes and stop before opening a PR."
+
+      - name: Push branch
+        run: |
+          git push -u origin "${{ steps.branch.outputs.name }}" --force-with-lease
+
+      - name: Generate PR body with /pr and open Pull Request via OpenCode
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.inputs.issue_number }}
+          BRANCH: ${{ steps.branch.outputs.name }}
+          FACTORY_MODEL: ${{ vars.FACTORY_MODEL || 'opencode/deepseek-v4.1-flash-free' }}
+        run: |
+          PROMPT_FILE="$(mktemp /tmp/factory-pr-XXXXXX.md)"
+          {
+            echo "Use the /pr skill format to write a pull request body for branch ${BRANCH} against main for Issue #${ISSUE_NUMBER}."
+            echo
+            echo "Include 'Closes #${ISSUE_NUMBER}' at the top, a Summary, a Merge Danger section, and these empty placeholder sections:"
+            echo "<!-- FACTORY_PREVIEW_START -->"
+            echo "<!-- FACTORY_PREVIEW_END -->"
+            echo "<!-- FACTORY_EVIDENCE_START -->"
+            echo "<!-- FACTORY_EVIDENCE_END -->"
+            echo
+            echo "Title must be a Conventional Commits title: <type>: <subject> (#${ISSUE_NUMBER})."
+            echo "Create the PR with gh pr create --base main --head \"${BRANCH}\" --title <title> --body-file <file>, or gh pr edit if it already exists."
+          } > "$PROMPT_FILE"
+
+          opencode run --auto --archived \
+            --title "factory-pr-${ISSUE_NUMBER}" \
+            -m "$FACTORY_MODEL" \
+            -f "$PROMPT_FILE" \
+            "Use the /pr skill to write the PR body into a file, then create or edit the pull request with gh."
