@@ -311,7 +311,9 @@ export default function LoginPage() {
   return (
     <div className="card w-full bg-base-100 shadow-xl">
       <div className="card-body">
-        <h2 className="card-title justify-center text-2xl">Sign in to BudgetIQ</h2>
+        <h2 className="card-title justify-center text-2xl">
+          {mode === "signin" ? "Sign in to BudgetIQ" : "Create your BudgetIQ account"}
+        </h2>
         <p className="text-center text-sm text-base-content/70">
           Track your income, expenses, and assets.
         </p>
@@ -329,16 +331,18 @@ export default function LoginPage() {
 
         <div className="divider my-4">or</div>
 
-        <div role="tablist" className="tabs tabs-lift">
+        <div role="group" aria-label="Account mode" className="tabs tabs-lift">
           <button
-            role="tab"
+            type="button"
+            aria-pressed={mode === "signin"}
             className={`tab ${mode === "signin" ? "tab-active" : ""}`}
             onClick={() => switchMode("signin")}
           >
             Sign in
           </button>
           <button
-            role="tab"
+            type="button"
+            aria-pressed={mode === "signup"}
             className={`tab ${mode === "signup" ? "tab-active" : ""}`}
             onClick={() => switchMode("signup")}
           >
