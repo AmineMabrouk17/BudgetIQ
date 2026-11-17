@@ -37,7 +37,7 @@ jobs:
             pnpm install --frozen-lockfile
             pnpm run --if-present lint
             pnpm run --if-present typecheck
-            pnpm test --if-present
+            pnpm run --if-present test
             pnpm run --if-present build
           elif [ -f yarn.lock ]; then
             yarn install --frozen-lockfile
