@@ -57,7 +57,7 @@ Under the hood it pairs a **Next.js** front end with **Supabase** (PostgreSQL + 
 - **Category breakdowns** — interactive Recharts visualisations of where your money goes.
 
 ### 🎨 UI / UX
-- **Polished landing page** — hero with product mockup, features grid, how-it-works, testimonials, FAQ, CTA band, and footer.
+- **Polished landing page** — hero with product mockup, features grid, how-it-works, why BudgetIQ, FAQ, CTA band, and footer.
 - **Scroll-reveal motion** — subtle, tasteful entrance animations as sections come into view.
 - **Light & dark themes** — DaisyUI theming with a persisted theme toggle.
 - **Responsive everywhere** — works beautifully on desktop, tablet, and mobile.

@@ -1,69 +1,62 @@
-import { Quote } from "lucide-react";
+import { Check } from "lucide-react";
 import SectionHeading from "@/components/landing/SectionHeading";
 import Reveal from "@/components/landing/Reveal";
 
-interface TestimonialData {
-  quote: string;
-  name: string;
-  role: string;
+interface Reason {
+  title: string;
+  detail: string;
 }
 
-// Placeholder testimonials — swap these with real quotes from the maintainer
-// before launch. They are fictional and only stand in for social proof.
-const testimonials: TestimonialData[] = [
+// Facts already true in the product and repository — never invent social proof.
+const reasons: Reason[] = [
   {
-    quote:
-      "The AI assistant is the reason I stayed. I type what I spent and it just shows up — logged, categorized, done.",
-    name: "Sarah M.",
-    role: "Early adopter",
+    title: "Free and open source",
+    detail: "Self-host it, fork it, or use the hosted demo. No hidden costs.",
   },
   {
-    quote:
-      "I finally know my net balance and total assets without juggling three different apps.",
-    name: "James T.",
-    role: "Freelancer",
+    title: "Private by default",
+    detail:
+      "Supabase Row-Level Security means every user only ever sees their own data.",
   },
   {
-    quote:
-      "Free, open source, and my data stays mine. There aren't many finance apps you can say that about.",
-    name: "Priya K.",
-    role: "Developer",
+    title: "No ads, no upsell",
+    detail: "Your dashboard stays about your money, not someone else's pitch.",
+  },
+  {
+    title: "Log it by describing it",
+    detail:
+      "Describe an income, expense, or asset and confirm one card — no spreadsheet drudgery.",
   },
 ];
 
-function TestimonialCard({ quote, name, role }: TestimonialData) {
+function ReasonCard({ title, detail }: Reason) {
   return (
-    <figure className="group flex h-full flex-col rounded-2xl border border-white/[0.08] bg-night-raised p-6 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-white/[0.18] hover:shadow-[0_24px_48px_-16px_rgba(0,0,0,0.55)] motion-reduce:hover:transform-none motion-reduce:transition-none">
-      <Quote className="h-6 w-6 text-pop-yellow" aria-hidden="true" />
-      <blockquote className="mt-4 flex-1 leading-[1.6] text-white/80">
-        {quote}
-      </blockquote>
-      <figcaption className="mt-6">
-        <p className="font-semibold text-white/90">{name}</p>
-        <p className="text-sm text-muted">{role}</p>
-      </figcaption>
-    </figure>
+    <div className="flex h-full flex-col rounded-2xl border border-white/[0.08] bg-night-raised p-6 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-white/[0.18] hover:shadow-[0_24px_48px_-16px_rgba(0,0,0,0.55)] motion-reduce:hover:transform-none motion-reduce:transition-none">
+      <Check className="h-6 w-6 text-pop-yellow" aria-hidden="true" />
+      <h3 className="mt-4 font-semibold text-white/90">{title}</h3>
+      <p className="mt-2 flex-1 leading-[1.6] text-muted">{detail}</p>
+    </div>
   );
 }
 
 export default function TestimonialsSection() {
   return (
-    <section id="testimonials" className="scroll-mt-20 bg-night py-20">
+    <section id="why-budgetiq" className="scroll-mt-20 bg-night py-20">
       <div className="mx-auto max-w-6xl px-6">
         <SectionHeading
-          eyebrow="Testimonials"
-          title="Loved by people who track their money"
-          description="What early users say about BudgetIQ — real quotes coming soon."
+          eyebrow="Why BudgetIQ"
+          title="Why people choose BudgetIQ"
+          description="Four commitments we can actually stand behind."
         />
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
-          {testimonials.map((testimonial, index) => (
+        <div className="mt-12 grid gap-6 sm:grid-cols-2 md:grid-cols-4">
+          {reasons.map((reason, index) => (
             <Reveal
-              key={testimonial.name}
+              key={reason.title}
               variant="up"
               delay={index * 90}
               className="h-full"
             >
-              <TestimonialCard {...testimonial} />
+              <ReasonCard {...reason} />
             </Reveal>
           ))}
         </div>
