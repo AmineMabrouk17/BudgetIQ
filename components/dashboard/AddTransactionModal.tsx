@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Loader2, Plus } from "lucide-react";
 import { createTransaction } from "@/app/actions/transactions";
 import type { TransactionScope, TransactionType } from "@/types/transaction";
@@ -26,11 +27,34 @@ const SCOPES: { value: TransactionScope; label: string }[] = [
 export default function AddTransactionModal() {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleRef = useRef<HTMLInputElement>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [category, setCategory] = useState("");
   const displayCurrency = useDisplayCurrency();
   const [rates, setRates] = useState<CurrencyRates | null>(null);
+
+  function clearAutoClose() {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  }
+
+  function scheduleAutoClose() {
+    clearAutoClose();
+    closeTimerRef.current = setTimeout(() => {
+      closeTimerRef.current = null;
+      setSaved(false);
+      dialogRef.current?.close();
+    }, 2500);
+  }
+
+  useEffect(() => {
+    return clearAutoClose;
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -55,11 +79,15 @@ export default function AddTransactionModal() {
   const canSave = !isRateUnavailable;
 
   function open() {
+    clearAutoClose();
+    setSaved(false);
     setError(null);
     dialogRef.current?.showModal();
   }
 
   function close() {
+    clearAutoClose();
+    setSaved(false);
     dialogRef.current?.close();
   }
 
@@ -93,8 +121,14 @@ export default function AddTransactionModal() {
         scope: (formData.get("scope") as TransactionScope) || undefined,
       });
       if (result.ok) {
-        close();
+        setSaved(true);
+        setError(null);
+        // Re-render the streamed dashboard sections from the server so the new
+        // row reaches TransactionTable without a manual browser reload.
+        router.refresh();
+        scheduleAutoClose();
       } else {
+        setSaved(false);
         setError(result.error);
       }
     });
@@ -185,8 +219,30 @@ export default function AddTransactionModal() {
               <CategoryCombobox name="category" value={category} />
             </label>
 
+            {/* Keep the live region mounted so assistive tech announces the
+                message when it changes, rather than when the node is inserted. */}
+            <div
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              className={saved ? "alert alert-success" : "sr-only"}
+            >
+              {saved ? (
+                <>
+                  <span>Transaction added. Your dashboard is up to date.</span>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    onClick={close}
+                  >
+                    Done
+                  </button>
+                </>
+              ) : null}
+            </div>
+
             {error && (
-              <div className="alert alert-error">
+              <div role="alert" className="alert alert-error">
                 <span>{error}</span>
               </div>
             )}

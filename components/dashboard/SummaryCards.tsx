@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import type { Summary } from "@/lib/summary";
 import type { IncomeType } from "@/lib/profiles";
 import { useCurrencyFormatter } from "@/lib/currency/use-display-currency";
@@ -58,6 +58,11 @@ export default function SummaryCards({
     setModalOpen(true);
   }
 
+  function openCreate() {
+    setEditing(null);
+    setModalOpen(true);
+  }
+
   function closeModal() {
     setModalOpen(false);
     setEditing(null);
@@ -79,6 +84,14 @@ export default function SummaryCards({
         <h2 className="text-lg font-semibold text-base-content">
           Financial Summary
         </h2>
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          onClick={openCreate}
+        >
+          <Plus className="h-4 w-4" aria-hidden="true" />
+          Add KPI
+        </button>
       </div>
 
       {kpiError && <p className="mb-3 text-sm text-error">{kpiError}</p>}
