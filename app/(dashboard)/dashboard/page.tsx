@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import type { TransactionScopeFilter } from "@/lib/transactions";
-import ScopeFilter from "@/components/dashboard/ScopeFilter";
 import AddTransactionModal from "@/components/dashboard/AddTransactionModal";
 import ChatDrawer from "@/components/ai/ChatDrawer";
 import DashboardSummary from "@/components/dashboard/DashboardSummary";
@@ -25,7 +24,7 @@ export default async function DashboardPage({
 }) {
   const scope = parseScope((await searchParams).scope);
 
-  // No data is awaited here on purpose. The heading, filters and skeletons are
+  // No data is awaited here on purpose. The heading and skeletons are
   // the shell, and each section streams in behind its own boundary as its
   // queries resolve — so the document is flushed before the transaction reads
   // finish instead of waiting on all of them.
@@ -39,9 +38,6 @@ export default async function DashboardPage({
         <Suspense fallback={<SummaryCardsSkeleton />}>
           <DashboardSummary />
         </Suspense>
-        <div className="flex items-center justify-end">
-          <ScopeFilter scope={scope} />
-        </div>
         <Suspense fallback={<AnalyticsSkeleton />}>
           <DashboardAnalytics />
         </Suspense>

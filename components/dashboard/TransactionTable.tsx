@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import {
   ArrowDown,
   ArrowUp,
@@ -25,6 +25,7 @@ import {
 } from "@/app/actions/transactions";
 import { useCurrencyFormatter } from "@/lib/currency/use-display-currency";
 import { formatDate } from "@/lib/format";
+import ScopeFilter from "@/components/dashboard/ScopeFilter";
 
 const TYPE_CONFIG: Record<
   TransactionType,
@@ -75,6 +76,32 @@ export default function TransactionTable({
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Local state is seeded once per server payload. DashboardTransactions passes
+  // a `key` derived from the row ids, so a successful save remounts this table
+  // with the fresh rows instead of leaving stale ones on screen.
+
+  // The `/` badge is only honest if `/` actually focuses the search field.
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key !== "/" || event.metaKey || event.ctrlKey || event.altKey) {
+        return;
+      }
+      const target = event.target as HTMLElement | null;
+      if (
+        target?.isContentEditable ||
+        target?.tagName === "INPUT" ||
+        target?.tagName === "TEXTAREA" ||
+        target?.tagName === "SELECT"
+      ) {
+        return;
+      }
+      event.preventDefault();
+      searchInputRef.current?.focus();
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   function handleDelete(id: string) {
     startTransition(async () => {
@@ -161,13 +188,42 @@ export default function TransactionTable({
   function renderSortIcon(field: SortField) {
     if (sortField !== field) {
       return (
-        <ArrowUpDown className="h-3 w-3 opacity-30 transition-transform duration-200 group-hover/th:opacity-70" />
+        <ArrowUpDown className="h-3 w-3 opacity-30 transition-transform duration-200 group-hover/button:opacity-70" />
       );
     }
     return sortOrder === "asc" ? (
       <ArrowUp className="h-3 w-3 text-primary transition-all duration-200" />
     ) : (
       <ArrowDown className="h-3 w-3 text-primary transition-all duration-200" />
+    );
+  }
+
+  function renderSortableHeader(
+    field: SortField,
+    label: string,
+    className = ""
+  ) {
+    const ariaSort =
+      sortField === field
+        ? sortOrder === "asc"
+          ? "ascending"
+          : "descending"
+        : "none";
+
+    return (
+      <th
+        aria-sort={ariaSort}
+        className={`py-3.5 text-[11px] font-medium uppercase tracking-wider transition-colors hover:text-base-content ${className}`}
+      >
+        <button
+          type="button"
+          onClick={() => handleSort(field)}
+          className="group/button flex w-full items-center gap-1.5 rounded-sm text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        >
+          {label}
+          {renderSortIcon(field)}
+        </button>
+      </th>
     );
   }
 
@@ -250,6 +306,18 @@ export default function TransactionTable({
           </div>
         </div>
 
+        <div className="mt-4 flex flex-wrap items-end gap-3 border-t border-base-content/5 pt-4">
+          <div>
+            <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-base-content/50">
+              Transaction scope
+            </p>
+            <ScopeFilter scope={scope} />
+            <p className="mt-1.5 text-[11px] text-base-content/50">
+              Applies to transactions only
+            </p>
+          </div>
+        </div>
+
         {error && (
           <div className="alert alert-error mt-4 py-2 text-xs">
             <span>{error}</span>
@@ -293,47 +361,12 @@ export default function TransactionTable({
           <table className="table w-full text-left text-xs">
             <thead>
               <tr className="border-b border-base-content/10 bg-base-200/30 text-[11px] font-medium tracking-wider uppercase text-base-content/50">
-                <th
-                  className="group/th cursor-pointer select-none py-3.5 pl-6 transition-colors hover:text-base-content"
-                  onClick={() => handleSort("title")}
-                >
-                  <div className="flex items-center gap-1.5">
-                    Title {renderSortIcon("title")}
-                  </div>
-                </th>
-                <th
-                  className="group/th cursor-pointer select-none py-3.5 transition-colors hover:text-base-content"
-                  onClick={() => handleSort("category")}
-                >
-                  <div className="flex items-center gap-1.5">
-                    Category {renderSortIcon("category")}
-                  </div>
-                </th>
-                <th
-                  className="group/th cursor-pointer select-none py-3.5 transition-colors hover:text-base-content"
-                  onClick={() => handleSort("type")}
-                >
-                  <div className="flex items-center gap-1.5">
-                    Type {renderSortIcon("type")}
-                  </div>
-                </th>
+                {renderSortableHeader("title", "Title", "pl-6")}
+                {renderSortableHeader("category", "Category")}
+                {renderSortableHeader("type", "Type")}
                 <th className="py-3.5">Scope</th>
-                <th
-                  className="group/th cursor-pointer select-none py-3.5 transition-colors hover:text-base-content"
-                  onClick={() => handleSort("amount")}
-                >
-                  <div className="flex items-center gap-1.5">
-                    Amount {renderSortIcon("amount")}
-                  </div>
-                </th>
-                <th
-                  className="group/th cursor-pointer select-none py-3.5 transition-colors hover:text-base-content"
-                  onClick={() => handleSort("created_at")}
-                >
-                  <div className="flex items-center gap-1.5">
-                    Date {renderSortIcon("created_at")}
-                  </div>
-                </th>
+                {renderSortableHeader("amount", "Amount")}
+                {renderSortableHeader("created_at", "Date")}
                 <th className="py-3.5 pr-6 text-right">Action</th>
               </tr>
             </thead>

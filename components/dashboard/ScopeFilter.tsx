@@ -33,9 +33,10 @@ export default function ScopeFilter({
   }
 
   return (
-    <div className="join">
+    <div className="join" role="group" aria-label="Transaction scope">
       {FILTER_OPTIONS.map((option) => (
         <button
+          type="button"
           key={option.value}
           className={`btn btn-sm join-item ${
             active === option.value ? "btn-active" : ""

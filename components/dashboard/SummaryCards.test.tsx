@@ -273,6 +273,20 @@ describe("SummaryCards", () => {
     expect(screen.getByRole("heading", { name: "Edit KPI" })).toBeInTheDocument();
   });
 
+  it("opens the Add KPI modal from the Financial Summary header", async () => {
+    render(
+      <SummaryCards summary={salariedSummary} hasTransactions incomeType="salaried" />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /add kpi/i }));
+
+    expect(screen.getByRole("heading", { name: "Add KPI" })).toBeInTheDocument();
+    expect(
+      (screen.getByPlaceholderText("e.g. Groceries this month") as HTMLInputElement)
+        .value
+    ).toBe("");
+  });
+
   it("deletes a KPI and reloads the list", async () => {
     listCustomKPIs
       .mockResolvedValueOnce({
