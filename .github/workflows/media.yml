@@ -48,16 +48,13 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Set up pnpm (repo package manager)
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
+      # No dependency install happens in this job, so do not enable
+      # setup-node's pnpm cache: its post-step would fail path validation
+      # because the pnpm store directory is never created.
       - name: Set up Node 22
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
 
       # The OpenScreen CLI is the desktop app executable, not a standalone npm
       # package. Install the documented Linux AppImage from a pinned release,
@@ -155,16 +152,13 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Set up pnpm (repo package manager)
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
+      # This job validates a checked-in skill file and uses `npx` for the
+      # best-effort tooling probes; it never installs project dependencies,
+      # so setup-node's pnpm cache is intentionally disabled here too.
       - name: Set up Node 22
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
 
       # brag-slim is project-local under .agents/skills/brag-slim/; the exact
       # upstream commit and hash are recorded in skills-lock.json. CI validates
@@ -188,31 +182,41 @@ jobs:
         id: validate
         shell: bash
         run: |
-          set -u
+          set -euo pipefail
           log="brag-skill-validation.log"
+          skill_file=".agents/skills/brag-slim/SKILL.md"
           {
             echo "# brag-slim CI validation"
             echo "generated_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
             echo "node=$(node --version)"
             echo "pin_source=skills-lock.json"
             echo "mode=validation-only (no API keys, no video render)"
-            # `skills add --agent opencode --copy` writes into .agents/skills/
-            # in this repo; older installs used .opencode/skills/. Accept either.
-            skill_file=""
-            for candidate in .agents/skills/brag-slim/SKILL.md .opencode/skills/brag-slim/SKILL.md; do
-              if [ -f "$candidate" ]; then
-                skill_file="$candidate"
-                break
-              fi
-            done
-            if [ -n "$skill_file" ]; then
-              echo "skill_file=present:$skill_file"
-              echo "--- SKILL.md front matter ---"
-              sed -n '1,6p' "$skill_file"
-            else
-              echo "skill_file=MISSING:.agents/skills/brag-slim/SKILL.md"
-              echo "note=install step failed or skill path changed; workflow stays green"
+            # The skill is checked in at .agents/skills/brag-slim/SKILL.md by
+            # the skills-lock.json pin. This is a local file check, not an
+            # external binary/network probe, so it must genuinely fail if the
+            # installed skill is missing or malformed.
+            if [ ! -f "$skill_file" ]; then
+              echo "skill_file=MISSING:$skill_file"
+              echo "::error::Expected project-local skill at $skill_file"
+              exit 1
             fi
+            echo "skill_file=present:$skill_file"
+            echo "--- SKILL.md front matter ---"
+            sed -n '1,6p' "$skill_file"
+            skill_name=$(awk 'NR == 1 && $0 == "---" { fm = 1; next }
+              fm && /^---[[:space:]]*$/ { exit }
+              fm && /^name:[[:space:]]*/ { sub(/^name:[[:space:]]*/, ""); print; exit }' "$skill_file")
+            skill_description=$(awk 'NR == 1 && $0 == "---" { fm = 1; next }
+              fm && /^---[[:space:]]*$/ { exit }
+              fm && /^description:[[:space:]]*/ { sub(/^description:[[:space:]]*/, ""); print; exit }' "$skill_file")
+            if [ "$skill_name" != "brag-slim" ] || [ -z "$skill_description" ]; then
+              echo "skill_name=${skill_name:-MISSING}"
+              echo "skill_description=${skill_description:+present}"
+              echo "::error::$skill_file must declare a name of brag-slim and a non-empty description"
+              exit 1
+            fi
+            echo "skill_name=$skill_name"
+            echo "skill_description=present"
             echo "--- product info detected from README.md ---"
             product_name=$(grep -m1 '^# ' README.md | sed -E 's/^# +//' || true)
             tagline=$(grep -m1 '^### ' README.md | sed -E 's/^### +//' || true)
