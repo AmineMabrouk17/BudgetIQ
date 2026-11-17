@@ -1,6 +1,6 @@
 ---
 name: create-pr
-description: Create a pull request in the warp repository for the current branch. Use when the user mentions opening a PR, creating a pull request, submitting changes for review, or preparing code for merge.
+description: Create a pull request in the current repository for the current branch. Use when the user mentions opening a PR, creating a pull request, submitting changes for review, or preparing code for merge.
 ---
 
 # create-pr
@@ -202,6 +202,69 @@ Use the `warp-integration-test` skill for implementation details, test registrat
 Use the `write-pr-description` skill for the body itself. It covers following the
 repository's template, the prose baseline, and when to add a reading order and focus
 areas for the reviewer.
+
+## Media-rich PR bodies (OpenScreen + animatic)
+
+For PRs that change the interface, include both a real demo video and a compact
+animated preview. Build them before writing the final PR body:
+
+1. **Run `/openscreen-demo`** to record a 10–30 s PR demo of the changed UI.
+   Follow that skill's setup, review and attachment rules: export to
+   `demo/pr-video.mp4`, then use `gh pr create ... --attach demo/pr-video.mp4`
+   or `gh pr comment <number> --body-file ... --attach demo/pr-video.mp4`
+   (GitHub CLI 2.99+) so GitHub hosts the file and rewrites the path. Do not
+   commit the video to the repository.
+2. **Run `/animatic`** to produce the animated preview from the changed routes
+   or component files. It writes four files under `docs/media/<slug>/`,
+   including `PR_BODY_ANIMATIC.md`. Paste that snippet into the body verbatim.
+
+Paste both sections into the PR body. Use these exact snippets (replace `<slug>`
+and the one-line description):
+
+OpenScreen demo section:
+
+```markdown
+## Demo video
+
+<One sentence naming the behaviour the recording shows.>
+
+![OpenScreen demo](demo/pr-video.mp4)
+```
+
+Animatic section — paste the complete contents of
+`docs/media/<slug>/PR_BODY_ANIMATIC.md`. It has this shape:
+
+```markdown
+## Animated preview (animatic)
+
+<picture>
+  <source srcset="docs/media/<slug>/animatic.webm" type="video/webm" />
+  <img src="docs/media/<slug>/animatic.gif" alt="Animated preview of interface changes" width="720" />
+</picture>
+
+![Animated preview (GIF fallback)](docs/media/<slug>/animatic.gif)
+
+**What changed**
+
+- `<changed file or route>` — see the labelled frames above.
+
+<details>
+<summary>Full storyboard</summary>
+
+![Storyboard](docs/media/<slug>/storyboard.svg)
+
+</details>
+```
+
+**Graceful degradation.** Never block PR creation on media. If OpenScreen MCP
+tools are not installed, screen recording is unavailable, or an export fails,
+omit the demo section and add the line `Demo video unavailable (OpenScreen tools
+not configured).` instead of a broken media link. If Playwright, browsers or
+ffmpeg are unavailable, `/animatic` still writes `storyboard.svg` and its
+snippet; paste what it produced and keep the storyboard link. If both tools are
+unavailable, add a single line `No media preview available in this environment
+(OpenScreen and animatic prerequisites missing).` and continue with the PR.
+Never upload media to third-party services.
 
 ## After Opening the PR
 
