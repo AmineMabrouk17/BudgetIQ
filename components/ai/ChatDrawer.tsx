@@ -202,9 +202,13 @@ export default function ChatDrawer({
           <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto p-4">
             {messages.length === 0 && (
               <p className="pt-10 text-center text-sm text-base-content/60">
-                Ask me anything about your finances.
+                Describe an income, expense, or asset to log it.
                 <br />
                 Try: &ldquo;I spent $15 on coffee&rdquo;
+                <span className="mt-2 block text-xs text-base-content/50">
+                  Your text is sent to the AI assistant to prepare a transaction
+                  for your confirmation.
+                </span>
               </p>
             )}
             {messages.map((m) => (
@@ -238,7 +242,7 @@ export default function ChatDrawer({
               className="input input-bordered flex-1"
               value={input}
               onChange={(event) => setInput(event.target.value)}
-              placeholder="Ask your assistant…"
+              placeholder="Describe a transaction…"
               aria-label="Chat message"
               disabled={isPending}
             />
