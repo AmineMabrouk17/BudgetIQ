@@ -28,7 +28,7 @@ export default async function DashboardLayout({
   return (
     <>
       <Navbar />
-      <div className="flex min-h-screen bg-base-200">
+      <div className="flex min-h-screen flex-col bg-base-200 lg:flex-row">
         <DashboardSidebar isAdmin={isAdmin} />
         <main className="min-w-0 flex-1">{children}</main>
       </div>
