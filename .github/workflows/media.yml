@@ -1,0 +1,231 @@
+name: Media (OpenScreen + brag)
+
+# Additive workflow: ci.yml stays the source of truth for lint/typecheck/test/audit.
+# Nothing here installs into the app or changes project source.
+#
+# Both media skills are PROJECT-LOCAL: they are installed under .agents/skills/
+# (and mirrored under .opencode/skills/ where this repo uses both layouts) with
+# `skills add ... --agent opencode --copy`, and their source commits/hashes
+# are pinned in skills-lock.json (v2, installMode: copy). Update the lock with the
+# skills CLI rather than hand-editing SKILL.md files in this repo.
+#
+# Video generation is OPT-IN for manual runs via workflow_dispatch.generate_video.
+# Pull requests only attempt a short, fail-soft capture probe; a hosted runner has
+# no real desktop session / ScreenCast portal, so a missing MP4 is expected and
+# never fails the workflow (every external-binary step below is best effort).
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      openscreen_version:
+        description: OpenScreen release tag used for the Linux AppImage
+        required: true
+        default: v2.3.0
+        type: string
+      generate_video:
+        description: Also attempt capture/export on a manual run (PRs always probe)
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  openscreen:
+    name: OpenScreen CLI probe
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      # Secrets cannot be read directly in step `if:` expressions. Expose the
+      # token as a job env var so the PR-comment step can guard on availability.
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm (repo package manager)
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # The OpenScreen CLI is the desktop app executable, not a standalone npm
+      # package. Install the documented Linux AppImage from a pinned release,
+      # then extract it so no FUSE kernel module is needed on hosted runners.
+      - name: Install headless runtime dependencies (best effort)
+        continue-on-error: true
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb libfuse2 mesa-vulkan-drivers libvulkan1
+
+      - name: Install OpenScreen CLI from pinned AppImage
+        id: install-openscreen
+        continue-on-error: true
+        env:
+          OPENSCREEN_VERSION: ${{ inputs.openscreen_version || 'v2.3.0' }}
+        run: |
+          set -eu
+          version="$OPENSCREEN_VERSION"
+          appdir="$RUNNER_TEMP/openscreen-appimage"
+          asset="Openscreen-Linux-${version#v}.AppImage"
+          url="https://github.com/getopenscreen/openscreen/releases/download/${version}/${asset}"
+          curl -fL --retry 3 -o "$RUNNER_TEMP/$asset" "$url"
+          chmod +x "$RUNNER_TEMP/$asset"
+          mkdir -p "$appdir"
+          (cd "$appdir" && "$RUNNER_TEMP/$asset" --appimage-extract >/dev/null)
+          ln -sf "$appdir/squashfs-root/AppRun" "$appdir/squashfs-root/openscreen"
+          echo "$appdir/squashfs-root" >> "$GITHUB_PATH"
+          echo "installed=$appdir/squashfs-root/openscreen" >> "$GITHUB_OUTPUT"
+
+      - name: Verify OpenScreen CLI
+        id: verify-openscreen
+        continue-on-error: true
+        run: |
+          # `--version` is not part of the documented CLI surface; some builds
+          # only accept `help`. Treat either response as a successful probe.
+          # xvfb-run covers Electron's display requirement and `timeout` avoids
+          # a hung job if the binary waits on a portal/picker.
+          if timeout 60s xvfb-run -a openscreen --version; then
+            echo "openscreen --version: OK"
+          else
+            echo "openscreen --version unavailable; trying help"
+            timeout 60s xvfb-run -a openscreen help | head -n 20 || true
+          fi
+
+      # Video generation is opt-in on manual runs (`generate_video: true`).
+      # PRs still do a best-effort 8s probe so the comment step below can attach
+      # an artifact if a runner ever provides a usable desktop session.
+      - name: Short headless capture (fail-soft)
+        if: >-
+          github.event_name == 'pull_request' ||
+          (github.event_name == 'workflow_dispatch' && inputs.generate_video)
+        continue-on-error: true
+        run: xvfb-run -a openscreen record --duration 8 --project demo.openscreen --json
+
+      - name: Export MP4 (fail-soft)
+        if: >-
+          github.event_name == 'pull_request' ||
+          (github.event_name == 'workflow_dispatch' && inputs.generate_video)
+        continue-on-error: true
+        run: xvfb-run -a openscreen export demo.openscreen -o demo.mp4 --json
+
+      - name: Upload generated MP4 (if one exists)
+        id: upload-demo
+        if: >-
+          github.event_name == 'pull_request' ||
+          (github.event_name == 'workflow_dispatch' && inputs.generate_video)
+        uses: actions/upload-artifact@v4
+        with:
+          name: openscreen-demo
+          path: demo.mp4
+          if-no-files-found: ignore
+
+      # Narrowly scoped: pull_request only, same-repo PRs only (fork tokens are
+      # read-only), token present, and an artifact URL actually produced.
+      - name: Comment on PR with artifact link
+        if: >-
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          env.GH_TOKEN != '' &&
+          steps.upload-demo.outputs.artifact-url != ''
+        continue-on-error: true
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          ARTIFACT_URL: ${{ steps.upload-demo.outputs.artifact-url }}
+        run: |
+          gh pr comment "$PR_URL" \
+            --body "Best-effort OpenScreen capture: $ARTIFACT_URL (empty on runners without a desktop session)."
+
+  brag:
+    name: brag-slim skill validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm (repo package manager)
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # brag-slim is project-local under .agents/skills/brag-slim/; the exact
+      # upstream commit and hash are recorded in skills-lock.json. CI validates
+      # the install and reads product info from README.md only. It never renders
+      # a video: that needs API keys and is opt-in when run locally.
+      - name: Install ffmpeg (best effort)
+        continue-on-error: true
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Install brag-slim skill (project-local, pinned via skills-lock.json)
+        continue-on-error: true
+        run: npx --yes skills add https://github.com/latent-spaces/brag --skill brag-slim --agent opencode --copy -y
+
+      - name: Check hyperframes tooling (best effort)
+        continue-on-error: true
+        run: npx --yes hyperframes doctor
+
+      - name: Validate brag skill (CI-safe; no rendering)
+        id: validate
+        shell: bash
+        run: |
+          set -u
+          log="brag-skill-validation.log"
+          {
+            echo "# brag-slim CI validation"
+            echo "generated_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "node=$(node --version)"
+            echo "pin_source=skills-lock.json"
+            echo "mode=validation-only (no API keys, no video render)"
+            # `skills add --agent opencode --copy` writes into .agents/skills/
+            # in this repo; older installs used .opencode/skills/. Accept either.
+            skill_file=""
+            for candidate in .agents/skills/brag-slim/SKILL.md .opencode/skills/brag-slim/SKILL.md; do
+              if [ -f "$candidate" ]; then
+                skill_file="$candidate"
+                break
+              fi
+            done
+            if [ -n "$skill_file" ]; then
+              echo "skill_file=present:$skill_file"
+              echo "--- SKILL.md front matter ---"
+              sed -n '1,6p' "$skill_file"
+            else
+              echo "skill_file=MISSING:.agents/skills/brag-slim/SKILL.md"
+              echo "note=install step failed or skill path changed; workflow stays green"
+            fi
+            echo "--- product info detected from README.md ---"
+            product_name=$(grep -m1 '^# ' README.md | sed -E 's/^# +//' || true)
+            tagline=$(grep -m1 '^### ' README.md | sed -E 's/^### +//' || true)
+            live_demo=$(grep -m1 'budgetiq-two.vercel.app' README.md | sed -E 's#.*https?://([^" )]+).*#\1#' || true)
+            echo "product_name=${product_name:-not found}"
+            echo "tagline=${tagline:-not found}"
+            echo "live_demo=${live_demo:-not found}"
+          } | tee "$log"
+
+      - name: Upload skill validation log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: brag-skill-validation
+          path: brag-skill-validation.log
+          if-no-files-found: warn
