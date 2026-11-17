@@ -1,5 +1,9 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { Menu } from "lucide-react";
 
 const anchors = [
   { href: "#features", label: "Features" },
@@ -8,6 +12,28 @@ const anchors = [
 ];
 
 export default function LandingNav() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      setMenuOpen(false);
+      menuButtonRef.current?.focus();
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [menuOpen]);
+
+  function closeMenuAndRestoreFocus() {
+    setMenuOpen(false);
+    menuButtonRef.current?.focus();
+  }
+
   return (
     <header className="sticky top-0 z-30 bg-night/60 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
@@ -35,6 +61,18 @@ export default function LandingNav() {
           ))}
         </nav>
         <div className="flex items-center gap-4">
+          <button
+            ref={menuButtonRef}
+            type="button"
+            className="inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-2 text-sm font-medium text-white/90 transition-colors hover:border-white/30 md:hidden"
+            aria-label="Menu"
+            aria-expanded={menuOpen}
+            aria-controls="mobile-section-nav"
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            <Menu className="h-4 w-4" aria-hidden="true" />
+            Menu
+          </button>
           <Link
             href="/login"
             className="hidden text-sm font-medium text-white/90 transition-colors hover:text-white sm:inline-flex"
@@ -49,6 +87,32 @@ export default function LandingNav() {
           </Link>
         </div>
       </div>
+      <nav
+        id="mobile-section-nav"
+        aria-label="Sections"
+        hidden={!menuOpen}
+        className="border-t border-white/10 px-6 pb-4 pt-2 md:hidden"
+      >
+        <div className="mx-auto flex max-w-6xl flex-col gap-1">
+          {anchors.map(({ href, label }) => (
+            <a
+              key={href}
+              href={href}
+              onClick={closeMenuAndRestoreFocus}
+              className="rounded-lg px-2 py-3 text-sm font-medium text-white/90 transition-colors hover:bg-white/5"
+            >
+              {label}
+            </a>
+          ))}
+          <Link
+            href="/login"
+            onClick={closeMenuAndRestoreFocus}
+            className="rounded-lg px-2 py-3 text-sm font-medium text-white/90 transition-colors hover:bg-white/5"
+          >
+            Log in
+          </Link>
+        </div>
+      </nav>
     </header>
   );
 }
