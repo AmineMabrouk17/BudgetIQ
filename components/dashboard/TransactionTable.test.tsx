@@ -33,6 +33,70 @@ function transaction(id: string, title: string, amount: number): Transaction {
 
 const initial = [transaction("t1", "Coffee", 12.5)];
 
+describe("TransactionTable search scope", () => {
+  it("says the search and its empty state only cover loaded transactions", () => {
+    render(
+      <TransactionTable
+        transactions={initial}
+        nextCursor="cursor-1"
+        scope={null}
+      />
+    );
+
+    const search = screen.getByPlaceholderText(/search loaded transactions/i);
+    fireEvent.change(search, { target: { value: "missing" } });
+
+    expect(
+      screen.getByText(/no matches in the loaded transactions/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/fetch older records to widen the search/i)
+    ).toBeInTheDocument();
+  });
+
+  it("does not promise older records when none exist", () => {
+    render(
+      <TransactionTable
+        transactions={initial}
+        nextCursor={null}
+        scope={null}
+      />
+    );
+
+    fireEvent.change(screen.getByPlaceholderText(/search loaded transactions/i), {
+      target: { value: "missing" },
+    });
+
+    expect(
+      screen.queryByText(/fetch older records/i)
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/try a different search term/i)
+    ).toBeInTheDocument();
+  });
+
+  it("labels counts as loaded matches while a query is active", () => {
+    render(
+      <TransactionTable
+        transactions={initial}
+        nextCursor={null}
+        scope={null}
+      />
+    );
+
+    fireEvent.change(screen.getByPlaceholderText(/search loaded transactions/i), {
+      target: { value: "coffee" },
+    });
+
+    expect(
+      screen.getByText(/loaded transactions matching your search/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(/1 match in loaded transactions/i)
+    ).toBeInTheDocument();
+  });
+});
+
 describe("TransactionTable accessibility and state sync", () => {
   beforeEach(() => {
     vi.clearAllMocks();

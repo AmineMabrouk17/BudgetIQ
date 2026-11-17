@@ -154,6 +154,9 @@ export default function TransactionTable({
     );
   }, [transactions, searchQuery]);
 
+  const activeQuery = searchQuery.trim();
+  const visibleCount = activeQuery ? filtered.length : transactions.length;
+
   // Sorting
   const sorted = useMemo(() => {
     return [...filtered].sort((a, b) => {
@@ -239,8 +242,17 @@ export default function TransactionTable({
                 <h2 className="text-base font-bold tracking-tight text-base-content">
                   Transactions
                 </h2>
-                <span className="inline-flex items-center rounded-full bg-base-200/80 px-2 py-0.5 text-xs font-semibold text-base-content/70">
-                  {transactions.length}
+                <span
+                  aria-label={
+                    activeQuery
+                      ? `${visibleCount} ${
+                          visibleCount === 1 ? "match" : "matches"
+                        } in loaded transactions`
+                      : `${visibleCount} loaded transactions`
+                  }
+                  className="inline-flex items-center rounded-full bg-base-200/80 px-2 py-0.5 text-xs font-semibold text-base-content/70"
+                >
+                  {visibleCount}
                 </span>
               </div>
               <p className="mt-0.5 text-xs text-base-content/50">
@@ -257,7 +269,7 @@ export default function TransactionTable({
               <input
                 ref={searchInputRef}
                 type="text"
-                placeholder="Search transactions..."
+                placeholder="Search loaded transactions…"
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -345,11 +357,36 @@ export default function TransactionTable({
               <Search className="h-5 w-5" />
             </div>
             <p className="mt-2 text-xs font-semibold text-base-content">
-              No results found
+              {activeQuery
+                ? "No matches in the loaded transactions"
+                : "No transactions match the current filters"}
             </p>
             <p className="text-[11px] text-base-content/50">
-              No transactions matching &ldquo;{searchQuery}&rdquo;
+              {activeQuery ? (
+                <>
+                  No transactions matching &ldquo;{searchQuery}&rdquo;
+                  {nextCursor
+                    ? " — fetch older records to widen the search"
+                    : ". Try a different search term."}
+                </>
+              ) : (
+                "Adjust or reset the filters to see more transactions."
+              )}
             </p>
+            {activeQuery && nextCursor && (
+              <button
+                className="btn btn-ghost btn-xs mt-3 text-primary hover:underline"
+                onClick={handleLoadMore}
+                disabled={isPending}
+              >
+                {isPending ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Database className="h-3 w-3" />
+                )}
+                Fetch older records
+              </button>
+            )}
             <button
               className="btn btn-ghost btn-xs mt-3 text-primary hover:underline"
               onClick={() => setSearchQuery("")}
@@ -495,7 +532,9 @@ export default function TransactionTable({
             Showing <span className="font-semibold text-base-content">{startIndex}</span>
             –<span className="font-semibold text-base-content">{endIndex}</span> of{" "}
             <span className="font-semibold text-base-content">{sorted.length}</span>{" "}
-            transactions
+            {searchQuery.trim()
+              ? "loaded transactions matching your search"
+              : "loaded transactions"}
           </p>
 
           <div className="flex items-center gap-3">
