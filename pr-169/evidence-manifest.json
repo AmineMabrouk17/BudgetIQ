@@ -1,0 +1,15 @@
+[
+  {
+    "label": "why-budgetiq",
+    "path": "/",
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "auth": false,
+    "expected": "Four commitments we can actually stand behind.",
+    "declared": true,
+    "before": "captured",
+    "after": "captured"
+  }
+]
