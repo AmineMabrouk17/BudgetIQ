@@ -1,11 +1,14 @@
 {
   "routes": [
     {
-      "label": "dashboard-demo-user",
-      "path": "/dashboard",
-      "viewport": "desktop",
-      "auth": true,
-      "expect": "Preview demo purchase"
+      "label": "mobile-menu",
+      "path": "/",
+      "viewport": "mobile",
+      "actions": [
+        {
+          "click": "button[aria-label=\"Menu\"]"
+        }
+      ]
     }
   ]
 }
