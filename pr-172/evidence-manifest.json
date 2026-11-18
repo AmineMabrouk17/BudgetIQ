@@ -1,0 +1,15 @@
+[
+  {
+    "label": "dashboard-strip",
+    "path": "/dashboard",
+    "viewport": {
+      "width": 900,
+      "height": 800
+    },
+    "auth": true,
+    "expected": null,
+    "declared": true,
+    "before": "captured",
+    "after": "captured"
+  }
+]
