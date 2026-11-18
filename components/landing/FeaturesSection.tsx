@@ -8,6 +8,7 @@ import {
   Receipt,
 } from "lucide-react";
 import Reveal from "@/components/landing/Reveal";
+import SectionIntro from "@/components/landing/SectionIntro";
 
 interface FeatureData {
   icon: LucideIcon;
@@ -63,13 +64,12 @@ export default function FeaturesSection() {
       <div className="mx-auto max-w-6xl px-6 lg:px-10">
         <Reveal variant="up">
           <div className="grid gap-6 lg:grid-cols-12">
-            <h2 className="max-w-[18ch] text-balance font-display text-[length:clamp(2.2rem,4.6vw,3.6rem)] font-bold leading-[0.99] tracking-[-0.035em] text-ink lg:col-span-7">
-              Everything you need to take control of your money
-            </h2>
-            <p className="max-w-sm self-end text-pretty text-[15px] leading-[1.65] text-ink-soft lg:col-span-4 lg:col-start-9">
-              A complete money tracker with an AI assistant that handles the
-              data entry. Free and open source.
-            </p>
+            <SectionIntro
+              title="Everything you need to take control of your money"
+              description="A complete money tracker with an AI assistant that handles the data entry. Free and open source."
+              titleClassName="lg:col-span-7"
+              descriptionClassName="lg:col-span-4 lg:col-start-9"
+            />
           </div>
         </Reveal>
 

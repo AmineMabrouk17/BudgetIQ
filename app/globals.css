@@ -29,8 +29,16 @@
   --color-positive: var(--bi-positive);
   --color-negative: var(--bi-negative);
   --color-focus: var(--bi-focus);
-  /* The statement card: a dark sheet in both themes, lifted in dark mode. */
+  /* The statement card and the step band: a dark sheet in both themes,
+     lifted in dark mode. Its own tones keep money legible without letting
+     page-theme colours leak into a permanently dark surface. */
   --color-sheet: var(--bi-sheet);
+  --color-sheet-ink: var(--bi-sheet-ink);
+  --color-sheet-soft: var(--bi-sheet-soft);
+  --color-sheet-rule: var(--bi-sheet-rule);
+  --color-sheet-signal: var(--bi-sheet-signal);
+  --color-sheet-positive: var(--bi-sheet-positive);
+  --color-sheet-negative: var(--bi-sheet-negative);
 }
 
 :root {
@@ -52,6 +60,12 @@
   --bi-negative: #b02a1e;
   --bi-focus: #1c24a8;
   --bi-sheet: #0b0f14;
+  --bi-sheet-ink: #f0f2f4;
+  --bi-sheet-soft: rgb(240 242 244 / 0.62);
+  --bi-sheet-rule: rgb(255 255 255 / 0.12);
+  --bi-sheet-signal: #8492ff;
+  --bi-sheet-positive: #4bd9a0;
+  --bi-sheet-negative: #ff8a73;
 }
 
 [data-theme="dark"] {
@@ -174,11 +188,11 @@
     color: var(--bi-on-signal);
   }
 
-  /* Paragraphs get a sane rag everywhere, not only where a component
-     remembered to ask for one. Browsers without support keep default wraps. */
-  p,
-  li,
-  dd {
+  /* The landing page gets a sane rag; app surfaces keep their own typography.
+     Browsers without support keep default wraps. */
+  .landing p,
+  .landing li,
+  .landing dd {
     text-wrap: pretty;
   }
 }
@@ -213,15 +227,10 @@
   animation: bi-marquee 52s linear infinite;
 }
 
-.bi-marquee:hover {
+/* Pause on pointer hover and on keyboard focus, so the entries can be read. */
+.bi-marquee:hover,
+.bi-marquee-host:focus-within .bi-marquee {
   animation-play-state: paused;
-}
-
-/* Blueprint dots: a quiet coordinate system for the hero, not wallpaper. */
-.bi-blueprint {
-  background-image: radial-gradient(var(--bi-rule-strong) 1px, transparent 1px);
-  background-size: 24px 24px;
-  mask-image: linear-gradient(to bottom, #000 0%, transparent 78%);
 }
 
 /* Reveal ships hidden until it scrolls in. Without JS, show everything. */

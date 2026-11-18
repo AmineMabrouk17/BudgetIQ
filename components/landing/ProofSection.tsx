@@ -1,5 +1,7 @@
-import { ArrowUpRight, Code2, Server, ShieldCheck } from "lucide-react";
+import { Code2, Server, ShieldCheck } from "lucide-react";
+import ArrowUpRightIcon from "@/components/landing/ArrowUpRightIcon";
 import Reveal from "@/components/landing/Reveal";
+import SectionIntro from "@/components/landing/SectionIntro";
 
 const proofs = [
   {
@@ -31,13 +33,14 @@ export default function ProofSection() {
       <div className="mx-auto max-w-6xl px-6 lg:px-10">
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-8">
           <Reveal variant="up" className="lg:col-span-5">
-            <h2 className="max-w-[14ch] text-balance font-display text-[length:clamp(2.2rem,4.4vw,3.4rem)] font-bold leading-[0.99] tracking-[-0.035em] text-ink">
-              Open source is the trust model.
-            </h2>
-            <p className="mt-5 max-w-[38ch] text-pretty text-[15px] leading-[1.65] text-ink-soft">
-              No ads, no data sales, no black box. Read the code, check the
-              security model, or run the whole app yourself.
-            </p>
+            <SectionIntro
+              title="Open source is the trust model."
+              description="No ads, no data sales, no black box. Read the code, check the security model, or run the whole app yourself."
+              size="medium"
+              titleMeasure="14ch"
+              descriptionMeasure="38ch"
+              descriptionClassName="mt-5"
+            />
             <div className="mt-8 border-t border-rule-strong pt-5">
               <p className="max-w-[38ch] text-pretty text-[13px] leading-[1.6] text-ink-mute">
                 No testimonials yet. This page would rather show proof than
@@ -48,10 +51,7 @@ export default function ProofSection() {
                 className="group mt-4 inline-flex min-h-6 items-center gap-1.5 py-1 text-[13px] font-semibold text-ink transition-colors hover:text-signal"
               >
                 Read the source
-                <ArrowUpRight
-                  aria-hidden="true"
-                  className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 motion-reduce:group-hover:translate-y-0 motion-reduce:group-hover:translate-x-0"
-                />
+                <ArrowUpRightIcon />
               </a>
             </div>
           </Reveal>

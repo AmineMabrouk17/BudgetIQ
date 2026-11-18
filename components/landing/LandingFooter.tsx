@@ -13,11 +13,8 @@ export default function LandingFooter() {
       <div className="mx-auto max-w-6xl px-6 py-14 lg:px-10">
         <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
           <div>
-            <div className="flex items-center gap-2.5 text-ink">
-              <BrandMark className="h-6 w-6 shrink-0" />
-              <span className="font-display text-[1.15rem] font-bold tracking-[-0.03em]">
-                BudgetIQ
-              </span>
+            <div className="text-ink">
+              <BrandMark />
             </div>
             <p className="mt-4 max-w-[34ch] text-[13px] leading-[1.6] text-ink-mute">
               BudgetIQ · Open source under MIT

@@ -1,8 +1,7 @@
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
 import AnimatedHeroTitle from "@/components/landing/AnimatedHeroTitle";
+import ArrowUpRightIcon from "@/components/landing/ArrowUpRightIcon";
 import HeroMockup from "@/components/landing/HeroMockup";
-import Parallax from "@/components/landing/Parallax";
 
 function GithubIcon() {
   return (
@@ -24,18 +23,11 @@ function GithubIcon() {
 export default function LandingHero() {
   return (
     <section className="relative overflow-hidden border-b border-rule">
-      <Parallax
-        speed={0.06}
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-full"
-      >
-        <div aria-hidden="true" className="bi-blueprint h-full w-full" />
-      </Parallax>
-
-      <div className="relative mx-auto grid max-w-6xl gap-14 px-6 pb-16 pt-14 lg:grid-cols-12 lg:items-center lg:gap-8 lg:px-10 lg:pb-24 lg:pt-16">
+      <div className="mx-auto grid max-w-6xl gap-14 px-6 pb-16 pt-14 lg:grid-cols-12 lg:items-center lg:gap-8 lg:px-10 lg:pb-24 lg:pt-16">
         <div className="lg:col-span-7 lg:pr-10">
           <AnimatedHeroTitle
             lines={["Say what", "you spent.", "It’s already logged."]}
-            emphasisLine={2}
+            voiceLineIndex={2}
           />
 
           <p className="mt-6 max-w-[46ch] text-pretty text-[17px] leading-[1.62] text-ink-soft lg:text-[18px] lg:leading-[1.6]">
@@ -50,10 +42,7 @@ export default function LandingHero() {
               className="group inline-flex items-center gap-2 bg-ink px-3.5 py-3.5 text-[15px] font-semibold text-canvas transition-colors hover:bg-signal hover:text-on-signal sm:px-6"
             >
               Get started free
-              <ArrowUpRight
-                aria-hidden="true"
-                className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 motion-reduce:group-hover:translate-y-0 motion-reduce:group-hover:translate-x-0"
-              />
+              <ArrowUpRightIcon />
             </Link>
             <a
               href="https://github.com/AmineMabrouk17/BudgetIQ"

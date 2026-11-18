@@ -19,7 +19,7 @@ export default async function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-canvas text-ink antialiased">
+    <div className="landing min-h-screen bg-canvas text-ink antialiased">
       <a
         href="#main"
         className="sr-only rounded-none focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-ink focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-canvas"

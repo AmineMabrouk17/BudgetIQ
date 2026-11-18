@@ -1,5 +1,6 @@
 import { Plus } from "lucide-react";
 import Reveal from "@/components/landing/Reveal";
+import SectionIntro from "@/components/landing/SectionIntro";
 
 interface FaqData {
   question: string;
@@ -65,12 +66,14 @@ export default function FaqSection() {
       <div className="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-12 lg:gap-8 lg:px-10">
         <Reveal variant="up" className="lg:col-span-4">
           <div className="lg:sticky lg:top-28">
-            <h2 className="max-w-[12ch] text-balance font-display text-[length:clamp(2.2rem,4.2vw,3.2rem)] font-bold leading-[0.99] tracking-[-0.035em] text-ink">
-              Questions, answered
-            </h2>
-            <p className="mt-5 max-w-[34ch] text-pretty text-[15px] leading-[1.65] text-ink-soft">
-              Everything you might wonder before signing up, answered plainly.
-            </p>
+            <SectionIntro
+              title="Questions, answered"
+              description="Everything you might wonder before signing up, answered plainly."
+              size="compact"
+              titleMeasure="12ch"
+              descriptionMeasure="34ch"
+              descriptionClassName="mt-5"
+            />
           </div>
         </Reveal>
 

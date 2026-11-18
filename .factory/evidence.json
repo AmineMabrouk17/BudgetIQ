@@ -1,29 +1,55 @@
 {
   "routes": [
     {
-      "label": "dashboard-demo-user",
-      "path": "/dashboard",
-      "viewport": "desktop",
-      "auth": true,
-      "expect": "Preview demo purchase"
-    },
-    {
       "label": "landing-hero",
       "path": "/",
       "viewport": "desktop",
-      "expect": "Get started free"
+      "expect": "— got it."
     },
     {
       "label": "landing-hero-mobile",
       "path": "/",
       "viewport": "mobile",
-      "expect": "Get started free"
+      "expect": "— got it."
+    },
+    {
+      "label": "landing-ledger",
+      "path": "/#live-ledger",
+      "viewport": "desktop",
+      "actions": [{ "scrollTo": "#live-ledger" }],
+      "expect": "LIVE LEDGER"
+    },
+    {
+      "label": "landing-features",
+      "path": "/#features",
+      "viewport": "desktop",
+      "actions": [{ "scrollTo": "#features" }]
+    },
+    {
+      "label": "landing-how-it-works",
+      "path": "/#how-it-works",
+      "viewport": "desktop",
+      "actions": [{ "scrollTo": "#how-it-works" }]
     },
     {
       "label": "landing-proof",
       "path": "/#proof",
       "viewport": "desktop",
-      "expect": "Open source is the trust model"
+      "actions": [{ "scrollTo": "#proof" }],
+      "expect": "Read the source"
+    },
+    {
+      "label": "landing-faq-mobile",
+      "path": "/#faq",
+      "viewport": "mobile",
+      "actions": [{ "scrollTo": "#faq" }]
+    },
+    {
+      "label": "landing-cta",
+      "path": "/#cta",
+      "viewport": "desktop",
+      "actions": [{ "scrollTo": "#cta" }],
+      "expect": "Start tracking\nyour money"
     }
   ]
 }

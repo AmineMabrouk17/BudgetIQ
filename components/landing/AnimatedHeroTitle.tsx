@@ -3,7 +3,7 @@ import { Fragment } from "react";
 interface AnimatedHeroTitleProps {
   lines: string[];
   /** Index of the line spoken in the assistant's serif voice. */
-  emphasisLine?: number;
+  voiceLineIndex?: number;
 }
 
 const BASE_DELAY_MS = 80;
@@ -38,7 +38,7 @@ function prepareLines(lines: string[]): PreparedLine[] {
 
 export default function AnimatedHeroTitle({
   lines,
-  emphasisLine,
+  voiceLineIndex,
 }: AnimatedHeroTitleProps) {
   const preparedLines = prepareLines(lines);
   return (
@@ -52,7 +52,7 @@ export default function AnimatedHeroTitle({
             <Fragment key={`${line.text}-${preparedWord.delayMs}`}>
               <span
                 className={`bi-rise inline-block will-change-transform ${
-                  emphasisLine === lineIndex
+                  voiceLineIndex === lineIndex
                     ? "font-voice text-[1.06em] font-normal italic tracking-[-0.015em] text-signal"
                     : ""
                 }`}

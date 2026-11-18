@@ -15,17 +15,14 @@ export default function LandingNav() {
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-1 px-6 py-3 md:h-16 md:flex-nowrap md:py-0 lg:px-10">
         <Link
           href="/"
-          className="order-1 flex items-center gap-2.5 text-ink transition-colors hover:text-signal"
+          className="order-1 flex items-center text-ink transition-colors hover:text-signal"
         >
-          <BrandMark className="h-6 w-6 shrink-0" />
-          <span className="font-display text-[1.15rem] font-bold tracking-[-0.03em]">
-            BudgetIQ
-          </span>
+          <BrandMark />
         </Link>
 
         <nav
           aria-label="Sections"
-          className="order-3 -mx-1 hidden w-full items-center gap-6 overflow-x-auto px-1 pb-1 md:order-2 md:mx-0 md:flex md:w-auto md:flex-1 md:justify-center md:overflow-visible md:px-0 md:pb-0"
+          className="order-3 -mx-1 flex w-full items-center gap-6 overflow-x-auto px-1 pb-1 md:order-2 md:mx-0 md:w-auto md:flex-1 md:justify-center md:overflow-visible md:px-0 md:pb-0"
         >
           {anchors.map(({ href, label }) => (
             <a
