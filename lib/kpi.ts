@@ -2,8 +2,6 @@ import { createClient } from "@/lib/supabase/server";
 import { DEFAULT_KPIS } from "@/lib/kpi-defaults";
 import type { CreateCustomKPIInput } from "@/types/kpi";
 
-export { DEFAULT_KPIS };
-
 export async function seedDefaultKpis(userId: string): Promise<void> {
   const supabase = await createClient();
 

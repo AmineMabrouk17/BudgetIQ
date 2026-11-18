@@ -235,6 +235,28 @@ async function runActions(page, actions, side) {
   }
 }
 
+function failureReason({
+  route,
+  redirectedToLogin,
+  redirectedAway,
+  landedPath,
+  blank,
+}) {
+  if (redirectedToLogin) {
+    return `Route "${route.label}" (${route.path}) redirected to the login page even ` +
+      `with auth: true. The demo session failed — check PREVIEW_TEST_SECRET and ` +
+      `VERCEL_ENV=preview on the server, and that the route is reachable.`;
+  }
+  if (blank) return `Route "${route.label}" (${route.path}) rendered a blank page.`;
+  if (redirectedAway) {
+    return `Route "${route.label}" (${route.path}) landed on ${landedPath} instead of ` +
+      `the declared path.`;
+  }
+  return `Route "${route.label}" (${route.path}) does not render the expected text ` +
+    `"${route.expect}". Evidence must show the change this PR makes; fix the ` +
+    `route, the actions or the expectation in .factory/evidence.json.`;
+}
+
 function missingExpected(route, body) {
   return route.expect ? !body.includes(route.expect) : false;
 }
@@ -261,32 +283,21 @@ async function captureRoute(page, route, side) {
   const mismatch = side === 'after' && missingExpected(route, body);
 
   if (redirectedAway || blank || mismatch) {
+    const reason = failureReason({
+      route,
+      redirectedToLogin,
+      redirectedAway,
+      landedPath,
+      blank,
+    });
     if (side === 'before') {
-      const reason = redirectedToLogin || redirectedAway
-        ? 'the route redirected away or could not be served on this branch'
-        : blank
-          ? 'the page rendered blank'
-          : `it did not render "${route.expect}" yet`;
       console.warn(
         `Before capture for "${route.label}" skipped: ${reason}. Recording it as unavailable.`
       );
       results.get(route.label).before = 'unavailable';
       return false;
     }
-    fail(
-      redirectedToLogin
-        ? `Route "${route.label}" (${route.path}) redirected to the login page even ` +
-          `with auth: true. The demo session failed — check PREVIEW_TEST_SECRET and ` +
-          `VERCEL_ENV=preview on the server, and that the route is reachable.`
-        : blank
-          ? `Route "${route.label}" (${route.path}) rendered a blank page.`
-          : redirectedAway
-            ? `Route "${route.label}" (${route.path}) landed on ${landedPath} instead of ` +
-              `the declared path.`
-            : `Route "${route.label}" (${route.path}) does not render the expected text ` +
-              `"${route.expect}". Evidence must show the change this PR makes; fix the ` +
-              `route, the actions or the expectation in .factory/evidence.json.`
-    );
+    fail(reason);
   }
 
   await page.screenshot({

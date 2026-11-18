@@ -1,5 +1,10 @@
 import { headers } from "next/headers";
-import { getPreviewMockSession } from "@/lib/auth/preview-bypass";
+import {
+  getPreviewMockSession,
+  PREVIEW_USER_EMAIL,
+  PREVIEW_USER_ID,
+  PREVIEW_USER_NAME,
+} from "@/lib/auth/preview-bypass";
 import { DEFAULT_KPIS } from "@/lib/kpi-defaults";
 import type { Profile } from "@/lib/profiles";
 import type { CustomKPI } from "@/types/kpi";
@@ -18,13 +23,13 @@ import type { Transaction } from "@/types/transaction";
  * fresh HMAC — the same guard the authenticated pages already rely on.
  */
 
-export const DEMO_USER_ID = "preview-synthetic-user";
+export const DEMO_USER_ID = PREVIEW_USER_ID;
 
 /** The dashboard layout gates on onboarding, so the demo profile is complete. */
 export const DEMO_PROFILE: Profile = {
   id: DEMO_USER_ID,
-  email: "preview-bot@internal.test",
-  full_name: "Preview Test Bot",
+  email: PREVIEW_USER_EMAIL,
+  full_name: PREVIEW_USER_NAME,
   avatar_url: null,
   income_type: "salaried",
   payday: 25,

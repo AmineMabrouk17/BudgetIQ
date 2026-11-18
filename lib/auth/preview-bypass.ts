@@ -17,9 +17,9 @@ export interface SyntheticUserSession {
 
 type HeaderReader = { get(name: string): string | null };
 
-const PREVIEW_USER_ID = "preview-synthetic-user";
-const PREVIEW_USER_EMAIL = "preview-bot@internal.test";
-const PREVIEW_USER_NAME = "Preview Test Bot";
+export const PREVIEW_USER_ID = "preview-synthetic-user";
+export const PREVIEW_USER_EMAIL = "preview-bot@internal.test";
+export const PREVIEW_USER_NAME = "Preview Test Bot";
 const MAX_TIMESTAMP_DRIFT_MS = 5 * 60 * 1000;
 const SESSION_TTL_MS = 60 * 60 * 1000;
 

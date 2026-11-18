@@ -5,7 +5,7 @@
       "path": "/dashboard",
       "viewport": "desktop",
       "auth": true,
-      "expect": "Financial Summary"
+      "expect": "Freelance invoice #142"
     }
   ]
 }
