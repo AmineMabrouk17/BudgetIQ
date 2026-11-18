@@ -9,7 +9,7 @@
     "auth": true,
     "expected": "Financial Summary",
     "declared": true,
-    "before": "unavailable",
+    "before": "captured",
     "after": "captured"
   }
 ]
