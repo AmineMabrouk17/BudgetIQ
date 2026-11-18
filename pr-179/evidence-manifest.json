@@ -1,0 +1,54 @@
+[
+  {
+    "label": "dashboard-demo-user",
+    "path": "/dashboard",
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "auth": true,
+    "expected": "Preview demo purchase",
+    "declared": true,
+    "before": "captured",
+    "after": "captured"
+  },
+  {
+    "label": "landing-hero",
+    "path": "/",
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "auth": false,
+    "expected": "Get started free",
+    "declared": true,
+    "before": "captured",
+    "after": "captured"
+  },
+  {
+    "label": "landing-hero-mobile",
+    "path": "/",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "auth": false,
+    "expected": "Get started free",
+    "declared": true,
+    "before": "captured",
+    "after": "captured"
+  },
+  {
+    "label": "landing-proof",
+    "path": "/#proof",
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "auth": false,
+    "expected": "Open source is the trust model",
+    "declared": true,
+    "before": "captured",
+    "after": "captured"
+  }
+]
