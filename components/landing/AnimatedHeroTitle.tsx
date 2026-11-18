@@ -1,9 +1,11 @@
+import { Fragment } from "react";
+
 interface AnimatedHeroTitleProps {
   lines: string[];
 }
 
-const BASE_DELAY_MS = 150;
-const WORD_STEP_MS = 90;
+const BASE_DELAY_MS = 80;
+const WORD_STEP_MS = 55;
 
 interface PreparedWord {
   word: string;
@@ -35,17 +37,21 @@ function prepareLines(lines: string[]): PreparedLine[] {
 export default function AnimatedHeroTitle({ lines }: AnimatedHeroTitleProps) {
   const preparedLines = prepareLines(lines);
   return (
-    <h1 className="mx-auto max-w-5xl font-display text-[length:clamp(3rem,9vw,9rem)] leading-[0.9] font-semibold tracking-[-0.02em] text-white/90">
+    <h1 className="max-w-3xl text-balance font-display text-[length:clamp(2.5rem,5vw,3.75rem)] font-normal leading-[1.08] tracking-[-0.03em] text-ink">
       {preparedLines.map((line) => (
-        <span key={line.text} aria-hidden={false} className="block">
+        <span key={line.text} className="block">
           {line.words.map((preparedWord) => (
-            <span
-              key={`${line.text}-${preparedWord.delayMs}`}
-              className="bi-rise inline-block will-change-transform"
-              style={{ animationDelay: `${preparedWord.delayMs}ms` }}
-            >
-              {preparedWord.word}{" "}
-            </span>
+            // The space sits between the word boxes, not inside them: a
+            // trailing space inside an inline-block is trimmed by innerText
+            // and by copy-paste, which turns the headline into one long word.
+            <Fragment key={`${line.text}-${preparedWord.delayMs}`}>
+              <span
+                className="bi-rise inline-block will-change-transform"
+                style={{ animationDelay: `${preparedWord.delayMs}ms` }}
+              >
+                {preparedWord.word}
+              </span>{" "}
+            </Fragment>
           ))}
         </span>
       ))}

@@ -33,7 +33,7 @@ describe("FaqSection", () => {
 
     expect(
       screen.getByText(
-        /not yet — budgetiq tracks income, expenses, and assets; budgets are on the roadmap/i
+        /no\. budgetiq tracks income, expense, and asset\. it has no budgets, limits, or alerts/i
       )
     ).toBeInTheDocument();
   });

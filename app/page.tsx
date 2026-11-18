@@ -5,7 +5,7 @@ import LandingNav from "@/components/landing/LandingNav";
 import LandingHero from "@/components/landing/LandingHero";
 import FeaturesSection from "@/components/landing/FeaturesSection";
 import HowItWorksSection from "@/components/landing/HowItWorksSection";
-import TestimonialsSection from "@/components/landing/TestimonialsSection";
+import ProofSection from "@/components/landing/ProofSection";
 import FaqSection from "@/components/landing/FaqSection";
 import CtaBand from "@/components/landing/CtaBand";
 import LandingFooter from "@/components/landing/LandingFooter";
@@ -18,14 +18,20 @@ export default async function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-night text-white/90 antialiased">
+    <div className="min-h-screen bg-canvas text-ink antialiased">
+      <a
+        href="#main"
+        className="sr-only rounded-none focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-ink focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-canvas"
+      >
+        Skip to content
+      </a>
       <AnnouncementBar />
       <LandingNav />
-      <main>
+      <main id="main">
         <LandingHero />
         <FeaturesSection />
         <HowItWorksSection />
-        <TestimonialsSection />
+        <ProofSection />
         <FaqSection />
         <CtaBand />
       </main>

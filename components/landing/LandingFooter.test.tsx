@@ -13,7 +13,7 @@ describe("LandingFooter", () => {
     for (const anchor of [
       "Features",
       "How it works",
-      "Testimonials",
+      "Why BudgetIQ",
       "FAQ",
     ]) {
       expect(

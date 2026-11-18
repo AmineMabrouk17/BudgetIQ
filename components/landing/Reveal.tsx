@@ -86,6 +86,7 @@ export default function Reveal({
   return (
     <div
       ref={ref}
+      data-reveal=""
       style={delay && !reduced ? { transitionDelay: `${delay}ms` } : undefined}
       className={`${
         isVisible ? VISIBLE_CLASSES[variant] : HIDDEN_CLASSES[variant]
