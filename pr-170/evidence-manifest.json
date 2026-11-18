@@ -1,0 +1,15 @@
+[
+  {
+    "label": "assistant-empty-state",
+    "path": "/dashboard",
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "auth": true,
+    "expected": "Describe an income, expense, or asset to log it.",
+    "declared": true,
+    "before": "captured",
+    "after": "captured"
+  }
+]
