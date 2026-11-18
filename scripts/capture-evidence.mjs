@@ -250,17 +250,23 @@ async function captureRoute(page, route, side) {
   await page.goto(url, { waitUntil: 'networkidle', timeout: 45000 }).catch(() => {});
   await runActions(page, route.actions, side);
 
-  const redirectedToLogin = route.auth && /\/login(?:\?|$)/.test(page.url());
-  const body = await page.locator('body').innerText();
+  const requestedPath = new URL(url).pathname;
+  const landedPath = new URL(page.url()).pathname;
+  const redirectedAway = landedPath !== requestedPath;
+  const redirectedToLogin = redirectedAway && landedPath.startsWith('/login');
+  const body = (await page.locator('body').innerText()).trim();
+  const blank = body.length < 20;
   // `expect` proves the PR branch shows the change. The base branch is meant to
   // show the old state, so a mismatch there is the evidence, not an error.
   const mismatch = side === 'after' && missingExpected(route, body);
 
-  if (redirectedToLogin || mismatch) {
+  if (redirectedAway || blank || mismatch) {
     if (side === 'before') {
-      const reason = redirectedToLogin
-        ? 'the route required auth this branch cannot provide yet'
-        : `it did not render "${route.expect}" yet`;
+      const reason = redirectedToLogin || redirectedAway
+        ? 'the route redirected away or could not be served on this branch'
+        : blank
+          ? 'the page rendered blank'
+          : `it did not render "${route.expect}" yet`;
       console.warn(
         `Before capture for "${route.label}" skipped: ${reason}. Recording it as unavailable.`
       );
@@ -272,9 +278,14 @@ async function captureRoute(page, route, side) {
         ? `Route "${route.label}" (${route.path}) redirected to the login page even ` +
           `with auth: true. The demo session failed — check PREVIEW_TEST_SECRET and ` +
           `VERCEL_ENV=preview on the server, and that the route is reachable.`
-        : `Route "${route.label}" (${route.path}) does not render the expected text ` +
-          `"${route.expect}". Evidence must show the change this PR makes; fix the ` +
-          `route, the actions or the expectation in .factory/evidence.json.`
+        : blank
+          ? `Route "${route.label}" (${route.path}) rendered a blank page.`
+          : redirectedAway
+            ? `Route "${route.label}" (${route.path}) landed on ${landedPath} instead of ` +
+              `the declared path.`
+            : `Route "${route.label}" (${route.path}) does not render the expected text ` +
+              `"${route.expect}". Evidence must show the change this PR makes; fix the ` +
+              `route, the actions or the expectation in .factory/evidence.json.`
     );
   }
 
