@@ -1,18 +1,5 @@
 [
   {
-    "label": "dashboard-demo-user",
-    "path": "/dashboard",
-    "viewport": {
-      "width": 1280,
-      "height": 800
-    },
-    "auth": true,
-    "expected": "Preview demo purchase",
-    "declared": true,
-    "before": "captured",
-    "after": "captured"
-  },
-  {
     "label": "landing-hero",
     "path": "/",
     "viewport": {
@@ -20,7 +7,7 @@
       "height": 800
     },
     "auth": false,
-    "expected": "Get started free",
+    "expected": "— got it.",
     "declared": true,
     "before": "captured",
     "after": "captured"
@@ -33,7 +20,46 @@
       "height": 844
     },
     "auth": false,
-    "expected": "Get started free",
+    "expected": "— got it.",
+    "declared": true,
+    "before": "captured",
+    "after": "captured"
+  },
+  {
+    "label": "landing-ledger",
+    "path": "/#live-ledger",
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "auth": false,
+    "expected": "LIVE LEDGER",
+    "declared": true,
+    "before": "captured",
+    "after": "captured"
+  },
+  {
+    "label": "landing-features",
+    "path": "/#features",
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "auth": false,
+    "expected": null,
+    "declared": true,
+    "before": "captured",
+    "after": "captured"
+  },
+  {
+    "label": "landing-how-it-works",
+    "path": "/#how-it-works",
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "auth": false,
+    "expected": null,
     "declared": true,
     "before": "captured",
     "after": "captured"
@@ -46,7 +72,33 @@
       "height": 800
     },
     "auth": false,
-    "expected": "Open source is the trust model",
+    "expected": "Read the source",
+    "declared": true,
+    "before": "captured",
+    "after": "captured"
+  },
+  {
+    "label": "landing-faq-mobile",
+    "path": "/#faq",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "auth": false,
+    "expected": null,
+    "declared": true,
+    "before": "captured",
+    "after": "captured"
+  },
+  {
+    "label": "landing-cta",
+    "path": "/#cta",
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "auth": false,
+    "expected": "Start tracking\nyour money",
     "declared": true,
     "before": "captured",
     "after": "captured"
