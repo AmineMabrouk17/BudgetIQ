@@ -36,12 +36,7 @@ export default async function RootLayout({
       suppressHydrationWarning
       className={`${hankenGrotesk.variable} ${youngSerif.variable}`}
     >
-      <body>
-        <noscript>
-          <style>{`[data-reveal]{opacity:1!important;transform:none!important}`}</style>
-        </noscript>
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
