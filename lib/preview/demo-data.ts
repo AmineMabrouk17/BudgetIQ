@@ -71,7 +71,7 @@ const DEMO_SEEDS: DemoSeed[] = [
   { id: "demo-txn-12", type: "expense", title: "Streaming bundle", amount: 19.99, category: "Subscriptions", scope: "personal", days: 2 },
   { id: "demo-txn-13", type: "expense", title: "Book: Deep Work", amount: 18.5, category: "Learning", scope: "personal", days: 1 },
   { id: "demo-txn-14", type: "expense", title: "Airport taxi", amount: 34.9, category: "Transport", scope: "business", days: 1 },
-  { id: "demo-txn-15", type: "expense", title: "Groceries top-up", amount: 41.15, category: "Food", scope: "personal", days: 0 },
+  { id: "demo-txn-15", type: "expense", title: "Preview demo purchase", amount: 41.15, category: "Food", scope: "personal", days: 0 },
 ];
 
 export const DEMO_TRANSACTIONS: Transaction[] = DEMO_SEEDS.map((seed) => ({
