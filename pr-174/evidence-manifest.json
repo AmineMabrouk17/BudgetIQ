@@ -1,0 +1,28 @@
+[
+  {
+    "label": "search-scope",
+    "path": "/dashboard",
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "auth": true,
+    "expected": "loaded transactions",
+    "declared": true,
+    "before": "captured",
+    "after": "captured"
+  },
+  {
+    "label": "search-empty",
+    "path": "/dashboard",
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "auth": true,
+    "expected": "No matches in the loaded transactions",
+    "declared": true,
+    "before": "captured",
+    "after": "captured"
+  }
+]
