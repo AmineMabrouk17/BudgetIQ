@@ -1,11 +1,15 @@
 {
   "routes": [
     {
-      "label": "dashboard-demo-user",
-      "path": "/dashboard",
+      "label": "create-account-mode",
+      "path": "/login",
       "viewport": "desktop",
-      "auth": true,
-      "expect": "Preview demo purchase"
+      "actions": [
+        {
+          "click": "text=Create account"
+        }
+      ],
+      "expect": "Create your BudgetIQ account"
     }
   ]
 }
