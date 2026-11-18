@@ -38,6 +38,7 @@ export default function HowItWorksSection() {
         <Reveal variant="up">
           <div className="grid gap-6 lg:grid-cols-12">
             <SectionIntro
+              eyebrow="How it works"
               title="Tracking your money in three steps"
               description="From sign-up to your first logged transaction in under a minute."
               tone="sheet"

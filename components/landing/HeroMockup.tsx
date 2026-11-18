@@ -27,7 +27,7 @@ export default function HeroMockup() {
           <p className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.14em] text-sheet-ink/70">
             <span
               aria-hidden="true"
-              className="inline-block h-1.5 w-1.5 bg-sheet-signal"
+              className="inline-block h-1.5 w-1.5 bg-sheet-soft"
             />
             Live
           </p>

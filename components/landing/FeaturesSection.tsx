@@ -7,6 +7,7 @@ import {
   MessageSquare,
   Receipt,
 } from "lucide-react";
+import InfoCard from "@/components/landing/InfoCard";
 import Reveal from "@/components/landing/Reveal";
 import SectionIntro from "@/components/landing/SectionIntro";
 
@@ -65,6 +66,7 @@ export default function FeaturesSection() {
         <Reveal variant="up">
           <div className="grid gap-6 lg:grid-cols-12">
             <SectionIntro
+              eyebrow="Features"
               title="Everything you need to take control of your money"
               description="A complete money tracker with an AI assistant that handles the data entry. Free and open source."
               titleClassName="lg:col-span-7"
@@ -85,20 +87,13 @@ export default function FeaturesSection() {
                   : "md:pr-8"
               }`}
             >
-              <article className="group flex h-full gap-4 py-8">
-                <Icon
-                  className="mt-0.5 h-5 w-5 shrink-0 text-signal transition-transform duration-300 group-hover:-translate-y-0.5 motion-reduce:group-hover:translate-y-0"
-                  aria-hidden="true"
-                />
-                <div>
-                  <h3 className="font-display text-[1.15rem] font-semibold leading-snug tracking-[-0.02em] text-ink">
-                    {title}
-                  </h3>
-                  <p className="mt-2 max-w-[42ch] text-pretty text-[15px] leading-[1.6] text-ink-soft">
-                    {description}
-                  </p>
-                </div>
-              </article>
+              <InfoCard
+                icon={Icon}
+                title={title}
+                description={description}
+                className="h-full py-8"
+                iconClassName="transition-transform duration-300 group-hover:-translate-y-0.5 motion-reduce:group-hover:translate-y-0"
+              />
             </Reveal>
           ))}
         </div>

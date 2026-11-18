@@ -24,7 +24,7 @@ function EntryList({ hidden }: { hidden?: boolean }) {
           key={entry.category}
           className="flex items-center gap-2.5 whitespace-nowrap text-[10px] font-medium uppercase tracking-[0.16em] text-ink-mute"
         >
-          <span aria-hidden="true" className="h-1 w-1 shrink-0 bg-signal" />
+          <span aria-hidden="true" className="h-1 w-1 shrink-0 bg-ink-mute" />
           {entry.category}
           <span className={`ledger-num ${ledgerToneClass[entry.tone]}`}>
             {entry.amount}

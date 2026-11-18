@@ -67,6 +67,7 @@ export default function FaqSection() {
         <Reveal variant="up" className="lg:col-span-4">
           <div className="lg:sticky lg:top-28">
             <SectionIntro
+              eyebrow="FAQ"
               title="Questions, answered"
               description="Everything you might wonder before signing up, answered plainly."
               size="compact"

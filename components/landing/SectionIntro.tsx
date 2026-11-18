@@ -1,6 +1,7 @@
 interface SectionIntroProps {
   title: string;
   description: string;
+  eyebrow?: string;
   titleClassName?: string;
   descriptionClassName?: string;
   titleMeasure?: string;
@@ -15,11 +16,13 @@ const titleSize: Record<NonNullable<SectionIntroProps["size"]>, string> = {
   compact: "text-[length:clamp(2.2rem,4.2vw,3.2rem)]",
 };
 
-/** Heading and supporting line shared by the landing sections. No eyebrow:
- *  the heading carries the section's weight on its own. */
+/** Heading and supporting line shared by the landing sections. The eyebrow is
+ *  the quiet section label the page has always carried; it steps aside on
+ *  phones so the heading keeps the width. */
 export default function SectionIntro({
   title,
   description,
+  eyebrow,
   titleClassName = "",
   descriptionClassName = "",
   titleMeasure = "18ch",
@@ -27,20 +30,39 @@ export default function SectionIntro({
   size = "default",
   tone = "ink",
 }: SectionIntroProps) {
+  const onSheet = tone === "sheet";
+
   return (
     <>
-      <h2
-        style={{ maxWidth: titleMeasure }}
-        className={`text-balance font-display ${titleSize[size]} font-bold leading-[0.99] tracking-[-0.035em] ${
-          tone === "sheet" ? "text-sheet-ink" : "text-ink"
-        } ${titleClassName}`}
-      >
-        {title}
-      </h2>
+      <div className={titleClassName}>
+        {eyebrow ? (
+          <div className="mb-4 hidden items-center gap-3 sm:flex">
+            <span
+              aria-hidden="true"
+              className={`h-px w-6 ${onSheet ? "bg-sheet-rule" : "bg-rule-strong"}`}
+            />
+            <p
+              className={`text-[11px] font-medium uppercase tracking-[0.18em] ${
+                onSheet ? "text-sheet-soft" : "text-ink-mute"
+              }`}
+            >
+              {eyebrow}
+            </p>
+          </div>
+        ) : null}
+        <h2
+          style={{ maxWidth: titleMeasure }}
+          className={`text-balance font-display ${titleSize[size]} font-bold leading-[0.99] tracking-[-0.035em] ${
+            onSheet ? "text-sheet-ink" : "text-ink"
+          }`}
+        >
+          {title}
+        </h2>
+      </div>
       <p
         style={{ maxWidth: descriptionMeasure }}
         className={`self-end text-pretty text-[15px] leading-[1.65] ${
-          tone === "sheet" ? "text-sheet-soft" : "text-ink-soft"
+          onSheet ? "text-sheet-soft" : "text-ink-soft"
         } ${descriptionClassName}`}
       >
         {description}

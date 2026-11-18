@@ -1,5 +1,6 @@
 import { Code2, Server, ShieldCheck } from "lucide-react";
 import ArrowUpRightIcon from "@/components/landing/ArrowUpRightIcon";
+import InfoCard from "@/components/landing/InfoCard";
 import Reveal from "@/components/landing/Reveal";
 import SectionIntro from "@/components/landing/SectionIntro";
 
@@ -34,6 +35,7 @@ export default function ProofSection() {
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-8">
           <Reveal variant="up" className="lg:col-span-5">
             <SectionIntro
+              eyebrow="Why BudgetIQ"
               title="Open source is the trust model."
               description="No ads, no data sales, no black box. Read the code, check the security model, or run the whole app yourself."
               size="medium"
@@ -59,24 +61,15 @@ export default function ProofSection() {
           <div className="lg:col-span-6 lg:col-start-7">
             {proofs.map(({ icon: Icon, title, description }, index) => (
               <Reveal key={title} variant="up" delay={index * 70}>
-                <article
-                  className={`flex gap-5 border-t border-rule-strong ${
+                <InfoCard
+                  icon={Icon}
+                  title={title}
+                  description={description}
+                  className={`border-t border-rule-strong ${
                     index === 0 ? "pt-0" : "py-6"
                   }`}
-                >
-                  <Icon
-                    className="mt-0.5 h-5 w-5 shrink-0 text-signal"
-                    aria-hidden="true"
-                  />
-                  <div>
-                    <h3 className="font-display text-[1.15rem] font-semibold leading-snug tracking-[-0.02em] text-ink">
-                      {title}
-                    </h3>
-                    <p className="mt-2 max-w-[44ch] text-pretty text-[15px] leading-[1.6] text-ink-soft">
-                      {description}
-                    </p>
-                  </div>
-                </article>
+                  descriptionClassName="max-w-[44ch]"
+                />
               </Reveal>
             ))}
           </div>

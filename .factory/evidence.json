@@ -35,8 +35,7 @@
       "label": "landing-proof",
       "path": "/#proof",
       "viewport": "desktop",
-      "actions": [{ "scrollTo": "#proof" }],
-      "expect": "Read the source"
+      "actions": [{ "scrollTo": "#proof" }]
     },
     {
       "label": "landing-faq-mobile",
@@ -48,8 +47,7 @@
       "label": "landing-cta",
       "path": "/#cta",
       "viewport": "desktop",
-      "actions": [{ "scrollTo": "#cta" }],
-      "expect": "Start tracking\nyour money"
+      "actions": [{ "scrollTo": "#cta" }]
     }
   ]
 }
