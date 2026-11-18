@@ -1,91 +1,136 @@
-type Trend = "up" | "down";
+import { TrendingDown, TrendingUp } from "lucide-react";
 
 interface SummaryCardData {
   label: string;
   value: string;
   delta: string;
-  trend: Trend;
+  direction: "up" | "down";
+  good: boolean;
 }
 
 const summaryCards: SummaryCardData[] = [
-  { label: "Net Balance", value: "$12,450", delta: "+$1,250", trend: "up" },
-  { label: "Monthly Spend", value: "$3,180", delta: "-12%", trend: "down" },
-  { label: "Total Assets", value: "$86,200", delta: "+4.2%", trend: "up" },
+  {
+    label: "Net balance",
+    value: "$12,450",
+    delta: "+$1,250",
+    direction: "up",
+    good: true,
+  },
+  {
+    label: "Expenses",
+    value: "$3,180",
+    delta: "−12%",
+    direction: "down",
+    good: true,
+  },
+  {
+    label: "Assets",
+    value: "$86,200",
+    delta: "+4.2%",
+    direction: "up",
+    good: true,
+  },
 ];
 
-function SummaryCard({ label, value, delta, trend }: SummaryCardData) {
+function SummaryCell({ label, value, delta, direction, good }: SummaryCardData) {
+  const TrendIcon = direction === "up" ? TrendingUp : TrendingDown;
+
   return (
-    <div className="rounded-xl border border-white/[0.08] bg-white/[0.04] p-3">
-      <p className="text-[10px] font-medium uppercase tracking-wide text-muted">
+    <div className="px-3 py-2 first:pl-0 last:pr-0">
+      <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-ink-mute">
         {label}
       </p>
-      <p className="mt-1 text-sm font-bold sm:text-base text-white/90">
+      <p className="ledger-num mt-1.5 text-[15px] font-semibold text-ink sm:text-base">
         {value}
       </p>
       <p
-        className={`mt-0.5 text-[10px] font-medium ${
-          trend === "up" ? "text-pop-green" : "text-pop-red"
+        className={`ledger-num mt-1 flex items-center gap-1 text-[11px] font-medium ${
+          good ? "text-positive" : "text-negative"
         }`}
       >
+        <TrendIcon className="h-3 w-3" aria-hidden="true" />
         {delta}
       </p>
     </div>
   );
 }
 
-function DonutChart() {
+function SavedThisMonth() {
   return (
-    <div
-      className="relative h-32 w-32 shrink-0"
-      role="img"
-      aria-label="Net balance breakdown"
-    >
+    <div className="flex items-center gap-4">
       <div
-        className="absolute inset-0 rounded-full"
-        style={{
-          background:
-            "conic-gradient(var(--color-accent) 0% 42%, var(--color-pop-yellow) 42% 58%, rgba(255,255,255,0.12) 58% 100%)",
-        }}
-      />
-      <div className="absolute inset-[24%] flex flex-col items-center justify-center rounded-full bg-night-raised ring-1 ring-white/[0.08]">
-        <p className="text-sm font-bold text-white/90">$1,250</p>
-        <p className="text-[10px] text-muted">saved</p>
+        className="relative h-28 w-28 shrink-0"
+        role="img"
+        aria-label="Saved this month by category"
+      >
+        <div
+          className="absolute inset-0 rounded-full"
+          style={{
+            background:
+              "conic-gradient(var(--color-clay) 0% 46%, var(--color-positive) 46% 72%, var(--color-surface-2) 72% 100%)",
+          }}
+        />
+        <div className="absolute inset-[26%] flex flex-col items-center justify-center rounded-full bg-surface ring-1 ring-rule">
+          <p className="ledger-num text-sm font-semibold text-ink">$1,250</p>
+          <p className="text-[11px] text-ink-mute">saved</p>
+        </div>
       </div>
+      <dl className="flex flex-col gap-2 text-[12px] text-ink-soft">
+        <div className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-clay" aria-hidden="true" />
+          <dt>Needs</dt>
+          <dd className="ledger-num ml-auto pl-3 font-medium text-ink">46%</dd>
+        </div>
+        <div className="flex items-center gap-2">
+          <span
+            className="h-2 w-2 rounded-full bg-positive"
+            aria-hidden="true"
+          />
+          <dt>Wants</dt>
+          <dd className="ledger-num ml-auto pl-3 font-medium text-ink">26%</dd>
+        </div>
+        <div className="flex items-center gap-2">
+          <span
+            className="h-2 w-2 rounded-full bg-surface-2 ring-1 ring-rule-strong"
+            aria-hidden="true"
+          />
+          <dt>Saved</dt>
+          <dd className="ledger-num ml-auto pl-3 font-medium text-ink">28%</dd>
+        </div>
+      </dl>
     </div>
   );
 }
 
 export default function HeroMockup() {
   return (
-    <div className="relative mx-auto w-full max-w-md rounded-2xl border border-white/[0.08] bg-night-raised p-6 shadow-2xl transition-transform duration-500 ease-out hover:-translate-y-1 hover:scale-[1.01] motion-reduce:hover:transform-none motion-reduce:transition-none">
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex gap-1.5">
-          <span className="h-3 w-3 rounded-full bg-pop-red/70" aria-hidden="true" />
+    <div className="relative w-full rounded-md border border-rule-strong bg-surface p-5 shadow-[0_1px_0_var(--color-rule),0_40px_80px_-48px_rgba(27,26,22,0.55)] sm:p-6">
+      <div className="flex items-baseline justify-between gap-3">
+        <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-ink-mute">
+          BudgetIQ · August ledger
+        </p>
+        <p className="flex items-center gap-1.5 text-[11px] font-medium text-ink-soft">
           <span
-            className="h-3 w-3 rounded-full bg-pop-yellow/70"
+            className="inline-block h-1.5 w-1.5 rounded-full bg-positive"
             aria-hidden="true"
           />
-          <span
-            className="h-3 w-3 rounded-full bg-pop-green/70"
-            aria-hidden="true"
-          />
-        </div>
-        <p className="text-xs font-medium text-muted">BudgetIQ dashboard</p>
+          Live
+        </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="mt-4 grid grid-cols-3 divide-x divide-rule border-y border-rule">
         {summaryCards.map((card) => (
-          <SummaryCard key={card.label} {...card} />
+          <SummaryCell key={card.label} {...card} />
         ))}
       </div>
 
-      <div className="mt-6 flex items-center gap-4">
-        <DonutChart />
+      <div className="mt-5 flex flex-col gap-5 sm:flex-row sm:items-center">
+        <SavedThisMonth />
         <div className="flex flex-1 flex-col gap-2">
-          <div className="max-w-[85%] self-start rounded-2xl rounded-bl-sm bg-white/10 px-4 py-2 text-sm text-white/90">
+          <div className="max-w-[95%] self-start rounded-sm rounded-bl-none bg-surface-2 px-3 py-2 text-[13px] text-ink">
             I spent $15 on coffee
           </div>
-          <div className="max-w-[85%] self-end rounded-2xl rounded-br-sm bg-accent px-4 py-2 text-sm font-medium text-white">
+          <div className="max-w-[95%] self-end rounded-sm rounded-br-none bg-clay px-3 py-2 text-[13px] font-medium text-on-clay">
             Logged ✓
           </div>
         </div>

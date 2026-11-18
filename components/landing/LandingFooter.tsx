@@ -1,15 +1,15 @@
 const productLinks = [
   { href: "#features", label: "Features" },
   { href: "#how-it-works", label: "How it works" },
-  { href: "#testimonials", label: "Testimonials" },
+  { href: "#proof", label: "Why BudgetIQ" },
   { href: "#faq", label: "FAQ" },
 ];
 
 export default function LandingFooter() {
   return (
-    <footer className="border-t border-white/[0.08] bg-night">
+    <footer className="border-t border-rule bg-canvas">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-10 sm:flex-row">
-        <p className="text-sm font-medium text-muted">
+        <p className="text-sm font-medium text-ink-soft">
           BudgetIQ · Open source under MIT
         </p>
         <nav aria-label="Footer">
@@ -18,7 +18,7 @@ export default function LandingFooter() {
               <li key={href}>
                 <a
                   href={href}
-                  className="relative text-sm text-muted transition-colors hover:text-white/90 after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-0 after:bg-current after:transition-all after:duration-300 hover:after:w-full motion-reduce:after:hidden"
+                  className="text-[13px] text-ink-mute transition-colors hover:text-ink"
                 >
                   {label}
                 </a>
@@ -27,7 +27,7 @@ export default function LandingFooter() {
             <li>
               <a
                 href="https://github.com/AmineMabrouk17/BudgetIQ"
-                className="relative text-sm text-base-content/70 transition-colors hover:text-base-content after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-0 after:bg-current after:transition-all after:duration-300 hover:after:w-full motion-reduce:after:hidden"
+                className="text-[13px] text-ink-mute transition-colors hover:text-ink"
               >
                 GitHub
               </a>

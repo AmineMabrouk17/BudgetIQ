@@ -9,7 +9,7 @@ describe("LandingHero", () => {
     expect(
       screen.getByRole("heading", {
         level: 1,
-        name: /your money, finally under control/i,
+        name: /say what you spent.*already logged/i,
       })
     ).toBeInTheDocument();
 

@@ -6,6 +6,24 @@
       "viewport": "desktop",
       "auth": true,
       "expect": "Preview demo purchase"
+    },
+    {
+      "label": "landing-hero",
+      "path": "/",
+      "viewport": "desktop",
+      "expect": "Say what you spent"
+    },
+    {
+      "label": "landing-hero-mobile",
+      "path": "/",
+      "viewport": "mobile",
+      "expect": "Say what you spent"
+    },
+    {
+      "label": "landing-proof",
+      "path": "/#proof",
+      "viewport": "desktop",
+      "expect": "Open source is the trust model"
     }
   ]
 }

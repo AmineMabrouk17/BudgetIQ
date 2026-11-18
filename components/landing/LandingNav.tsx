@@ -1,49 +1,71 @@
-import Image from "next/image";
 import Link from "next/link";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const anchors = [
   { href: "#features", label: "Features" },
   { href: "#how-it-works", label: "How it works" },
+  { href: "#proof", label: "Open source" },
   { href: "#faq", label: "FAQ" },
 ];
 
+function LedgerMark() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-7 w-7 shrink-0 text-clay"
+    >
+      <path d="M4 5h16M4 10h16M4 15h7M4 19h7" />
+      <path d="M14 19l3-4 3 2" />
+    </svg>
+  );
+}
+
 export default function LandingNav() {
   return (
-    <header className="sticky top-0 z-30 bg-night/60 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        <Link href="/" className="flex items-center gap-2">
-          <Image
-            src="/logo-icon-light.png"
-            alt="BudgetIQ logo"
-            width={32}
-            height={32}
-            className="h-8 w-8 rounded-lg"
-          />
-          <span className="font-display font-bold text-lg text-white/90">
+    <header className="sticky top-0 z-30 border-b border-rule bg-canvas/85 backdrop-blur-md">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-1 px-6 py-3 md:h-16 md:flex-nowrap md:py-0">
+        <Link
+          href="/"
+          className="order-1 flex items-center gap-2.5 text-ink transition-colors hover:text-clay"
+        >
+          <LedgerMark />
+          <span className="font-display text-lg font-normal tracking-[-0.02em]">
             BudgetIQ
           </span>
         </Link>
-        <nav className="hidden items-center gap-8 md:flex">
+
+        <nav
+          aria-label="Sections"
+          className="order-3 -mx-1 flex w-full items-center gap-5 overflow-x-auto px-1 pb-1 md:order-2 md:mx-0 md:w-auto md:flex-1 md:justify-center md:overflow-visible md:px-0 md:pb-0"
+        >
           {anchors.map(({ href, label }) => (
             <a
               key={href}
               href={href}
-              className="relative text-sm font-medium text-muted transition-colors hover:text-white/90 after:absolute after:-bottom-1 after:left-0 after:h-px after:w-0 after:bg-current after:transition-all after:duration-300 hover:after:w-full motion-reduce:after:hidden"
+              className="flex min-h-11 items-center whitespace-nowrap text-[13px] font-medium text-ink-soft transition-colors hover:text-ink"
             >
               {label}
             </a>
           ))}
         </nav>
-        <div className="flex items-center gap-4">
+
+        <div className="order-2 ml-auto flex items-center gap-2 md:order-3 md:ml-0 md:gap-3">
+          <ThemeToggle />
           <Link
             href="/login"
-            className="hidden text-sm font-medium text-white/90 transition-colors hover:text-white sm:inline-flex"
+            className="hidden px-2 text-[13px] font-medium text-ink-soft transition-colors hover:text-ink sm:inline-flex"
           >
             Log in
           </Link>
           <Link
             href="/login"
-            className="group inline-flex items-center rounded-full bg-white px-5 py-2 text-sm font-semibold text-[#010D1F] transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/90 hover:shadow-xl active:translate-y-0 motion-reduce:hover:transform-none"
+            className="inline-flex items-center rounded-sm bg-clay px-4 py-2 text-[13px] font-semibold text-on-clay transition-colors hover:bg-clay-deep"
           >
             Get started
           </Link>

@@ -13,17 +13,22 @@ export default function SectionHeading({
 }: SectionHeadingProps) {
   return (
     <Reveal variant="up">
-      <div className="mx-auto max-w-2xl text-center">
-        <p className="text-[13px] uppercase tracking-[0.01em] text-muted">
-          {eyebrow}
-        </p>
-        <h2 className="mt-3 text-3xl font-display font-semibold tracking-[-0.02em] text-white/90 sm:text-4xl md:text-5xl">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-8">
+        <h2 className="max-w-2xl text-balance font-display text-[length:clamp(1.9rem,3.4vw,2.5rem)] font-normal leading-[1.12] tracking-[-0.02em] text-ink">
           {title}
         </h2>
-        {description ? (
-          <p className="mt-4 leading-[1.6] text-muted">{description}</p>
-        ) : null}
+        <div className="hidden shrink-0 items-center gap-3 pb-1.5 sm:flex">
+          <span aria-hidden="true" className="h-px w-6 bg-rule-strong" />
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-ink-mute">
+            {eyebrow}
+          </p>
+        </div>
       </div>
+      {description ? (
+        <p className="mt-4 max-w-xl text-pretty leading-[1.65] text-ink-soft">
+          {description}
+        </p>
+      ) : null}
     </Reveal>
   );
 }

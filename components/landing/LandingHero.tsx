@@ -1,5 +1,12 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import {
+  ArrowRight,
+  Baby,
+  Clapperboard,
+  Coffee,
+  Plane,
+  ShoppingBasket,
+} from "lucide-react";
 import AnimatedHeroTitle from "@/components/landing/AnimatedHeroTitle";
 import HeroMockup from "@/components/landing/HeroMockup";
 import Parallax from "@/components/landing/Parallax";
@@ -22,113 +29,75 @@ function GithubIcon() {
   );
 }
 
+const categories = [
+  { icon: ShoppingBasket, label: "Groceries" },
+  { icon: Coffee, label: "Coffee" },
+  { icon: Plane, label: "Travel" },
+  { icon: Baby, label: "Baby" },
+  { icon: Clapperboard, label: "Subscriptions" },
+];
+
 export default function LandingHero() {
   return (
-    <section className="relative mx-auto w-full max-w-6xl overflow-visible px-6 pb-24 pt-20 text-center lg:pt-28">
+    <section className="relative overflow-hidden border-b border-rule">
       <Parallax
-        speed={0.12}
-        className="pointer-events-none absolute top-10 left-1/4 -z-10"
+        speed={0.06}
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[36rem]"
       >
         <div
           aria-hidden="true"
-          className="bi-drift h-72 w-72 rounded-full bg-accent/25 blur-[120px]"
-        />
-      </Parallax>
-      <Parallax
-        speed={-0.08}
-        className="pointer-events-none absolute right-1/4 bottom-0 -z-10"
-      >
-        <div
-          aria-hidden="true"
-          className="bi-drift h-72 w-72 rounded-full bg-pop-purple/20 blur-[120px]"
+          className="h-full w-full bg-[radial-gradient(70%_60%_at_75%_10%,var(--color-clay-soft),transparent_70%)]"
         />
       </Parallax>
 
-      <div className="relative">
-        <PillTag
-          emoji="🥑"
-          label="Groceries"
-          colorClass="bg-pop-green"
-          rotationDeg={-8}
-          popDelay={700}
-          className="absolute -left-2 top-6 z-10 hidden md:inline-flex"
-        />
-        <PillTag
-          emoji="🧸"
-          label="Baby"
-          colorClass="bg-pop-pink"
-          rotationDeg={7}
-          popDelay={850}
-          className="absolute right-0 top-10 z-10 hidden md:inline-flex"
-        />
-        <PillTag
-          emoji="☕"
-          label="Coffee"
-          colorClass="bg-pop-orange"
-          rotationDeg={-6}
-          popDelay={1000}
-          className="absolute left-4 top-1/2 z-10 hidden md:inline-flex"
-        />
-        <PillTag
-          emoji="🎬"
-          label="Subscriptions"
-          colorClass="bg-pop-purple"
-          rotationDeg={9}
-          popDelay={1150}
-          className="absolute top-1/2 right-6 z-10 hidden md:inline-flex"
-        />
-        <PillTag
-          emoji="✈️"
-          label="Travel"
-          colorClass="bg-pop-yellow"
-          rotationDeg={-9}
-          popDelay={1300}
-          className="absolute bottom-0 left-8 z-10 hidden md:inline-flex"
-        />
-        <AnimatedHeroTitle lines={["Your money,", "finally under control."]} />
-      </div>
+      <div className="mx-auto grid max-w-6xl gap-14 px-6 py-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-12 lg:py-24">
+        <div>
+          <div className="bi-rise flex flex-wrap items-center gap-2">
+            {categories.map((category) => (
+              <PillTag key={category.label} {...category} />
+            ))}
+          </div>
 
-      <p
-        className="bi-rise mx-auto mt-8 max-w-2xl text-lg leading-[1.6] text-muted"
-        style={{ animationDelay: "900ms" }}
-      >
-        BudgetIQ is a free, open-source personal finance app. Track income,
-        expenses, and assets — and let the AI assistant log them straight from
-        your words. Sign in with Google in seconds.
-      </p>
+          <div className="mt-8">
+            <AnimatedHeroTitle
+              lines={["Say what you spent.", "It’s already logged."]}
+            />
+          </div>
 
-      <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-        <Link
-          href="/login"
-          className="group inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-base font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-accent-bright hover:shadow-[0_12px_32px_-8px_rgba(0,153,255,0.55)] active:translate-y-0 motion-reduce:hover:transform-none"
-        >
-          Get started free
-          <ArrowRight
-            aria-hidden="true"
-            className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 motion-reduce:group-hover:translate-x-0"
-          />
-        </Link>
-        <a
-          href="https://github.com/AmineMabrouk17/BudgetIQ"
-          className="group inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-base font-semibold text-[#010D1F] transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/90 hover:shadow-xl active:translate-y-0 motion-reduce:hover:transform-none"
-        >
-          <GithubIcon />
-          View on GitHub
-        </a>
-      </div>
+          <p className="mt-6 max-w-xl text-pretty text-lg leading-[1.65] text-ink-soft">
+            BudgetIQ tracks your Income, Expenses, and Assets in one place.
+            Describe a transaction the way you would say it out loud, and the
+            AI assistant logs it after one quick confirmation.
+          </p>
 
-      <p
-        className="bi-rise mt-14 text-[13px] uppercase tracking-[0.01em] text-muted"
-        style={{ animationDelay: "1100ms" }}
-      >
-        Free forever · Open source · No ads · Your data, yours
-      </p>
+          <div className="mt-9 flex flex-wrap items-center gap-3">
+            <Link
+              href="/login"
+              className="group inline-flex items-center gap-2 rounded-sm bg-clay px-6 py-3 text-base font-semibold text-on-clay transition-colors hover:bg-clay-deep"
+            >
+              Get started free
+              <ArrowRight
+                aria-hidden="true"
+                className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
+              />
+            </Link>
+            <a
+              href="https://github.com/AmineMabrouk17/BudgetIQ"
+              className="inline-flex items-center gap-2 rounded-sm border border-rule-strong px-6 py-3 text-base font-semibold text-ink transition-colors hover:border-ink hover:bg-surface"
+            >
+              <GithubIcon />
+              View on GitHub
+            </a>
+          </div>
 
-      <div
-        className="bi-rise mx-auto mt-16 w-full max-w-xl"
-        style={{ animationDelay: "1200ms" }}
-      >
-        <HeroMockup />
+          <p className="mt-10 text-[13px] font-medium uppercase tracking-[0.12em] text-ink-mute">
+            Free forever · Open source · No ads · Your data, yours
+          </p>
+        </div>
+
+        <div className="w-full max-w-md justify-self-center lg:max-w-none">
+          <HeroMockup />
+        </div>
       </div>
     </section>
   );
