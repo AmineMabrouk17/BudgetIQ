@@ -4,6 +4,11 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getTransactions } from "@/lib/transactions";
 import { evaluateKPIs, type EvaluatedKPI } from "@/lib/kpi-calculator";
+import {
+  DEMO_KPIS,
+  isPreviewDemoRequest,
+  previewDemoTransactions,
+} from "@/lib/preview/demo-data";
 import type {
   CustomKPI,
   KpiOperation,
@@ -200,6 +205,15 @@ function errorMessage(error: unknown): string {
 }
 
 export async function listCustomKPIs(): Promise<ListKpisResult> {
+  // Signed preview QA requests render the fixture so evidence can show a
+  // populated dashboard without a reachable Supabase project.
+  if (await isPreviewDemoRequest()) {
+    return {
+      ok: true,
+      kpis: evaluateKPIs(DEMO_KPIS, await previewDemoTransactions()),
+    };
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
