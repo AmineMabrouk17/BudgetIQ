@@ -196,24 +196,42 @@ function previewAuthHeaders() {
   };
 }
 
-async function runActions(page, actions) {
+async function runActions(page, actions, side) {
   for (const action of actions) {
-    if ('click' in action) {
-      await page.locator(action.click).first().click({ timeout: 10000 });
-    } else if ('fill' in action) {
-      await page.locator(action.fill.selector).first().fill(action.fill.value);
-    } else if ('press' in action) {
-      await page.keyboard.press(action.press);
-    } else if ('scrollTo' in action) {
-      await page
-        .locator(action.scrollTo)
-        .first()
-        .scrollIntoViewIfNeeded({ timeout: 10000 });
-    } else if ('wait' in action) {
-      await page.waitForTimeout(action.wait);
+    try {
+      if ('click' in action) {
+        await page.locator(action.click).first().click({ timeout: 10000 });
+      } else if ('fill' in action) {
+        await page.locator(action.fill.selector).first().fill(action.fill.value);
+      } else if ('press' in action) {
+        await page.keyboard.press(action.press);
+      } else if ('scrollTo' in action) {
+        await page
+          .locator(action.scrollTo)
+          .first()
+          .scrollIntoViewIfNeeded({ timeout: 10000 });
+      } else if ('wait' in action) {
+        await page.waitForTimeout(action.wait);
+      }
+      // Let the UI settle after each step so the frame shows the end state.
+      await page.waitForTimeout(250);
+    } catch (error) {
+      // The base branch may not have the control yet — the change this PR
+      // introduces is the thing that creates it. Capture the pre-action state
+      // there and keep the failure strict on the PR branch.
+      if (side === 'before') {
+        console.warn(
+          `Before capture: action ${JSON.stringify(action)} did not apply ` +
+            `(${error.message.split('\n')[0]}). Capturing the state before it.`
+        );
+        continue;
+      }
+      fail(
+        `Action ${JSON.stringify(action)} failed on the PR branch: ` +
+          `${error.message.split('\n')[0]}. The evidence would not show the ` +
+          `state this PR claims; fix the selector or the action.`
+      );
     }
-    // Let the UI settle after each step so the frame shows the end state.
-    await page.waitForTimeout(250);
   }
 }
 
@@ -230,11 +248,13 @@ function missingExpected(route, body) {
 async function captureRoute(page, route, side) {
   const url = new URL(route.path, appUrl).toString();
   await page.goto(url, { waitUntil: 'networkidle', timeout: 45000 }).catch(() => {});
-  await runActions(page, route.actions);
+  await runActions(page, route.actions, side);
 
   const redirectedToLogin = route.auth && /\/login(?:\?|$)/.test(page.url());
   const body = await page.locator('body').innerText();
-  const mismatch = missingExpected(route, body);
+  // `expect` proves the PR branch shows the change. The base branch is meant to
+  // show the old state, so a mismatch there is the evidence, not an error.
+  const mismatch = side === 'after' && missingExpected(route, body);
 
   if (redirectedToLogin || mismatch) {
     if (side === 'before') {

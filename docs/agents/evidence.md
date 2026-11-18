@@ -9,7 +9,9 @@ CI enforces this in `.github/workflows/ci.yml`:
   `.factory/evidence.json` fails `visual-evidence`.
 - The capture script (`scripts/capture-evidence.mjs`) reads that file, captures
   the same routes and states on the base branch and the PR branch, and fails
-  when a route does not render the text the PR is supposed to introduce.
+  when the PR branch does not render the text the PR is supposed to introduce.
+  Actions that only exist after the change are tolerated on the base branch, so
+  a brand-new control still gets a clean "before".
 - Each screenshot is captioned in the PR body with its route, viewport and
   whether it was captured as the demo user.
 
@@ -44,7 +46,7 @@ CI enforces this in `.github/workflows/ci.yml`:
 | `viewport` | no | `"desktop"` (1280×800), `"mobile"` (390×844) or `{ "width": n, "height": n }`. Defaults to desktop. |
 | `auth` | no | `true` captures as the demo user through the signed preview session. Defaults to `false`. |
 | `actions` | no | Steps that put the UI into the state the PR changes. |
-| `expect` | no | Text that must be present after the actions run. This is what stops a shot of the wrong page from passing. |
+| `expect` | no | Text the **PR branch** must render after the actions run. The base branch is captured as it is — its old state is the "before" — so this only guards the after shot. |
 
 ### Actions
 
