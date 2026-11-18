@@ -1,11 +1,30 @@
 {
   "routes": [
     {
-      "label": "dashboard-demo-user",
+      "label": "faq-budgets",
+      "path": "/#faq",
+      "viewport": "desktop",
+      "actions": [
+        {
+          "scrollTo": "#faq"
+        }
+      ],
+      "expect": "doesn't set or enforce budgets"
+    },
+    {
+      "label": "kpi-labels",
       "path": "/dashboard",
       "viewport": "desktop",
       "auth": true,
-      "expect": "Preview demo purchase"
+      "actions": [
+        {
+          "wait": 1500
+        },
+        {
+          "click": "button[aria-label^=\"Edit \"]"
+        }
+      ],
+      "expect": "Amount Under Target"
     }
   ]
 }
