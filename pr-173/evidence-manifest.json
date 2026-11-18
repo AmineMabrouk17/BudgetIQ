@@ -1,0 +1,28 @@
+[
+  {
+    "label": "faq-budgets",
+    "path": "/#faq",
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "auth": false,
+    "expected": "doesn't set or enforce budgets",
+    "declared": true,
+    "before": "captured",
+    "after": "captured"
+  },
+  {
+    "label": "kpi-labels",
+    "path": "/dashboard",
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "auth": true,
+    "expected": "Amount Under Target",
+    "declared": true,
+    "before": "captured",
+    "after": "captured"
+  }
+]
