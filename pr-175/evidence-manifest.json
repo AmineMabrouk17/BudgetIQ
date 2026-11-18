@@ -1,0 +1,15 @@
+[
+  {
+    "label": "create-account-mode",
+    "path": "/login",
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "auth": false,
+    "expected": "Create your BudgetIQ account",
+    "declared": true,
+    "before": "captured",
+    "after": "captured"
+  }
+]
