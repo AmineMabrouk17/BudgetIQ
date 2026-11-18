@@ -1,3 +1,5 @@
+import { Fragment } from "react";
+
 interface AnimatedHeroTitleProps {
   lines: string[];
 }
@@ -39,13 +41,17 @@ export default function AnimatedHeroTitle({ lines }: AnimatedHeroTitleProps) {
       {preparedLines.map((line) => (
         <span key={line.text} className="block">
           {line.words.map((preparedWord) => (
-            <span
-              key={`${line.text}-${preparedWord.delayMs}`}
-              className="bi-rise inline-block will-change-transform"
-              style={{ animationDelay: `${preparedWord.delayMs}ms` }}
-            >
-              {preparedWord.word}{" "}
-            </span>
+            // The space sits between the word boxes, not inside them: a
+            // trailing space inside an inline-block is trimmed by innerText
+            // and by copy-paste, which turns the headline into one long word.
+            <Fragment key={`${line.text}-${preparedWord.delayMs}`}>
+              <span
+                className="bi-rise inline-block will-change-transform"
+                style={{ animationDelay: `${preparedWord.delayMs}ms` }}
+              >
+                {preparedWord.word}
+              </span>{" "}
+            </Fragment>
           ))}
         </span>
       ))}
