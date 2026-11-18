@@ -6,6 +6,9 @@
       "viewport": "desktop",
       "actions": [
         {
+          "click": "text=Is there a budget feature?"
+        },
+        {
           "scrollTo": "#faq"
         }
       ],
