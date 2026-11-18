@@ -1,28 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
+import { DEFAULT_KPIS } from "@/lib/kpi-defaults";
 import type { CreateCustomKPIInput } from "@/types/kpi";
-
-const DEFAULT_KPIS: CreateCustomKPIInput[] = [
-  {
-    title: "Income",
-    source_type: "income",
-    operation: "sum",
-    sort_order: 0,
-  },
-  {
-    title: "Tax Reserve 15%",
-    source_type: "expense",
-    operation: "percentage",
-    operand: 0.15,
-    sort_order: 1,
-  },
-  {
-    title: "Budget Remaining",
-    source_type: "expense",
-    operation: "budget_remaining",
-    operand: 600,
-    sort_order: 2,
-  },
-];
 
 export async function seedDefaultKpis(userId: string): Promise<void> {
   const supabase = await createClient();

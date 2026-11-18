@@ -1,5 +1,10 @@
 import { cache } from "react";
 import { createClient, getUser } from "@/lib/supabase/server";
+import {
+  isPreviewDemoRequest,
+  previewDemoTransactions,
+  previewDemoTransactionsBetween,
+} from "@/lib/preview/demo-data";
 import type {
   CreateTransactionInput,
   Transaction,
@@ -84,6 +89,7 @@ export type TransactionScopeFilter = TransactionScope | null;
 async function fetchTransactions(
   scope: TransactionScopeFilter = null
 ): Promise<Transaction[]> {
+  if (await isPreviewDemoRequest()) return previewDemoTransactions(scope);
   await requireUserId();
 
   const supabase = await createClient();
@@ -114,6 +120,10 @@ export async function getTransactionsPage(
   cursor?: string,
   scope: TransactionScopeFilter = null
 ): Promise<TransactionPage> {
+  if (await isPreviewDemoRequest()) {
+    const rows = await previewDemoTransactions(scope);
+    return { transactions: rows, nextCursor: null };
+  }
   await requireUserId();
 
   const supabase = await createClient();
@@ -159,6 +169,9 @@ export async function getTransactionsBetween(
   endISO: string,
   limit = 500
 ): Promise<Transaction[]> {
+  if (await isPreviewDemoRequest()) {
+    return previewDemoTransactionsBetween(startISO, endISO, limit);
+  }
   await requireUserId();
 
   const supabase = await createClient();

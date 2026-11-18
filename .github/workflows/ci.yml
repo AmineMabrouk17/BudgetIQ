@@ -123,11 +123,31 @@ jobs:
           npm install --no-save playwright
           npx playwright install chromium
 
+      - name: Validate evidence scope
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          # Every UI change must name the routes and states it touches, so the
+          # before/after shots show this PR's change rather than a generic page.
+          UI_CHANGED="$(git -C pr-branch diff --name-only "origin/${BASE_REF}...HEAD" -- 'app/**' 'components/**' | grep -v -E '\.(test|spec)\.(ts|tsx)$' || true)"
+          if [ -n "$UI_CHANGED" ] && [ ! -f pr-branch/.factory/evidence.json ]; then
+            echo "::error::This PR changes UI files but has no .factory/evidence.json."
+            echo "Declare the exact routes and UI states this PR changes; see docs/agents/evidence.md."
+            echo "Changed files:"
+            echo "$UI_CHANGED"
+            exit 1
+          fi
+
+      - name: Generate preview QA secret
+        run: echo "PREVIEW_TEST_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+
       - name: Capture Before & After screenshots + GIF/MP4
         env:
           START_CMD: ${{ vars.FACTORY_START_CMD || '' }}
           APP_URL: ${{ vars.FACTORY_APP_URL || 'http://127.0.0.1:3000' }}
           TARGET_PATH: ${{ vars.FACTORY_TARGET_PATH || '/' }}
+          # Enables the signed demo session so authenticated routes render.
+          VERCEL_ENV: preview
         run: |
           node pr-branch/scripts/capture-evidence.mjs \
             --base-dir base-branch \
@@ -164,21 +184,44 @@ jobs:
           git push origin factory-assets
 
           BASE_RAW="https://github.com/${{ github.repository }}/blob/factory-assets/${DEST}"
+          export BASE_RAW
           {
             echo 'evidence_markdown<<EOF'
             echo "### Visual Evidence (Playwright)"
-            echo "| Before (\`${{ github.base_ref }}\`) | After (PR #${{ github.event.pull_request.number }}) |"
-            echo "|---|---|"
-            echo "| ![Before](${BASE_RAW}/before.png?raw=true) | ![After](${BASE_RAW}/after.png?raw=true) |"
-            echo ""
-            if [ -f "${DEST}/after.gif" ]; then
-              echo "**Feature Walkthrough (GIF):**"
-              echo "![Walkthrough](${BASE_RAW}/after.gif?raw=true)"
-            fi
-            if [ -f "${DEST}/after.mp4" ]; then
-              echo ""
-              echo "- [Download / View MP4 Recording](${BASE_RAW}/after.mp4?raw=true)"
-            fi
+            node -e '
+              const fs = require("fs");
+              const path = require("path");
+              const base = process.env.BASE_RAW;
+              const manifest = JSON.parse(
+                fs.readFileSync(path.join("..", "evidence-out", "evidence-manifest.json"), "utf8")
+              );
+              const describe = (route) => {
+                const viewport = `${route.viewport.width}x${route.viewport.height}`;
+                const auth = route.auth ? "demo user (signed preview session)" : "public";
+                return `${route.path} · ${viewport} · ${auth}`;
+              };
+              for (const route of manifest) {
+                const after = `${base}/after-${route.label}.png?raw=true`;
+                const before =
+                  route.before === "unavailable"
+                    ? "not reachable before this PR"
+                    : `![Before](${base}/before-${route.label}.png?raw=true)`;
+                console.log(`#### ${route.label} — ${describe(route)}`);
+                console.log("");
+                console.log("| Before | After |");
+                console.log("|---|---|");
+                console.log(`| ${before} | ![After](${after}) |`);
+                console.log("");
+                if (fs.existsSync(path.join("..", "evidence-out", `after-${route.label}.gif`))) {
+                  console.log(`![Walkthrough: ${route.label}](${base}/after-${route.label}.gif?raw=true)`);
+                  console.log("");
+                }
+                if (fs.existsSync(path.join("..", "evidence-out", `after-${route.label}.mp4`))) {
+                  console.log(`- [MP4 recording: ${route.label}](${base}/after-${route.label}.mp4?raw=true)`);
+                  console.log("");
+                }
+              }
+            '
             echo 'EOF'
           } >> "$GITHUB_OUTPUT"
 

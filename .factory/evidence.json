@@ -1,0 +1,11 @@
+{
+  "routes": [
+    {
+      "label": "dashboard-demo-user",
+      "path": "/dashboard",
+      "viewport": "desktop",
+      "auth": true,
+      "expect": "Preview demo purchase"
+    }
+  ]
+}

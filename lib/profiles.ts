@@ -5,6 +5,7 @@ import {
   type SessionUser,
 } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { DEMO_PROFILE, isPreviewDemoRequest } from "@/lib/preview/demo-data";
 
 export const INCOME_TYPES = [
   "salaried",
@@ -60,6 +61,7 @@ export async function getAllProfiles(): Promise<Profile[]> {
 }
 
 async function fetchProfile(): Promise<Profile | null> {
+  if (await isPreviewDemoRequest()) return { ...DEMO_PROFILE };
   // Reuses the request-scoped session memo rather than hitting the Auth API a
   // second time: callers already resolved `getUser()` for the auth redirect.
   const user = await getUser();
