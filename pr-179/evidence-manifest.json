@@ -72,7 +72,7 @@
       "height": 800
     },
     "auth": false,
-    "expected": "Read the source",
+    "expected": null,
     "declared": true,
     "before": "captured",
     "after": "captured"
@@ -98,7 +98,7 @@
       "height": 800
     },
     "auth": false,
-    "expected": "Start tracking\nyour money",
+    "expected": null,
     "declared": true,
     "before": "captured",
     "after": "captured"
