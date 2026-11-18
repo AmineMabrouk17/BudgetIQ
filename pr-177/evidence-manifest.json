@@ -1,0 +1,15 @@
+[
+  {
+    "label": "dashboard-demo-user",
+    "path": "/dashboard",
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "auth": true,
+    "expected": "Financial Summary",
+    "declared": true,
+    "before": "unavailable",
+    "after": "captured"
+  }
+]
