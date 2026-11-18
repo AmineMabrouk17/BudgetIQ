@@ -1,11 +1,15 @@
 {
   "routes": [
     {
-      "label": "dashboard-demo-user",
-      "path": "/dashboard",
+      "label": "why-budgetiq",
+      "path": "/",
       "viewport": "desktop",
-      "auth": true,
-      "expect": "Preview demo purchase"
+      "actions": [
+        {
+          "scrollTo": "#why-budgetiq"
+        }
+      ],
+      "expect": "Four commitments we can actually stand behind."
     }
   ]
 }
