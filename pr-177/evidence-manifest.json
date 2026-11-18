@@ -7,7 +7,7 @@
       "height": 800
     },
     "auth": true,
-    "expected": "Financial Summary",
+    "expected": "Preview demo purchase",
     "declared": true,
     "before": "unavailable",
     "after": "captured"
