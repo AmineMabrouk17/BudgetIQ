@@ -11,13 +11,13 @@
       "label": "landing-hero",
       "path": "/",
       "viewport": "desktop",
-      "expect": "Say what you spent"
+      "expect": "Get started free"
     },
     {
       "label": "landing-hero-mobile",
       "path": "/",
       "viewport": "mobile",
-      "expect": "Say what you spent"
+      "expect": "Get started free"
     },
     {
       "label": "landing-proof",
