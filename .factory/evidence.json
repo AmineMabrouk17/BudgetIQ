@@ -1,11 +1,16 @@
 {
   "routes": [
     {
-      "label": "dashboard-demo-user",
+      "label": "assistant-empty-state",
       "path": "/dashboard",
       "viewport": "desktop",
       "auth": true,
-      "expect": "Preview demo purchase"
+      "actions": [
+        {
+          "click": "button[aria-label=\"Open AI assistant\"]"
+        }
+      ],
+      "expect": "Describe an income, expense, or asset to log it."
     }
   ]
 }
