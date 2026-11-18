@@ -1,16 +1,23 @@
 {
   "routes": [
     {
+      "label": "dashboard-demo-user",
+      "path": "/dashboard",
+      "viewport": "desktop",
+      "auth": true,
+      "expect": "Preview demo purchase"
+    },
+    {
       "label": "landing-hero",
       "path": "/",
       "viewport": "desktop",
-      "expect": "— got it."
+      "expect": "Say what\nyou spent."
     },
     {
       "label": "landing-hero-mobile",
       "path": "/",
       "viewport": "mobile",
-      "expect": "— got it."
+      "expect": "Say what\nyou spent."
     },
     {
       "label": "landing-ledger",
@@ -47,7 +54,8 @@
       "label": "landing-cta",
       "path": "/#cta",
       "viewport": "desktop",
-      "actions": [{ "scrollTo": "#cta" }]
+      "actions": [{ "scrollTo": "#cta" }],
+      "expect": "Start tracking\nyour money"
     }
   ]
 }

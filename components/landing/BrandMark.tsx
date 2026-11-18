@@ -1,17 +1,11 @@
-interface BrandMarkProps {
-  className?: string;
-}
-
 /**
  * The landing wordmark: four ledger cells, one already logged, set beside the
  * product name. The cells are the smallest statement of the idea — structure,
  * with one thing recorded.
  */
-export default function BrandMark({ className }: BrandMarkProps) {
+export default function BrandMark() {
   return (
-    <span
-      className={`inline-flex items-center gap-2.5 font-display text-[1.15rem] font-bold tracking-[-0.03em] ${className ?? ""}`}
-    >
+    <span className="inline-flex items-center gap-2.5 font-display text-[1.15rem] font-bold tracking-[-0.03em]">
       <svg
         aria-hidden="true"
         viewBox="0 0 24 24"
