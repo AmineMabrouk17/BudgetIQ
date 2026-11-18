@@ -1,11 +1,26 @@
 {
   "routes": [
     {
-      "label": "dashboard-demo-user",
+      "label": "search-scope",
       "path": "/dashboard",
       "viewport": "desktop",
       "auth": true,
-      "expect": "Preview demo purchase"
+      "expect": "loaded transactions"
+    },
+    {
+      "label": "search-empty",
+      "path": "/dashboard",
+      "viewport": "desktop",
+      "auth": true,
+      "actions": [
+        {
+          "fill": {
+            "selector": "input[placeholder*=\"Search\"]",
+            "value": "zzzz-not-found"
+          }
+        }
+      ],
+      "expect": "No matches in the loaded transactions"
     }
   ]
 }
