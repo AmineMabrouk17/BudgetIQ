@@ -4,6 +4,7 @@
       "label": "dashboard-demo-user",
       "path": "/dashboard",
       "viewport": "desktop",
+      "theme": "light",
       "auth": true,
       "expect": "Preview demo purchase"
     },
@@ -11,18 +12,35 @@
       "label": "landing-hero",
       "path": "/",
       "viewport": "desktop",
+      "theme": "light",
       "expect": "Say what\nyou spent."
     },
     {
       "label": "landing-hero-mobile",
       "path": "/",
       "viewport": "mobile",
+      "theme": "light",
+      "expect": "Say what\nyou spent."
+    },
+    {
+      "label": "landing-hero-dark",
+      "path": "/",
+      "viewport": "desktop",
+      "theme": "dark",
+      "expect": "Say what\nyou spent."
+    },
+    {
+      "label": "landing-hero-mobile-dark",
+      "path": "/",
+      "viewport": "mobile",
+      "theme": "dark",
       "expect": "Say what\nyou spent."
     },
     {
       "label": "landing-ledger",
       "path": "/#live-ledger",
       "viewport": "desktop",
+      "theme": "light",
       "actions": [{ "scrollTo": "#live-ledger" }],
       "expect": "LIVE LEDGER"
     },
@@ -30,30 +48,50 @@
       "label": "landing-features",
       "path": "/#features",
       "viewport": "desktop",
+      "theme": "light",
       "actions": [{ "scrollTo": "#features" }]
     },
     {
       "label": "landing-how-it-works",
       "path": "/#how-it-works",
       "viewport": "desktop",
+      "theme": "light",
+      "actions": [{ "scrollTo": "#how-it-works" }]
+    },
+    {
+      "label": "landing-how-it-works-dark",
+      "path": "/#how-it-works",
+      "viewport": "desktop",
+      "theme": "dark",
       "actions": [{ "scrollTo": "#how-it-works" }]
     },
     {
       "label": "landing-proof",
       "path": "/#proof",
       "viewport": "desktop",
+      "theme": "light",
       "actions": [{ "scrollTo": "#proof" }]
     },
     {
       "label": "landing-faq-mobile",
       "path": "/#faq",
       "viewport": "mobile",
+      "theme": "light",
       "actions": [{ "scrollTo": "#faq" }]
     },
     {
       "label": "landing-cta",
       "path": "/#cta",
       "viewport": "desktop",
+      "theme": "light",
+      "actions": [{ "scrollTo": "#cta" }],
+      "expect": "Start tracking\nyour money"
+    },
+    {
+      "label": "landing-cta-dark",
+      "path": "/#cta",
+      "viewport": "desktop",
+      "theme": "dark",
       "actions": [{ "scrollTo": "#cta" }],
       "expect": "Start tracking\nyour money"
     }

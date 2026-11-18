@@ -198,7 +198,8 @@ jobs:
               const describe = (route) => {
                 const viewport = `${route.viewport.width}x${route.viewport.height}`;
                 const auth = route.auth ? "demo user (signed preview session)" : "public";
-                return `${route.path} · ${viewport} · ${auth}`;
+                const theme = route.theme === "dark" ? "dark" : "light";
+                return `${route.path} · ${viewport} · ${theme} · ${auth}`;
               };
               for (const route of manifest) {
                 const after = `${base}/after-${route.label}.png?raw=true`;

@@ -1,17 +1,6 @@
-import {
-  type LedgerEntry,
-  ledgerToneClass,
-} from "@/components/landing/ledger";
+import { ledgerSamples, ledgerToneClass } from "@/components/landing/ledger";
 
-const entries: LedgerEntry[] = [
-  { category: "Salary", amount: "+$3,200.00", tone: "in" },
-  { category: "Groceries", amount: "−$86.40", tone: "out" },
-  { category: "Coffee", amount: "−$4.20", tone: "out" },
-  { category: "Freelance", amount: "+$450.00", tone: "in" },
-  { category: "Subscriptions", amount: "−$38.90", tone: "out" },
-  { category: "Utilities", amount: "−$120.00", tone: "out" },
-  { category: "Assets", amount: "$86,200.00", tone: "neutral" },
-];
+const entries = ledgerSamples;
 
 function EntryList({ hidden }: { hidden?: boolean }) {
   return (

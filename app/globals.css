@@ -3,7 +3,8 @@
 @theme inline {
   --font-sans: var(--font-geist);
   --font-display: var(--font-archivo);
-  /* The assistant's voice: a human serif, never used for UI chrome. */
+  /* The assistant's voice: a human serif for spoken phrases and the numerals
+     that speak them. Never used for buttons, fields, or other UI chrome. */
   --font-voice: var(--font-instrument-serif);
 }
 
@@ -228,7 +229,7 @@
 }
 
 /* Pause on pointer hover and on keyboard focus, so the entries can be read. */
-.bi-marquee:hover,
+.bi-marquee-host:hover .bi-marquee,
 .bi-marquee-host:focus-within .bi-marquee {
   animation-play-state: paused;
 }

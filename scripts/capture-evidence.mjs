@@ -79,6 +79,10 @@ function normaliseRoutes(config) {
       fail(`routes[${index}].viewport must be "desktop", "mobile" or {width, height}.`);
     }
 
+    if (route.theme && !['light', 'dark'].includes(route.theme)) {
+      fail(`routes[${index}].theme must be "light" or "dark".`);
+    }
+
     const actions = route.actions ?? [];
     if (!Array.isArray(actions)) fail(`routes[${index}].actions must be an array.`);
     for (const [actionIndex, action] of actions.entries()) {
@@ -92,6 +96,7 @@ function normaliseRoutes(config) {
       label: route.label,
       path: route.path,
       viewport,
+      theme: route.theme || 'light',
       auth: Boolean(route.auth),
       actions,
       expect: typeof route.expect === 'string' ? route.expect : null,
@@ -107,6 +112,7 @@ const routes = config
         label: 'page',
         path: fallbackPath,
         viewport: VIEWPORTS.desktop,
+        theme: 'light',
         auth: false,
         actions: [],
         expect: null,
@@ -123,6 +129,7 @@ function writeManifest() {
     label: route.label,
     path: route.path,
     viewport: route.viewport,
+    theme: route.theme,
     auth: route.auth,
     expected: route.expect,
     declared: Boolean(config),
@@ -332,6 +339,13 @@ async function captureFromDir(dir, label, record = false) {
 
         const context = await browser.newContext({
           viewport: route.viewport,
+          cookies: [
+            {
+              name: 'theme',
+              value: route.theme,
+              url: new URL('/', appUrl).toString(),
+            },
+          ],
           ...(route.auth ? { extraHTTPHeaders: previewAuthHeaders() } : {}),
           ...(record
             ? { recordVideo: { dir: videoDir, size: route.viewport } }

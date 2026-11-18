@@ -51,7 +51,7 @@ export default function SectionIntro({
     <>
       <div className={titleClassName}>
         {eyebrow ? (
-          <div className="mb-4 hidden items-center gap-3 sm:flex">
+          <div className="mb-4 flex items-center gap-3">
             <span
               aria-hidden="true"
               className={`h-px w-6 ${toneStyles.rule}`}

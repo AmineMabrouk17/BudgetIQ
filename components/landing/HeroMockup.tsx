@@ -1,15 +1,10 @@
 import ArrowUpRightIcon from "@/components/landing/ArrowUpRightIcon";
 import { Check, TrendingUp } from "lucide-react";
-import {
-  type LedgerEntry,
-  sheetToneClass,
-} from "@/components/landing/ledger";
+import { ledgerSamples, sheetToneClass } from "@/components/landing/ledger";
 
-const ledgerRows: LedgerEntry[] = [
-  { category: "Salary", amount: "+$3,200.00", tone: "in", meta: "Aug 01" },
-  { category: "Groceries", amount: "−$86.40", tone: "out", meta: "Aug 14" },
-  { category: "Assets", amount: "$86,200", tone: "neutral", meta: "4 accounts" },
-];
+const ledgerRows = ledgerSamples.filter(({ category }) =>
+  ["Salary", "Groceries", "Assets"].includes(category)
+);
 
 /**
  * The product as a physical artifact: a statement that stays dark in both
