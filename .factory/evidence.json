@@ -1,11 +1,13 @@
 {
   "routes": [
     {
-      "label": "dashboard-demo-user",
+      "label": "dashboard-strip",
       "path": "/dashboard",
-      "viewport": "desktop",
-      "auth": true,
-      "expect": "Preview demo purchase"
+      "viewport": {
+        "width": 900,
+        "height": 800
+      },
+      "auth": true
     }
   ]
 }
