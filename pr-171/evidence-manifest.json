@@ -1,0 +1,15 @@
+[
+  {
+    "label": "mobile-menu",
+    "path": "/",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "auth": false,
+    "expected": null,
+    "declared": true,
+    "before": "captured",
+    "after": "captured"
+  }
+]
