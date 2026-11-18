@@ -1,16 +1,8 @@
 import Link from "next/link";
-import {
-  ArrowRight,
-  Baby,
-  Clapperboard,
-  Coffee,
-  Plane,
-  ShoppingBasket,
-} from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import AnimatedHeroTitle from "@/components/landing/AnimatedHeroTitle";
 import HeroMockup from "@/components/landing/HeroMockup";
 import Parallax from "@/components/landing/Parallax";
-import PillTag from "@/components/landing/PillTag";
 
 function GithubIcon() {
   return (
@@ -29,73 +21,61 @@ function GithubIcon() {
   );
 }
 
-const categories = [
-  { icon: ShoppingBasket, label: "Groceries" },
-  { icon: Coffee, label: "Coffee" },
-  { icon: Plane, label: "Travel" },
-  { icon: Baby, label: "Baby" },
-  { icon: Clapperboard, label: "Subscriptions" },
-];
-
 export default function LandingHero() {
   return (
     <section className="relative overflow-hidden border-b border-rule">
       <Parallax
         speed={0.06}
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[36rem]"
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-full"
       >
-        <div
-          aria-hidden="true"
-          className="h-full w-full bg-[radial-gradient(70%_60%_at_75%_10%,var(--color-clay-soft),transparent_70%)]"
-        />
+        <div aria-hidden="true" className="bi-blueprint h-full w-full" />
       </Parallax>
 
-      <div className="mx-auto grid max-w-6xl gap-14 px-6 py-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-12 lg:py-24">
-        <div>
-          <div className="bi-rise flex flex-wrap items-center gap-2">
-            {categories.map((category) => (
-              <PillTag key={category.label} {...category} />
-            ))}
-          </div>
+      <div className="relative mx-auto grid max-w-6xl gap-14 px-6 pb-16 pt-14 lg:grid-cols-12 lg:items-center lg:gap-8 lg:px-10 lg:pb-24 lg:pt-16">
+        <div className="lg:col-span-7 lg:pr-10">
+          <AnimatedHeroTitle
+            lines={["Say what", "you spent.", "It’s already logged."]}
+            emphasisLine={2}
+          />
 
-          <div className="mt-8">
-            <AnimatedHeroTitle
-              lines={["Say what you spent.", "It’s already logged."]}
-            />
-          </div>
-
-          <p className="mt-6 max-w-xl text-pretty text-lg leading-[1.65] text-ink-soft">
+          <p className="mt-6 max-w-[46ch] text-pretty text-[17px] leading-[1.62] text-ink-soft lg:text-[18px] lg:leading-[1.6]">
             BudgetIQ tracks your Income, Expenses, and Assets in one place.
             Describe a transaction the way you would say it out loud, and the
             AI assistant logs it after one quick confirmation.
           </p>
 
-          <div className="mt-9 flex flex-wrap items-center gap-3">
+          <div className="mt-9 flex flex-wrap items-center gap-2 sm:gap-3">
             <Link
               href="/login"
-              className="group inline-flex items-center gap-2 rounded-sm bg-clay px-6 py-3 text-base font-semibold text-on-clay transition-colors hover:bg-clay-deep"
+              className="group inline-flex items-center gap-2 bg-ink px-3.5 py-3.5 text-[15px] font-semibold text-canvas transition-colors hover:bg-signal hover:text-on-signal sm:px-6"
             >
               Get started free
-              <ArrowRight
+              <ArrowUpRight
                 aria-hidden="true"
-                className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
+                className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 motion-reduce:group-hover:translate-y-0 motion-reduce:group-hover:translate-x-0"
               />
             </Link>
             <a
               href="https://github.com/AmineMabrouk17/BudgetIQ"
-              className="inline-flex items-center gap-2 rounded-sm border border-rule-strong px-6 py-3 text-base font-semibold text-ink transition-colors hover:border-ink hover:bg-surface"
+              className="inline-flex items-center gap-2 border border-rule-strong px-3.5 py-3.5 text-[15px] font-semibold text-ink transition-colors hover:border-ink hover:bg-surface sm:px-6"
             >
               <GithubIcon />
               View on GitHub
             </a>
           </div>
 
-          <p className="mt-10 text-[13px] font-medium uppercase tracking-[0.12em] text-ink-mute">
-            Free forever · Open source · No ads · Your data, yours
+          <p className="mt-10 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-rule pt-4 text-[10px] font-medium uppercase tracking-[0.16em] text-ink-mute">
+            <span>Free forever</span>
+            <span aria-hidden="true" className="h-3 w-px bg-rule-strong" />
+            <span>Open source</span>
+            <span aria-hidden="true" className="h-3 w-px bg-rule-strong" />
+            <span>No ads</span>
+            <span aria-hidden="true" className="h-3 w-px bg-rule-strong" />
+            <span>Your data, yours</span>
           </p>
         </div>
 
-        <div className="w-full max-w-md justify-self-center lg:max-w-none">
+        <div className="w-full lg:col-span-5">
           <HeroMockup />
         </div>
       </div>

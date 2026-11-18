@@ -1,13 +1,16 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: var(--font-hanken);
-  --font-display: var(--font-young-serif);
+  --font-sans: var(--font-geist);
+  --font-display: var(--font-archivo);
+  /* The assistant's voice: a human serif, never used for UI chrome. */
+  --font-voice: var(--font-instrument-serif);
 }
 
-/* BudgetIQ "Ledger" design system.
-   Warm paper by default, pine ink at night. One action colour (clay), two
-   truthful signals (positive / negative), and money set in tabular figures.
+/* BudgetIQ "Signal Ink" design system.
+   Cool chalk paper, graphite ink, and one committed ultramarine for action.
+   Green and rust are reserved for money semantics, never decoration. Money is
+   set in tabular figures so it never jitters while a number updates.
    Token names are prefixed so DaisyUI's theme variables can never clobber
    them — that collision is what turned `bg-accent` teal on the old landing. */
 @theme {
@@ -19,74 +22,79 @@
   --color-ink: var(--bi-ink);
   --color-ink-soft: var(--bi-ink-soft);
   --color-ink-mute: var(--bi-ink-mute);
-  --color-clay: var(--bi-clay);
-  --color-clay-deep: var(--bi-clay-deep);
-  --color-clay-soft: var(--bi-clay-soft);
-  --color-on-clay: var(--bi-on-clay);
+  --color-signal: var(--bi-signal);
+  --color-signal-deep: var(--bi-signal-deep);
+  --color-signal-soft: var(--bi-signal-soft);
+  --color-on-signal: var(--bi-on-signal);
   --color-positive: var(--bi-positive);
   --color-negative: var(--bi-negative);
   --color-focus: var(--bi-focus);
+  /* The statement card: a dark sheet in both themes, lifted in dark mode. */
+  --color-sheet: var(--bi-sheet);
 }
 
 :root {
   color-scheme: light;
 
-  --bi-canvas: #f4efe6;
-  --bi-surface: #fffcf6;
-  --bi-surface-2: #ebe3d5;
-  --bi-rule: rgb(27 26 22 / 0.12);
-  --bi-rule-strong: rgb(27 26 22 / 0.26);
-  --bi-ink: #1b1a16;
-  --bi-ink-soft: #514b3f;
-  --bi-ink-mute: #6b6253;
-  --bi-clay: #a83e1c;
-  --bi-clay-deep: #8a3013;
-  --bi-clay-soft: rgb(168 62 28 / 0.09);
-  --bi-on-clay: #fffcf6;
-  --bi-positive: #2c6b4c;
-  --bi-negative: #a63a24;
-  --bi-focus: #8a3013;
+  --bi-canvas: #f0f2f4;
+  --bi-surface: #ffffff;
+  --bi-surface-2: #e3e7eb;
+  --bi-rule: rgb(12 17 22 / 0.12);
+  --bi-rule-strong: rgb(12 17 22 / 0.28);
+  --bi-ink: #0c1116;
+  --bi-ink-soft: #414b57;
+  --bi-ink-mute: #5c6773;
+  --bi-signal: #2a34d6;
+  --bi-signal-deep: #1c24a8;
+  --bi-signal-soft: rgb(42 52 214 / 0.08);
+  --bi-on-signal: #ffffff;
+  --bi-positive: #08734e;
+  --bi-negative: #b02a1e;
+  --bi-focus: #1c24a8;
+  --bi-sheet: #0b0f14;
 }
 
 [data-theme="dark"] {
   color-scheme: dark;
 
-  --bi-canvas: #0f1714;
-  --bi-surface: #1a2620;
-  --bi-surface-2: #22322a;
-  --bi-rule: rgb(243 238 228 / 0.12);
-  --bi-rule-strong: rgb(243 238 228 / 0.26);
-  --bi-ink: #f3eee4;
-  --bi-ink-soft: #b9b4a6;
-  --bi-ink-mute: #948f81;
-  --bi-clay: #e27a4a;
-  --bi-clay-deep: #f0956a;
-  --bi-clay-soft: rgb(226 122 74 / 0.14);
-  --bi-on-clay: #0f1714;
-  --bi-positive: #6fd3a0;
-  --bi-negative: #f08e74;
-  --bi-focus: #f0956a;
+  --bi-canvas: #0a0d12;
+  --bi-surface: #11161d;
+  --bi-surface-2: #1a212b;
+  --bi-rule: rgb(237 241 246 / 0.12);
+  --bi-rule-strong: rgb(237 241 246 / 0.26);
+  --bi-ink: #edf1f6;
+  --bi-ink-soft: #b3bdca;
+  --bi-ink-mute: #8b96a5;
+  --bi-signal: #8492ff;
+  --bi-signal-deep: #a3aeff;
+  --bi-signal-soft: rgb(132 146 255 / 0.14);
+  --bi-on-signal: #0a0d12;
+  --bi-positive: #4bd9a0;
+  --bi-negative: #ff8a73;
+  --bi-focus: #a3aeff;
+  --bi-sheet: #141b24;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     color-scheme: dark;
 
-    --bi-canvas: #0f1714;
-    --bi-surface: #1a2620;
-    --bi-surface-2: #22322a;
-    --bi-rule: rgb(243 238 228 / 0.12);
-    --bi-rule-strong: rgb(243 238 228 / 0.26);
-    --bi-ink: #f3eee4;
-    --bi-ink-soft: #b9b4a6;
-    --bi-ink-mute: #948f81;
-    --bi-clay: #e27a4a;
-    --bi-clay-deep: #f0956a;
-    --bi-clay-soft: rgb(226 122 74 / 0.14);
-    --bi-on-clay: #0f1714;
-    --bi-positive: #6fd3a0;
-    --bi-negative: #f08e74;
-    --bi-focus: #f0956a;
+    --bi-canvas: #0a0d12;
+    --bi-surface: #11161d;
+    --bi-surface-2: #1a212b;
+    --bi-rule: rgb(237 241 246 / 0.12);
+    --bi-rule-strong: rgb(237 241 246 / 0.26);
+    --bi-ink: #edf1f6;
+    --bi-ink-soft: #b3bdca;
+    --bi-ink-mute: #8b96a5;
+    --bi-signal: #8492ff;
+    --bi-signal-deep: #a3aeff;
+    --bi-signal-soft: rgb(132 146 255 / 0.14);
+    --bi-on-signal: #0a0d12;
+    --bi-positive: #4bd9a0;
+    --bi-negative: #ff8a73;
+    --bi-focus: #a3aeff;
+    --bi-sheet: #141b24;
   }
 }
 
@@ -125,25 +133,25 @@
    brand overrides for the product chrome outside the landing page. */
 :root,
 [data-theme="light"] {
-  --color-primary: #0099ff;
+  --color-primary: #2a34d6;
   --color-primary-content: #ffffff;
 }
 
 [data-theme="dark"] {
-  --color-base-100: #11263b;
-  --color-base-200: #001122;
-  --color-base-300: #010d1f;
-  --color-primary: #0099ff;
-  --color-primary-content: #ffffff;
+  --color-base-100: #11161d;
+  --color-base-200: #0a0d12;
+  --color-base-300: #070a0e;
+  --color-primary: #8492ff;
+  --color-primary-content: #0a0d12;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
-    --color-base-100: #11263b;
-    --color-base-200: #001122;
-    --color-base-300: #010d1f;
-    --color-primary: #0099ff;
-    --color-primary-content: #ffffff;
+    --color-base-100: #11161d;
+    --color-base-200: #0a0d12;
+    --color-base-300: #070a0e;
+    --color-primary: #8492ff;
+    --color-primary-content: #0a0d12;
   }
 }
 
@@ -162,8 +170,16 @@
   }
 
   ::selection {
-    background: var(--bi-clay);
-    color: var(--bi-on-clay);
+    background: var(--bi-signal);
+    color: var(--bi-on-signal);
+  }
+
+  /* Paragraphs get a sane rag everywhere, not only where a component
+     remembered to ask for one. Browsers without support keep default wraps. */
+  p,
+  li,
+  dd {
+    text-wrap: pretty;
   }
 }
 
@@ -183,6 +199,31 @@
   animation: bi-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* A slow ledger ticker. Duplicated content makes the loop seamless. */
+@keyframes bi-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.bi-marquee {
+  animation: bi-marquee 52s linear infinite;
+}
+
+.bi-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Blueprint dots: a quiet coordinate system for the hero, not wallpaper. */
+.bi-blueprint {
+  background-image: radial-gradient(var(--bi-rule-strong) 1px, transparent 1px);
+  background-size: 24px 24px;
+  mask-image: linear-gradient(to bottom, #000 0%, transparent 78%);
+}
+
 /* Reveal ships hidden until it scrolls in. Without JS, show everything. */
 @media (scripting: none) {
   [data-reveal] {
@@ -193,6 +234,10 @@
 
 @media (prefers-reduced-motion: reduce) {
   .bi-rise {
+    animation: none;
+  }
+
+  .bi-marquee {
     animation: none;
   }
 }

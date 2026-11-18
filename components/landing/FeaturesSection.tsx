@@ -7,16 +7,15 @@ import {
   MessageSquare,
   Receipt,
 } from "lucide-react";
-import SectionHeading from "@/components/landing/SectionHeading";
 import Reveal from "@/components/landing/Reveal";
 
-interface FeatureCardData {
+interface FeatureData {
   icon: LucideIcon;
   title: string;
   description: string;
 }
 
-const featureCards: FeatureCardData[] = [
+const features: FeatureData[] = [
   {
     icon: Receipt,
     title: "Track it all in one place",
@@ -55,41 +54,51 @@ const featureCards: FeatureCardData[] = [
   },
 ];
 
-function FeatureCard({ icon: Icon, title, description }: FeatureCardData) {
-  return (
-    <div className="group h-full border-t border-rule-strong pt-5">
-      <Icon
-        className="h-5 w-5 text-clay transition-transform duration-300 group-hover:-translate-y-0.5 motion-reduce:group-hover:translate-y-0"
-        aria-hidden="true"
-      />
-      <h3 className="mt-4 font-display text-xl font-normal tracking-[-0.02em] text-ink">
-        {title}
-      </h3>
-      <p className="mt-2 text-pretty text-sm leading-[1.65] text-ink-soft">
-        {description}
-      </p>
-    </div>
-  );
-}
-
 export default function FeaturesSection() {
   return (
-    <section id="features" className="scroll-mt-20 border-b border-rule bg-canvas py-20">
-      <div className="mx-auto max-w-6xl px-6">
-        <SectionHeading
-          eyebrow="Features"
-          title="Everything you need to take control of your money"
-          description="A complete money tracker with an AI assistant that handles the data entry. Free and open source."
-        />
-        <div className="mt-12 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-          {featureCards.map((card, index) => (
+    <section
+      id="features"
+      className="scroll-mt-20 border-b border-rule bg-canvas py-24 lg:py-28"
+    >
+      <div className="mx-auto max-w-6xl px-6 lg:px-10">
+        <Reveal variant="up">
+          <div className="grid gap-6 lg:grid-cols-12">
+            <h2 className="max-w-[18ch] text-balance font-display text-[length:clamp(2.2rem,4.6vw,3.6rem)] font-bold leading-[0.99] tracking-[-0.035em] text-ink lg:col-span-7">
+              Everything you need to take control of your money
+            </h2>
+            <p className="max-w-sm self-end text-pretty text-[15px] leading-[1.65] text-ink-soft lg:col-span-4 lg:col-start-9">
+              A complete money tracker with an AI assistant that handles the
+              data entry. Free and open source.
+            </p>
+          </div>
+        </Reveal>
+
+        <div className="mt-14 grid border-t border-rule-strong md:grid-cols-2">
+          {features.map(({ icon: Icon, title, description }, index) => (
             <Reveal
-              key={card.title}
+              key={title}
               variant="up"
-              delay={index * 70}
-              className="h-full"
+              delay={index * 60}
+              className={`border-b border-rule ${
+                index % 2 === 1
+                  ? "md:border-l md:border-rule md:pl-8"
+                  : "md:pr-8"
+              }`}
             >
-              <FeatureCard {...card} />
+              <article className="group flex h-full gap-4 py-8">
+                <Icon
+                  className="mt-0.5 h-5 w-5 shrink-0 text-signal transition-transform duration-300 group-hover:-translate-y-0.5 motion-reduce:group-hover:translate-y-0"
+                  aria-hidden="true"
+                />
+                <div>
+                  <h3 className="font-display text-[1.15rem] font-semibold leading-snug tracking-[-0.02em] text-ink">
+                    {title}
+                  </h3>
+                  <p className="mt-2 max-w-[42ch] text-pretty text-[15px] leading-[1.6] text-ink-soft">
+                    {description}
+                  </p>
+                </div>
+              </article>
             </Reveal>
           ))}
         </div>

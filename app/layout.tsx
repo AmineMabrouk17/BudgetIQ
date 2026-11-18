@@ -1,19 +1,26 @@
 import type { Metadata } from "next";
-import { Hanken_Grotesk, Young_Serif } from "next/font/google";
+import { Archivo, Geist, Instrument_Serif } from "next/font/google";
 import { cookies } from "next/headers";
 import "./globals.css";
 import { metadata as siteMetadata } from "./metadata";
 
-const hankenGrotesk = Hanken_Grotesk({
-  variable: "--font-hanken",
+const geist = Geist({
+  variable: "--font-geist",
   subsets: ["latin"],
   display: "swap",
 });
 
-const youngSerif = Young_Serif({
-  variable: "--font-young-serif",
+const archivo = Archivo({
+  variable: "--font-archivo",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-instrument-serif",
   subsets: ["latin"],
   weight: "400",
+  style: "italic",
   display: "swap",
 });
 
@@ -34,7 +41,7 @@ export default async function RootLayout({
       lang="en"
       data-theme={dataTheme}
       suppressHydrationWarning
-      className={`${hankenGrotesk.variable} ${youngSerif.variable}`}
+      className={`${geist.variable} ${archivo.variable} ${instrumentSerif.variable}`}
     >
       <body>{children}</body>
     </html>

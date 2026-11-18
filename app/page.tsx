@@ -3,6 +3,7 @@ import { getUser } from "@/lib/supabase/server";
 import AnnouncementBar from "@/components/landing/AnnouncementBar";
 import LandingNav from "@/components/landing/LandingNav";
 import LandingHero from "@/components/landing/LandingHero";
+import TickerStrip from "@/components/landing/TickerStrip";
 import FeaturesSection from "@/components/landing/FeaturesSection";
 import HowItWorksSection from "@/components/landing/HowItWorksSection";
 import ProofSection from "@/components/landing/ProofSection";
@@ -29,6 +30,7 @@ export default async function Home() {
       <LandingNav />
       <main id="main">
         <LandingHero />
+        <TickerStrip />
         <FeaturesSection />
         <HowItWorksSection />
         <ProofSection />
