@@ -186,15 +186,13 @@ Phase 2:  ██ 279 ms (-88.9% total)
 
 ### Phase 1: RSC Streaming & Datacenter Co-location
 - **RSC Streaming (`<Suspense>`)**: Decomposed monolithic page data fetching into asynchronous streaming boundaries with skeleton fallbacks so the shell renders without awaiting transactions.
-- **Request-Scoped Memoization (`React.cache`)**: Wrapped Supabase `getUser()` and `getProfile()` to eliminate redundant auth lookups per request.
+- **Request-Scoped Memoization (`React.cache`)**: Wrapped Supabase `getUser()` to eliminate redundant auth lookups per request.
 - **In-flight Promise Deduplication**: Merged concurrent client-side calls to `/api/currency-rates` from 4 network requests down to 1.
 - **Infrastructure Co-location**: Aligned Vercel serverless function execution region (`dub1` Dublin, Ireland) with the Supabase database region (`eu-west-1`), eliminating transatlantic network round-trips.
 
 ### Phase 2: Zero-Round-Trip Auth Shell
 A second pass removed the last blocking calls from the dashboard shell, so a warm `/dashboard` request flushes HTML with zero database or Auth API round-trips:
 - **Local JWT Verification**: `getUser()` verifies the access token's signature against the project's JWKS via `supabase.auth.getClaims()` instead of round-tripping to `/auth/v1/user`. Because the app builds a client per request, [`lib/auth/jwks.ts`](lib/auth/jwks.ts) holds the key set in module scope — one download per process rather than per request. Tokens that cannot be verified locally (expired, symmetric, tampered) fall back gracefully to the Auth API.
-- **Onboarding Flag in the Token**: Completing onboarding writes `onboarded: true` to `user_metadata`, so the layout gates on the verified token instead of querying `profiles` on every load. Migration [`0009`](supabase/migrations/0009_onboarded_flag_backfill.sql) backfills the flag for existing users.
-- **Pushed-Down Data Access**: The navbar's income-profile editor moved behind a `<Suspense>` boundary (`NavbarIncomeSettings`) — it is a collapsed dropdown, and reading the profile there was holding back the entire document.
 
 > **Note on Supavisor**: Not applicable. BudgetIQ reaches the database through PostgREST over HTTPS via `supabase-js`; it never opens a direct Postgres connection, so there is no connection string to point at the transaction pooler on port 6543. Supabase manages that connection pooling behind PostgREST already.
 

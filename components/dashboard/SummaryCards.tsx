@@ -3,12 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import type { Summary } from "@/lib/summary";
-import type { IncomeType } from "@/lib/profiles";
 import { useCurrencyFormatter } from "@/lib/currency/use-display-currency";
-import {
-  cardsForPersona,
-  DEFAULT_INCOME_TYPE,
-} from "@/lib/dashboard-cards";
+import { SUMMARY_CARDS } from "@/lib/dashboard-cards";
 import {
   deleteCustomKPI,
   listCustomKPIs,
@@ -19,14 +15,12 @@ import KpiModal from "@/components/dashboard/KPIModal";
 export default function SummaryCards({
   summary,
   hasTransactions,
-  incomeType = DEFAULT_INCOME_TYPE,
 }: {
   summary: Summary;
   hasTransactions: boolean;
-  incomeType?: IncomeType;
 }) {
   const format = useCurrencyFormatter();
-  const cards = cardsForPersona(incomeType);
+  const cards = SUMMARY_CARDS;
 
   const [kpis, setKpis] = useState<EvaluatedKPI[] | null>(null);
   const [kpiError, setKpiError] = useState<string | null>(null);

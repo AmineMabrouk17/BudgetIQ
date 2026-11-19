@@ -9,6 +9,15 @@
       "expect": "Preview demo purchase"
     },
     {
+      "label": "navbar-user-menu",
+      "path": "/dashboard",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": true,
+      "actions": [{ "click": "[aria-label=\"User profile menu\"]" }],
+      "expect": "Sign out"
+    },
+    {
       "label": "landing-hero",
       "path": "/",
       "viewport": "desktop",
