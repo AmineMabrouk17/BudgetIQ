@@ -1,5 +1,6 @@
 import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
+import BrandMark from "@/components/landing/BrandMark";
 
 const anchors = [
   { href: "#features", label: "Features" },
@@ -8,41 +9,20 @@ const anchors = [
   { href: "#faq", label: "FAQ" },
 ];
 
-function LedgerMark() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="h-7 w-7 shrink-0 text-clay"
-    >
-      <path d="M4 5h16M4 10h16M4 15h7M4 19h7" />
-      <path d="M14 19l3-4 3 2" />
-    </svg>
-  );
-}
-
 export default function LandingNav() {
   return (
     <header className="sticky top-0 z-30 border-b border-rule bg-canvas/85 backdrop-blur-md">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-1 px-6 py-3 md:h-16 md:flex-nowrap md:py-0">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-1 px-6 py-3 md:h-16 md:flex-nowrap md:py-0 lg:px-10">
         <Link
           href="/"
-          className="order-1 flex items-center gap-2.5 text-ink transition-colors hover:text-clay"
+          className="order-1 flex items-center text-ink transition-colors hover:text-signal"
         >
-          <LedgerMark />
-          <span className="font-display text-lg font-normal tracking-[-0.02em]">
-            BudgetIQ
-          </span>
+          <BrandMark />
         </Link>
 
         <nav
           aria-label="Sections"
-          className="order-3 -mx-1 flex w-full items-center gap-5 overflow-x-auto px-1 pb-1 md:order-2 md:mx-0 md:w-auto md:flex-1 md:justify-center md:overflow-visible md:px-0 md:pb-0"
+          className="order-3 -mx-1 flex w-full items-center gap-6 overflow-x-auto px-1 pb-1 md:order-2 md:mx-0 md:w-auto md:flex-1 md:justify-center md:overflow-visible md:px-0 md:pb-0"
         >
           {anchors.map(({ href, label }) => (
             <a
@@ -59,13 +39,13 @@ export default function LandingNav() {
           <ThemeToggle />
           <Link
             href="/login"
-            className="hidden px-2 text-[13px] font-medium text-ink-soft transition-colors hover:text-ink sm:inline-flex"
+            className="hidden min-h-11 items-center px-2 text-[13px] font-medium text-ink-soft transition-colors hover:text-ink sm:inline-flex"
           >
             Log in
           </Link>
           <Link
             href="/login"
-            className="inline-flex items-center rounded-sm bg-clay px-4 py-2 text-[13px] font-semibold text-on-clay transition-colors hover:bg-clay-deep"
+            className="inline-flex min-h-11 items-center gap-2 bg-ink px-4 text-[13px] font-semibold text-canvas transition-colors hover:bg-signal hover:text-on-signal"
           >
             Get started
           </Link>

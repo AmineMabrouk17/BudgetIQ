@@ -2,6 +2,8 @@ import { Fragment } from "react";
 
 interface AnimatedHeroTitleProps {
   lines: string[];
+  /** Index of the line spoken in the assistant's serif voice. */
+  voiceLineIndex?: number;
 }
 
 const BASE_DELAY_MS = 80;
@@ -34,11 +36,14 @@ function prepareLines(lines: string[]): PreparedLine[] {
   return prepared;
 }
 
-export default function AnimatedHeroTitle({ lines }: AnimatedHeroTitleProps) {
+export default function AnimatedHeroTitle({
+  lines,
+  voiceLineIndex,
+}: AnimatedHeroTitleProps) {
   const preparedLines = prepareLines(lines);
   return (
-    <h1 className="max-w-3xl text-balance font-display text-[length:clamp(2.5rem,5vw,3.75rem)] font-normal leading-[1.08] tracking-[-0.03em] text-ink">
-      {preparedLines.map((line) => (
+    <h1 className="max-w-[20ch] text-balance font-display text-[length:clamp(2.5rem,6.2vw,5.25rem)] font-bold leading-[0.96] tracking-[-0.035em] text-ink">
+      {preparedLines.map((line, lineIndex) => (
         <span key={line.text} className="block">
           {line.words.map((preparedWord) => (
             // The space sits between the word boxes, not inside them: a
@@ -46,7 +51,11 @@ export default function AnimatedHeroTitle({ lines }: AnimatedHeroTitleProps) {
             // and by copy-paste, which turns the headline into one long word.
             <Fragment key={`${line.text}-${preparedWord.delayMs}`}>
               <span
-                className="bi-rise inline-block will-change-transform"
+                className={`bi-rise inline-block will-change-transform ${
+                  voiceLineIndex === lineIndex
+                    ? "font-voice text-[1.06em] font-normal italic tracking-[-0.015em] text-signal"
+                    : ""
+                }`}
                 style={{ animationDelay: `${preparedWord.delayMs}ms` }}
               >
                 {preparedWord.word}

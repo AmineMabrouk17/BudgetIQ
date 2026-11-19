@@ -1,6 +1,6 @@
-import { ChevronDown } from "lucide-react";
-import SectionHeading from "@/components/landing/SectionHeading";
+import { Plus } from "lucide-react";
 import Reveal from "@/components/landing/Reveal";
+import SectionIntro from "@/components/landing/SectionIntro";
 
 interface FaqData {
   question: string;
@@ -43,14 +43,14 @@ const faqs: FaqData[] = [
 function FaqItem({ question, answer }: FaqData) {
   return (
     <details className="group border-b border-rule">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-base font-medium text-ink transition-colors hover:text-clay group-open:text-clay [&::-webkit-details-marker]:hidden">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-6 text-[16px] font-medium text-ink transition-colors hover:text-signal group-open:text-signal [&::-webkit-details-marker]:hidden">
         {question}
-        <ChevronDown
-          className="h-4 w-4 shrink-0 text-ink-mute transition-transform duration-200 group-open:rotate-180"
+        <Plus
+          className="h-4 w-4 shrink-0 text-ink-mute transition-transform duration-300 group-open:rotate-45 group-open:text-signal"
           aria-hidden="true"
         />
       </summary>
-      <div className="max-w-2xl pb-5 text-sm leading-[1.65] text-ink-soft">
+      <div className="max-w-[60ch] pb-6 pr-10 text-[15px] leading-[1.65] text-ink-soft">
         {answer}
       </div>
     </details>
@@ -59,16 +59,28 @@ function FaqItem({ question, answer }: FaqData) {
 
 export default function FaqSection() {
   return (
-    <section id="faq" className="scroll-mt-20 border-b border-rule bg-surface py-20">
-      <div className="mx-auto max-w-3xl px-6">
-        <SectionHeading
-          eyebrow="FAQ"
-          title="Questions, answered"
-          description="Everything you might wonder before signing up, answered plainly."
-        />
-        <div className="mt-10 border-t border-rule">
+    <section
+      id="faq"
+      className="scroll-mt-20 border-b border-rule bg-canvas py-24 lg:py-28"
+    >
+      <div className="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-12 lg:gap-8 lg:px-10">
+        <Reveal variant="up" className="lg:col-span-4">
+          <div className="lg:sticky lg:top-28">
+            <SectionIntro
+              eyebrow="FAQ"
+              title="Questions, answered"
+              description="Everything you might wonder before signing up, answered plainly."
+              size="compact"
+              titleMeasure="12ch"
+              descriptionMeasure="34ch"
+              descriptionClassName="mt-5"
+            />
+          </div>
+        </Reveal>
+
+        <div className="border-t border-rule-strong lg:col-span-7 lg:col-start-6">
           {faqs.map((faq, index) => (
-            <Reveal key={faq.question} variant="up" delay={index * 50}>
+            <Reveal key={faq.question} variant="up" delay={index * 40}>
               <FaqItem {...faq} />
             </Reveal>
           ))}

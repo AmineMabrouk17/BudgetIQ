@@ -7,16 +7,17 @@ import {
   MessageSquare,
   Receipt,
 } from "lucide-react";
-import SectionHeading from "@/components/landing/SectionHeading";
+import InfoCard from "@/components/landing/InfoCard";
 import Reveal from "@/components/landing/Reveal";
+import SectionIntro from "@/components/landing/SectionIntro";
 
-interface FeatureCardData {
+interface FeatureData {
   icon: LucideIcon;
   title: string;
   description: string;
 }
 
-const featureCards: FeatureCardData[] = [
+const features: FeatureData[] = [
   {
     icon: Receipt,
     title: "Track it all in one place",
@@ -55,41 +56,44 @@ const featureCards: FeatureCardData[] = [
   },
 ];
 
-function FeatureCard({ icon: Icon, title, description }: FeatureCardData) {
-  return (
-    <div className="group h-full border-t border-rule-strong pt-5">
-      <Icon
-        className="h-5 w-5 text-clay transition-transform duration-300 group-hover:-translate-y-0.5 motion-reduce:group-hover:translate-y-0"
-        aria-hidden="true"
-      />
-      <h3 className="mt-4 font-display text-xl font-normal tracking-[-0.02em] text-ink">
-        {title}
-      </h3>
-      <p className="mt-2 text-pretty text-sm leading-[1.65] text-ink-soft">
-        {description}
-      </p>
-    </div>
-  );
-}
-
 export default function FeaturesSection() {
   return (
-    <section id="features" className="scroll-mt-20 border-b border-rule bg-canvas py-20">
-      <div className="mx-auto max-w-6xl px-6">
-        <SectionHeading
-          eyebrow="Features"
-          title="Everything you need to take control of your money"
-          description="A complete money tracker with an AI assistant that handles the data entry. Free and open source."
-        />
-        <div className="mt-12 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-          {featureCards.map((card, index) => (
+    <section
+      id="features"
+      className="scroll-mt-20 border-b border-rule bg-canvas py-24 lg:py-28"
+    >
+      <div className="mx-auto max-w-6xl px-6 lg:px-10">
+        <Reveal variant="up">
+          <div className="grid gap-6 lg:grid-cols-12">
+            <SectionIntro
+              eyebrow="Features"
+              title="Everything you need to take control of your money"
+              description="A complete money tracker with an AI assistant that handles the data entry. Free and open source."
+              titleClassName="lg:col-span-7"
+              descriptionClassName="lg:col-span-4 lg:col-start-9"
+            />
+          </div>
+        </Reveal>
+
+        <div className="mt-14 grid border-t border-rule-strong md:grid-cols-2">
+          {features.map(({ icon: Icon, title, description }, index) => (
             <Reveal
-              key={card.title}
+              key={title}
               variant="up"
-              delay={index * 70}
-              className="h-full"
+              delay={index * 60}
+              className={`border-b border-rule ${
+                index % 2 === 1
+                  ? "md:border-l md:border-rule md:pl-8"
+                  : "md:pr-8"
+              }`}
             >
-              <FeatureCard {...card} />
+              <InfoCard
+                icon={Icon}
+                title={title}
+                description={description}
+                className="h-full py-8"
+                iconClassName="transition-transform duration-300 group-hover:-translate-y-0.5 motion-reduce:group-hover:translate-y-0"
+              />
             </Reveal>
           ))}
         </div>

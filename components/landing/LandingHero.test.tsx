@@ -29,13 +29,18 @@ describe("LandingHero", () => {
     );
 
     expect(
-      screen.getByText(/free forever · open source · no ads · your data, yours/i)
+      screen.getByText(/free forever/i)
     ).toBeInTheDocument();
+    expect(screen.getByText(/no ads/i)).toBeInTheDocument();
+    expect(screen.getByText(/your data, yours/i)).toBeInTheDocument();
   });
 
-  it("renders the Groceries pill tag", () => {
+  it("renders the live statement card with the assistant exchange", () => {
     render(<LandingHero />);
 
-    expect(screen.getByText(/groceries/i)).toBeInTheDocument();
+    expect(screen.getByText(/august statement/i)).toBeInTheDocument();
+    expect(screen.getByText(/net balance/i)).toBeInTheDocument();
+    expect(screen.getByText(/i spent \$15 on coffee/i)).toBeInTheDocument();
+    expect(screen.getByText(/got it/i)).toBeInTheDocument();
   });
 });
