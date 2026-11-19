@@ -1,30 +1,31 @@
+import { Check, MessageSquare } from "lucide-react";
 import ArrowUpRightIcon from "@/components/landing/ArrowUpRightIcon";
 import Reveal from "@/components/landing/Reveal";
 import SectionIntro from "@/components/landing/SectionIntro";
 
-/** The policy below is quoted from this file, so the section can be checked
- *  against the repository instead of taken on faith. */
-const policySource =
-  "https://github.com/AmineMabrouk17/BudgetIQ/blob/main/supabase/migrations/0001_transactions.sql";
-
-const remainingProofs = [
+const proofs = [
   {
-    title: "MIT licensed",
+    title: "One confirmation",
     description:
-      "The full source is on GitHub. Audit it, fork it, or lift the parts you want.",
+      "Say it, confirm once, done. No forms, no spreadsheet, no manual entry.",
   },
   {
-    title: "Self-host it",
+    title: "Phone and desktop",
     description:
-      "Point BudgetIQ at your own Supabase project and keep every record in infrastructure you control.",
+      "The same flow one-handed on a phone or on a wide screen. Nothing to install.",
+  },
+  {
+    title: "Open source",
+    description:
+      "MIT licensed. Read it, fork it, or self-host on your own Supabase project.",
   },
 ];
 
 /**
- * The trust argument shown as the document that enforces it: the real RLS
- * policy, cited to its migration, with the two remaining proofs ruled in
- * underneath. One sheet instead of three icon cards, so the section proves
- * rather than asserts.
+ * The "Why BudgetIQ" argument, shown as the product doing the thing it claims:
+ * a real phrase typed, an assistant that understands it, one confirmation click,
+ * and the transaction is logged. Three small proofs underneath, so the section
+ * demonstrates rather than asserts.
  */
 export default function ProofSection() {
   return (
@@ -37,16 +38,16 @@ export default function ProofSection() {
           <Reveal variant="up" className="lg:col-span-5">
             <SectionIntro
               eyebrow="Why BudgetIQ"
-              title="Open source is the trust model."
-              description="No ads, no data sales, no black box. Read the code, check the security model, or run the whole app yourself."
+              title="Log a transaction the way you say it."
+              description="Type “I spent $45 on groceries today” and BudgetIQ records it after one confirmation. No forms, no spreadsheets."
               size="medium"
-              titleMeasure="14ch"
+              titleMeasure="16ch"
               descriptionMeasure="38ch"
               descriptionClassName="mt-5"
             />
             <div className="mt-8">
               <p className="max-w-[38ch] text-pretty text-[13px] leading-[1.6] text-ink-mute">
-                No testimonials yet. This page would rather show proof than
+                No testimonials yet. This page would rather show the product than
                 quotes we cannot verify.
               </p>
               <a
@@ -64,49 +65,68 @@ export default function ProofSection() {
             delay={80}
             className="lg:col-span-6 lg:col-start-7"
           >
-            <div className="border border-rule-strong">
-              <div className="border-b border-rule px-5 pb-5 pt-5 sm:px-6">
-                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                  <h3 className="font-display text-[1.2rem] font-semibold leading-snug tracking-[-0.02em] text-ink">
-                    Row-level security
-                  </h3>
-                  <a
-                    href={policySource}
-                    className="font-mono text-[11px] text-ink-mute underline-offset-4 transition-colors hover:text-signal hover:underline"
+            <div className="border border-rule-strong bg-canvas">
+              <div className="border-b border-rule px-5 py-4 sm:px-6">
+                <div className="flex items-center gap-2.5">
+                  <span
+                    aria-hidden="true"
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-signal-soft text-signal"
                   >
-                    0001_transactions.sql
-                  </a>
+                    <MessageSquare className="h-3.5 w-3.5" />
+                  </span>
+                  <h3 className="font-display text-[1.05rem] font-semibold leading-snug tracking-[-0.02em] text-ink">
+                    AI assistant
+                  </h3>
+                  <span className="ml-auto font-mono text-[11px] text-ink-mute">
+                    live
+                  </span>
                 </div>
-                <p className="mt-2 max-w-[46ch] text-pretty text-[14.5px] leading-[1.6] text-ink-soft">
-                  Every record is scoped to your account by Postgres RLS. You
-                  only ever see your own data.
-                </p>
               </div>
 
-              <div className="border-b border-rule bg-canvas px-5 py-4 sm:px-6">
-                <code className="block font-mono text-[11.5px] leading-[1.8] text-ink-soft sm:text-[13px]">
-                  <span className="block">ALTER TABLE public.transactions</span>
-                  <span className="block pl-4">
-                    ENABLE ROW LEVEL SECURITY;
+              <div className="space-y-4 px-5 py-6 sm:px-6">
+                <div className="ml-auto max-w-[82%] bg-surface-2 px-4 py-2.5 text-[14px] leading-[1.5] text-ink">
+                  I spent $45 on groceries today
+                </div>
+
+                <div className="max-w-[88%]">
+                  <p className="font-voice text-[15px] leading-[1.5] text-ink-soft">
+                    Got it — $45 expense, Groceries. Log it?
+                  </p>
+                  <div className="mt-3 border border-rule bg-surface px-4 py-3">
+                    <div className="flex items-baseline justify-between gap-4">
+                      <span className="text-[13px] font-medium text-ink-soft">
+                        Expense · Groceries
+                      </span>
+                      <span className="font-mono text-[15px] font-semibold tabular-nums text-ink">
+                        $45.00
+                      </span>
+                    </div>
+                    <div
+                      aria-hidden="true"
+                      className="mt-3 inline-flex w-full items-center justify-center bg-signal px-3 py-2 text-[13px] font-semibold text-on-signal"
+                    >
+                      Log transaction
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 text-[13px] text-ink-mute">
+                  <span
+                    aria-hidden="true"
+                    className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-positive/15 text-positive"
+                  >
+                    <Check className="h-2.5 w-2.5" />
                   </span>
-                  <span className="mt-3 block">CREATE POLICY</span>
-                  <span className="block pl-4">
-                    &quot;Users can manage their own transactions&quot;
-                  </span>
-                  <span className="block">ON public.transactions</span>
-                  <span className="block">FOR ALL</span>
-                  <span className="mt-3 -mx-5 block bg-signal-soft px-5 py-0.5 font-medium text-signal-deep sm:-mx-6 sm:px-6">
-                    USING (auth.uid() = user_id);
-                  </span>
-                </code>
+                  Logged. Monthly spending: $1,240.00
+                </div>
               </div>
 
-              <div className="grid sm:grid-cols-2">
-                {remainingProofs.map(({ title, description }, index) => (
+              <div className="grid border-t border-rule sm:grid-cols-3">
+                {proofs.map(({ title, description }, index) => (
                   <div
                     key={title}
                     className={`px-5 py-5 sm:px-6 ${
-                      index === 0
+                      index < proofs.length - 1
                         ? "border-b border-rule sm:border-b-0 sm:border-r"
                         : ""
                     }`}

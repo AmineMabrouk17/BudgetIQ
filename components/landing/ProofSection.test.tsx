@@ -7,45 +7,35 @@ describe("ProofSection", () => {
     render(<ProofSection />);
 
     expect(
-      screen.getByRole("heading", { name: /open source is the trust model/i })
+      screen.getByRole("heading", { name: /log a transaction the way you say it/i })
     ).toBeInTheDocument();
   });
 
-  it("renders the three verifiable proofs", () => {
+  it("shows the conversational example", () => {
     render(<ProofSection />);
 
-    for (const title of [
-      "Row-level security",
-      "MIT licensed",
-      "Self-host it",
-    ]) {
+    expect(screen.getByText(/i spent \$45 on groceries today/i)).toBeInTheDocument();
+    expect(screen.getByText(/got it — \$45 expense, groceries/i)).toBeInTheDocument();
+    expect(screen.getByText(/log transaction/i)).toBeInTheDocument();
+    expect(screen.getByText(/logged\. monthly spending/i)).toBeInTheDocument();
+  });
+
+  it("renders the three supporting proofs", () => {
+    render(<ProofSection />);
+
+    for (const title of ["One confirmation", "Phone and desktop", "Open source"]) {
       expect(
         screen.getByRole("heading", { name: new RegExp(title, "i") })
       ).toBeInTheDocument();
     }
   });
 
-  it("quotes the policy that enforces the privacy claim", () => {
-    render(<ProofSection />);
-
-    expect(screen.getByText(/auth\.uid\(\) = user_id/)).toBeInTheDocument();
-    expect(
-      screen.getByText(/enable row level security/i)
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/"Users can manage their own transactions"/)
-    ).toBeInTheDocument();
-  });
-
-  it("cites the migration the quote comes from", () => {
+  it("links to the source repository", () => {
     render(<ProofSection />);
 
     expect(
-      screen.getByRole("link", { name: "0001_transactions.sql" })
-    ).toHaveAttribute(
-      "href",
-      expect.stringContaining("supabase/migrations/0001_transactions.sql")
-    );
+      screen.getByRole("link", { name: /read the source/i })
+    ).toHaveAttribute("href", expect.stringContaining("github.com"));
   });
 
   it("is honest that testimonials are not published yet", () => {
