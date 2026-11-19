@@ -84,15 +84,15 @@ export default function ProofSection() {
               </div>
 
               <div className="border-b border-rule bg-canvas px-5 py-4 sm:px-6">
-                <code className="block font-mono text-[12px] leading-[1.8] text-ink-soft sm:text-[13px]">
+                <code className="block font-mono text-[11.5px] leading-[1.8] text-ink-soft sm:text-[13px]">
                   <span className="block">ALTER TABLE public.transactions</span>
                   <span className="block pl-4">
                     ENABLE ROW LEVEL SECURITY;
                   </span>
-                  <span className="mt-3 block">
-                    CREATE POLICY &quot;Users can manage their own
+                  <span className="mt-3 block">CREATE POLICY</span>
+                  <span className="block pl-4">
+                    &quot;Users can manage their own transactions&quot;
                   </span>
-                  <span className="block pl-4">transactions&quot;</span>
                   <span className="block">ON public.transactions</span>
                   <span className="block">FOR ALL</span>
                   <span className="mt-3 -mx-5 block bg-signal-soft px-5 py-0.5 font-medium text-signal-deep sm:-mx-6 sm:px-6">

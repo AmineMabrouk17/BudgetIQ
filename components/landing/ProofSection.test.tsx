@@ -32,6 +32,9 @@ describe("ProofSection", () => {
     expect(
       screen.getByText(/enable row level security/i)
     ).toBeInTheDocument();
+    expect(
+      screen.getByText(/"Users can manage their own transactions"/)
+    ).toBeInTheDocument();
   });
 
   it("cites the migration the quote comes from", () => {
