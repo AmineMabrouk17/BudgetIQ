@@ -25,6 +25,26 @@ describe("ProofSection", () => {
     }
   });
 
+  it("quotes the policy that enforces the privacy claim", () => {
+    render(<ProofSection />);
+
+    expect(screen.getByText(/auth\.uid\(\) = user_id/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/enable row level security/i)
+    ).toBeInTheDocument();
+  });
+
+  it("cites the migration the quote comes from", () => {
+    render(<ProofSection />);
+
+    expect(
+      screen.getByRole("link", { name: "0001_transactions.sql" })
+    ).toHaveAttribute(
+      "href",
+      expect.stringContaining("supabase/migrations/0001_transactions.sql")
+    );
+  });
+
   it("is honest that testimonials are not published yet", () => {
     render(<ProofSection />);
 

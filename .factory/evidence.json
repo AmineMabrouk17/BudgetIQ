@@ -79,7 +79,24 @@
       "path": "/#proof",
       "viewport": "desktop",
       "theme": "light",
-      "actions": [{ "scrollTo": "#proof" }]
+      "actions": [{ "scrollTo": "#proof" }],
+      "expect": "USING (auth.uid() = user_id);"
+    },
+    {
+      "label": "landing-proof-mobile",
+      "path": "/#proof",
+      "viewport": "mobile",
+      "theme": "light",
+      "actions": [{ "scrollTo": "#proof" }],
+      "expect": "USING (auth.uid() = user_id);"
+    },
+    {
+      "label": "landing-proof-dark",
+      "path": "/#proof",
+      "viewport": "desktop",
+      "theme": "dark",
+      "actions": [{ "scrollTo": "#proof" }],
+      "expect": "USING (auth.uid() = user_id);"
     },
     {
       "label": "landing-faq-mobile",
