@@ -1,22 +1,10 @@
-import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { LogOut, SlidersHorizontal } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { getUser } from "@/lib/supabase/server";
 import { signOut } from "@/app/actions/auth";
 import ThemeToggle from "@/components/ThemeToggle";
 import CurrencySelect from "@/components/CurrencySelect";
-import NavbarIncomeSettings from "@/components/NavbarIncomeSettings";
-
-/** Matches the height of the real editor so the swap causes no layout shift. */
-function IncomeSettingsSkeleton() {
-  return (
-    <div className="space-y-2 px-1 py-1" aria-hidden>
-      <div className="h-9 w-full animate-pulse rounded-btn bg-base-300/60" />
-      <div className="h-9 w-full animate-pulse rounded-btn bg-base-300/60" />
-    </div>
-  );
-}
 
 function initials(name: string): string {
   return name
@@ -109,18 +97,6 @@ export default async function Navbar() {
                     {user.email}
                   </p>
                 )}
-              </div>
-
-              <div className="divider my-1" />
-
-              <div className="px-2 pt-1 pb-1">
-                <div className="flex items-center gap-2 px-2 pb-1 text-xs font-semibold text-base-content/60">
-                  <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden />
-                  <span>Income profile</span>
-                </div>
-                <Suspense fallback={<IncomeSettingsSkeleton />}>
-                  <NavbarIncomeSettings />
-                </Suspense>
               </div>
 
               <div className="divider my-1" />

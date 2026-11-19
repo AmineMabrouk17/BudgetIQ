@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/supabase/server";
-import { getProfile, isOnboardedFromSession, needsOnboarding } from "@/lib/profiles";
 import { isAdminSession } from "@/lib/auth/admin-session";
 import Navbar from "@/components/Navbar";
 import DashboardSidebar from "@/components/DashboardSidebar";
@@ -13,17 +12,7 @@ export default async function DashboardLayout({
   const user = await getUser();
   if (!user) redirect("/login");
 
-  // The onboarding gate normally reads the flag out of the verified access
-  // token the user is already carrying, which costs no round-trip. Only a
-  // token issued before the flag existed (see migration 0009) has to fall back
-  // to the profile row.
-  const onboarded = isOnboardedFromSession(user);
-  const [profile, isAdmin] = await Promise.all([
-    onboarded ? Promise.resolve(null) : getProfile(),
-    isAdminSession(),
-  ]);
-
-  if (!onboarded && needsOnboarding(profile)) redirect("/onboarding");
+  const isAdmin = await isAdminSession();
 
   return (
     <>

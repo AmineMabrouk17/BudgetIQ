@@ -13,9 +13,6 @@ describe("landingView", () => {
       email: "ada@example.com",
       full_name: "Ada Lovelace",
       avatar_url: null,
-      income_type: "salaried",
-      payday: null,
-      expected_income: null,
     };
 
     expect(landingView(profile)).toBe("dashboard");

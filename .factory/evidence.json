@@ -9,6 +9,15 @@
       "expect": "Preview demo purchase"
     },
     {
+      "label": "navbar-user-menu",
+      "path": "/dashboard",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": true,
+      "actions": [{ "click": "[aria-label=\"User profile menu\"]" }],
+      "expect": "Sign out"
+    },
+    {
       "label": "landing-hero",
       "path": "/",
       "viewport": "desktop",
@@ -70,7 +79,24 @@
       "path": "/#proof",
       "viewport": "desktop",
       "theme": "light",
-      "actions": [{ "scrollTo": "#proof" }]
+      "actions": [{ "scrollTo": "#proof" }],
+      "expect": "USING (auth.uid() = user_id);"
+    },
+    {
+      "label": "landing-proof-mobile",
+      "path": "/#proof",
+      "viewport": "mobile",
+      "theme": "light",
+      "actions": [{ "scrollTo": "#proof" }],
+      "expect": "USING (auth.uid() = user_id);"
+    },
+    {
+      "label": "landing-proof-dark",
+      "path": "/#proof",
+      "viewport": "desktop",
+      "theme": "dark",
+      "actions": [{ "scrollTo": "#proof" }],
+      "expect": "USING (auth.uid() = user_id);"
     },
     {
       "label": "landing-faq-mobile",

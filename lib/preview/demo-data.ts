@@ -25,15 +25,12 @@ import type { Transaction } from "@/types/transaction";
 
 export const DEMO_USER_ID = PREVIEW_USER_ID;
 
-/** The dashboard layout gates on onboarding, so the demo profile is complete. */
+/** The demo user's profile, shared by the signed-preview read paths. */
 export const DEMO_PROFILE: Profile = {
   id: DEMO_USER_ID,
   email: PREVIEW_USER_EMAIL,
   full_name: PREVIEW_USER_NAME,
   avatar_url: null,
-  income_type: "salaried",
-  payday: 25,
-  expected_income: 5200,
 };
 
 const DAY = 24 * 60 * 60 * 1000;

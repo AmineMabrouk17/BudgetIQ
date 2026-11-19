@@ -10,10 +10,9 @@ import {
 import { DEFAULT_KPIS } from "@/lib/kpi-defaults";
 
 describe("preview demo fixture", () => {
-  it("gives the demo user an onboarded profile", () => {
+  it("gives the demo user a complete profile", () => {
     expect(DEMO_PROFILE.id).toBe(DEMO_USER_ID);
-    expect(DEMO_PROFILE.income_type).not.toBeNull();
-    expect(DEMO_PROFILE.payday).toBeGreaterThan(0);
+    expect(DEMO_PROFILE.email).not.toBeNull();
   });
 
   it("provides transactions for both scopes so either filter renders rows", async () => {
