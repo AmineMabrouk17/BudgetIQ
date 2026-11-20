@@ -118,7 +118,7 @@ Next.js app  ──────► Supabase
   · admin page         ──────► Gemini  ──(backup)──► OpenRouter
   · API routes          AI answers for both assistants
       │
-      └──────────────► API Ninjas   exchange rates (cached in Supabase)
+      └──────────────► Exchange-rate API   keyless rates (cached in Supabase)
 ```
 
 | What you see | Where it lives | What it does |
@@ -143,7 +143,7 @@ Data is written through **Server Actions** in `app/actions/` (transactions, KPIs
 - **Node.js 20.9 or newer** (Next.js 16 requires it) and **pnpm**.
 - A free or paid **[Supabase](https://supabase.com)** project.
 - At least one AI key: **[Gemini](https://aistudio.google.com)** (preferred) or **[OpenRouter](https://openrouter.ai)** as a fallback. The app refuses to call the AI if neither is set, but the rest of the app still works.
-- Optional: an [API Ninjas](https://api-ninjas.com) key for live exchange rates, [Cloudflare Turnstile](https://dash.cloudflare.com) keys for bot protection, and [Upstash Redis](https://upstash.com) for shared rate limits.
+- Optional: [Cloudflare Turnstile](https://dash.cloudflare.com) keys for bot protection and [Upstash Redis](https://upstash.com) for shared rate limits. Exchange rates come from a free, keyless API — no extra key needed.
 
 ### 2. Install
 
@@ -172,7 +172,6 @@ Only the two Supabase values are checked at startup; the others enable specific 
 | `GEMINI_MODEL` | Override the model (default `gemini-3.6-flash`) | No |
 | `OPENROUTER_API_KEY` | AI backup when Gemini is out of quota | No |
 | `OPENROUTER_FALLBACK_MODEL` | Override backup model (default `nvidia/nemotron-3-ultra-550b-a55b:free`) | No |
-| `API_NINJAS_API_KEY` | Live exchange rates for the currency dropdown | No |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | Login bot protection. Optional in development, required in production builds | Prod: yes |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Shared rate limits across server instances. Without them, limits are kept in memory | No |
 | `ADMIN_PASSWORD`, `SUPABASE_SERVICE_ROLE_KEY` | Unlocking `/admin` and listing all users | Only for `/admin` |
@@ -253,7 +252,7 @@ The plan is stored per user in `salary_budget_plans` and includes the conversati
 
 ### Display currency
 
-Amounts are plain USD numbers in the database and have no currency column. The header dropdown stores your choice in a cookie, and rates are fetched from API Ninjas, cached in Supabase for about 24 hours, and reused if the API is down. When you enter an amount in a non-USD currency, the app converts it back to USD before saving. See [ADR-0001](docs/adr/0001-display-only-currency.md).
+Amounts are plain USD numbers in the database and have no currency column. The header dropdown stores your choice in a cookie, and rates are fetched from the free, keyless [exchangerate-api.com](https://www.exchangerate-api.com) open endpoint, cached in Supabase for about 24 hours, and reused if the API is down. When you enter an amount in a non-USD currency, the app converts it back to USD before saving. See [ADR-0001](docs/adr/0001-display-only-currency.md).
 
 ### Custom KPIs
 
