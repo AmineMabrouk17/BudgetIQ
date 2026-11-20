@@ -36,10 +36,10 @@ Confirm the table columns exist, RLS is enabled, the policy is listed, and index
 | `supabase/migrations/0004_currency_rates.sql` | | |
 | `supabase/migrations/0005_profiles_income_fields.sql` | | |
 | `supabase/migrations/0006_transaction_scope.sql` | | |
-| `supabase/migrations/0007_custom_kpis.sql` | | |
+| `supabase/migrations/0007_custom_kpis.sql` | Applied/effective in linked env `xofcqnuhgowbfquovcea` (BudgetIQ, CLI-verified 2026-11-20); record status per other environment | **DB-verified in linked env:** RLS enabled, policy `Users can manage their own KPIs` (ALL, `auth.uid() = user_id`, WITH CHECK same). SQL isolation test (temp rows, rollback): as User A visible=1 own, read/update/delete User B=0 and forged insert as B rejected by RLS; symmetric for User B. **Note:** client-role table grants remain broad in this env but RLS enforces ownership; review least-privilege grants per policy if desired. **Still required:** app-level/staging cross-user UI/action validation and per-environment status. |
 | `supabase/migrations/0008_salary_budget_plans.sql` | | |
 | `supabase/migrations/0009_onboarded_flag_backfill.sql` | | |
-| `supabase/migrations/0010_currency_rates_rls.sql` | Applied in at least one environment (user-reported); per-environment status must be recorded | **Verification pending/hardening required:** run `supabase/verification/0010_0007_security_checks.sql` (A1–A6). Confirm RLS enabled and SELECT-only policy present. If `anon/authenticated` still have INSERT/UPDATE/DELETE/TRUNCATE/REFERENCES/TRIGGER grants (as observed in one check), execute A4 revoke/grant hardening, re-run A3/A5, and verify service-role cache refresh works. Mark verified only after effective state is confirmed in each environment. |
+| `supabase/migrations/0010_currency_rates_rls.sql` | Applied/effective in linked env `xofcqnuhgowbfquovcea` (BudgetIQ, CLI-verified 2026-11-20); record status per other environment | **DB-verified in linked env:** RLS enabled, SELECT-only policy `Anyone can read currency rates` for `anon,authenticated` (`USING true`), and client table grants reduced to `SELECT` for `anon/authenticated` (postgres/service_role retain privileges; service_role bypasses RLS). Client-role write attempts denied (permission denied). **Still required:** verify server-side `SUPABASE_SERVICE_ROLE_KEY` cache refresh in deployed app/runtime and mark each environment separately. |
 
 ## Security/deployment follow-up checklist (source-audited)
 
