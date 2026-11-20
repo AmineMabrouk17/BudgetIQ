@@ -32,10 +32,17 @@ The source code is public on GitHub, there is a free hosted demo, there are no a
   <img src="https://img.shields.io/badge/Recharts-Charts-22B8CF?style=for-the-badge&logo=recharts&logoColor=white" alt="Recharts" />
 </p>
 
+## Product demo
+
+<video src="docs/media/budgetiq-product-demo/budgetiq-product-demo-120s.mp4" poster="docs/media/budgetiq-product-demo/budgetiq-product-demo-poster.jpg" controls width="100%"></video>
+
+[Download the 2-minute demo (MP4)](docs/media/budgetiq-product-demo/budgetiq-product-demo-120s.mp4)
+
 ---
 
 ## Table of contents
 
+- [Product demo](#product-demo)
 - [What you can do with it](#what-you-can-do-with-it)
 - [What it is *not*](#what-it-is-not)
 - [How the app fits together](#how-the-app-fits-together)
