@@ -45,7 +45,6 @@ The source code is public on GitHub, there is a free hosted demo, there are no a
 - [A closer look at the main features](#a-closer-look-at-the-main-features)
 - [Project structure](#project-structure)
 - [Deploy to Vercel](#deploy-to-vercel)
-- [Roadmap](#roadmap)
 - [Contributing](#contributing)
 - [More documentation](#more-documentation)
 - [License](#license)
@@ -59,7 +58,7 @@ The source code is public on GitHub, there is a free hosted demo, there are no a
 - **Talk to the AI assistant.** Open the chat drawer and write what happened. It figures out whether it was income, an expense, or an asset, suggests a title, amount and category, and you confirm with one click.
 - **Or add it manually.** The "Add transaction" dialog lets you pick a type (Income / Expense / Asset), a title, an amount, a category and a scope.
 - **Keep work and life apart.** Every transaction is either **Personal** or **Business**, and the dashboard can be filtered to one or the other with `?scope=personal` or `?scope=business`.
-- **Delete mistakes.** Transactions can be removed from the table. (Editing an existing transaction is not built yet — see [Roadmap](#roadmap).)
+- **Delete mistakes.** Transactions can be removed from the table. (Editing an existing transaction is not built yet.)
 
 ### See the big picture
 
@@ -330,26 +329,6 @@ If your Supabase database is in `eu-west-1`, co-locating the Vercel functions in
 
 ---
 
-## Roadmap
-
-Ideas for future work — feel free to open or pick up an issue on the [GitHub project board](https://github.com/users/AmineMabrouk17/projects/4).
-
-| Priority | Idea |
-| :---: | --- |
-| 🔴 High | Edit an existing transaction (today you can only add and delete) |
-| 🔴 High | Export transactions to CSV / PDF statements |
-| 🔴 High | Recurring transactions (subscriptions, monthly bills) |
-| 🟡 Medium | Date-range filtering and search in the transaction table |
-| 🟡 Medium | Multi-currency storage with a currency per transaction |
-| 🟡 Medium | Spending limits with alerts (would be a new product capability) |
-| 🟡 Medium | Email/password reset flow powered by Supabase SMTP |
-| 🟢 Low | Savings goals and progress tracking |
-| 🟢 Low | Installable PWA with offline-first caching |
-| 🟢 Low | Import data from CSV / bank statements |
-| 🟢 Low | Localization (French, Arabic, …) |
-
----
-
 ## Contributing
 
 Contributions are welcome.
@@ -359,8 +338,6 @@ Contributions are welcome.
 3. Run `pnpm lint`, `pnpm typecheck` and `pnpm test` before opening a pull request.
 4. If you change the UI, add the states you changed to [`.factory/evidence.json`](.factory/evidence.json) and capture them with `scripts/capture-evidence.mjs` — see [the evidence guide](docs/agents/evidence.md).
 5. Open a pull request describing what changed and why.
-
-The board of implementation-ready issues is on [GitHub Projects](https://github.com/users/AmineMabrouk17/projects/4).
 
 ---
 
