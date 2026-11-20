@@ -10,7 +10,7 @@
     "auth": true,
     "expected": "Preview demo purchase",
     "declared": true,
-    "before": "captured",
+    "before": "unavailable",
     "after": "captured"
   },
   {
@@ -24,7 +24,7 @@
     "auth": true,
     "expected": "Sign out",
     "declared": true,
-    "before": "captured",
+    "before": "unavailable",
     "after": "captured"
   },
   {
