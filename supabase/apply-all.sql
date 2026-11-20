@@ -210,3 +210,5 @@ ON public.currency_rates
 FOR SELECT
 TO anon, authenticated
 USING (true);
+REVOKE ALL PRIVILEGES ON TABLE public.currency_rates FROM anon, authenticated;
+GRANT SELECT ON TABLE public.currency_rates TO anon, authenticated;

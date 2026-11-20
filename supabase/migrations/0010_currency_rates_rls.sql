@@ -10,5 +10,8 @@ FOR SELECT
 TO anon, authenticated
 USING (true);
 
--- No INSERT/UPDATE/DELETE policies for anon/authenticated roles: only the
--- service role (which bypasses RLS) may mutate cached rates.
+-- Defense in depth: remove direct table privileges from client roles and grant
+-- read-only access explicitly. No INSERT/UPDATE/DELETE policies exist for
+-- anon/authenticated; service_role bypasses RLS for server-side cache refresh.
+REVOKE ALL PRIVILEGES ON TABLE public.currency_rates FROM anon, authenticated;
+GRANT SELECT ON TABLE public.currency_rates TO anon, authenticated;
