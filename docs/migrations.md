@@ -39,4 +39,16 @@ Confirm the table columns exist, RLS is enabled, the policy is listed, and index
 | `supabase/migrations/0007_custom_kpis.sql` | | |
 | `supabase/migrations/0008_salary_budget_plans.sql` | | |
 | `supabase/migrations/0009_onboarded_flag_backfill.sql` | | |
-| `supabase/migrations/0010_currency_rates_rls.sql` | | |
+| `supabase/migrations/0010_currency_rates_rls.sql` | Pending in deployed environments (not verifiable from source) | Pending deployment verification: confirm RLS enabled, anon/authenticated SELECT-only, no client DML grants/policies, and service-role cache refresh works |
+
+## Security/deployment follow-up checklist (source-audited)
+
+These are repo-documented actions and cannot be fully completed from source alone:
+
+- **Admin auth:** Set a strong `ADMIN_PASSWORD` in every environment before exposing `/admin`. The app now fails closed when it is unset and uses signed, expiring admin session tokens.
+- **Service role:** Configure `SUPABASE_SERVICE_ROLE_KEY` server-side where required for admin user listing and currency-rate cache refresh. Never expose it to clients.
+- **Migration 0010 rollout:** Apply `supabase/migrations/0010_currency_rates_rls.sql` (or rerun `supabase/apply-all.sql`) in each database environment and verify effective RLS/grants/policies and cache refresh behavior.
+- **Trusted ingress/proxy headers:** Verify which client-IP header is authoritative at the edge/proxy and that spoofed forwarding headers are stripped/overwritten. Login rate limiting and Turnstile `remoteip` depend on that deployment boundary; monitor requests attributed to `unknown`.
+- **CI/workflow trust boundaries:** Current workflows include mitigations (reduced permissions, same-repo PR guards for privileged automation, trusted-ref PR-body update, Telegram secret isolation from PR code, pinned deploy CLIs), but self-hosted/privileged automation still requires runner isolation, secret scoping, and repo governance review before relying on it in production.
+- **Session/revocation parity:** Local JWT verification avoids definitive-error downgrades but cannot replace all server-side session revocation semantics; validate behavior in staging for your Supabase token/session configuration and edge/runtime paths.
+- **Staging/CI/audit:** Run CI on GitHub, test in staging after deployment, and re-run the security audit in a capable sandbox to confirm unresolved findings are fixed, refuted, or explicitly accepted.

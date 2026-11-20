@@ -1,6 +1,6 @@
 -- Combined BudgetIQ migration (run once in Supabase SQL Editor).
 -- Safe to re-run: every statement uses IF NOT EXISTS / DROP IF EXISTS.
--- Apply in order: this file is migrations 0001..0009 concatenated.
+-- Apply in order: this file is migrations 0001..0010 concatenated.
 
 SET search_path = public;
 

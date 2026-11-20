@@ -3,6 +3,13 @@ name: Software Factory - Issue to PR (manual fallback)
 # The normal path is human-in-the-loop: create the issue, then run /factory <number>
 # in OpenCode on the VPS. This workflow is the optional manual fallback from the
 # Actions UI when you want the same result without driving OpenCode yourself.
+#
+# Security note (source-audited): this workflow runs an autonomous agent on a
+# self-hosted runner with broad write permissions and consumes untrusted issue
+# content. Restrict who can create/edit issues and dispatch workflows, use an
+# isolated/ephemeral runner with minimal ambient credentials, and require human
+# review of pushed branches/PRs before merge or deployment. Do not treat this as
+# safe for untrusted contributors without additional governance controls.
 
 on:
   workflow_dispatch:

@@ -181,7 +181,7 @@ Only the two Supabase values are checked at startup; the others enable specific 
 | `OPENROUTER_FALLBACK_MODEL` | Override backup model (default `nvidia/nemotron-3-ultra-550b-a55b:free`) | No |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | Login bot protection. Optional in development, required in production builds | Prod: yes |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Shared rate limits across server instances. Without them, limits are kept in memory | No |
-| `ADMIN_PASSWORD`, `SUPABASE_SERVICE_ROLE_KEY` | Unlocking `/admin` and listing all users | Only for `/admin` |
+| `ADMIN_PASSWORD`, `SUPABASE_SERVICE_ROLE_KEY` | Unlocking `/admin` (requires a strong configured password) and service-role operations such as listing all users and refreshing the currency-rate cache | Only for `/admin` and currency-rate cache refresh |
 | `ALLOWED_DEV_ORIGINS` | Extra localhost-like origins for `next dev` | No |
 | `PREVIEW_TEST_SECRET` | Signed demo user for Vercel preview captures | No |
 
@@ -197,7 +197,7 @@ Open your Supabase project → **SQL Editor** and run [`supabase/apply-all.sql`]
 | `profiles` | One profile per user, created automatically on sign-up |
 | `custom_kpis` | User-defined summary cards |
 | `salary_budget_plans` | Salary, four-pillar actuals, AI advice and chat history |
-| `currency_rates` | Cached exchange rates (public reference data, no RLS) |
+| `currency_rates` | Cached exchange rates (public reference data, read-only to clients under RLS; refreshed server-side with the service role key) |
 
 The numbered files in `supabase/migrations/` are the same changes in order, if you prefer applying them one at a time.
 
@@ -259,15 +259,15 @@ The plan is stored per user in `salary_budget_plans` and includes the conversati
 
 ### Display currency
 
-Amounts are plain USD numbers in the database and have no currency column. The header dropdown stores your choice in a cookie, and rates are fetched from the free, keyless [exchangerate-api.com](https://www.exchangerate-api.com) open endpoint, cached in Supabase for about 24 hours, and reused if the API is down. When you enter an amount in a non-USD currency, the app converts it back to USD before saving. See [ADR-0001](docs/adr/0001-display-only-currency.md).
+Amounts are plain USD numbers in the database and have no currency column. The header dropdown stores your choice in a cookie, and rates are fetched from the free, keyless [exchangerate-api.com](https://www.exchangerate-api.com) open endpoint, cached in Supabase for about 24 hours, and reused if the API is down. Cache writes go through the server-side service role client and `currency_rates` is protected by RLS for read-only client access (migration `0010`), so public/anon clients cannot mutate shared rates. When you enter an amount in a non-USD currency, the app converts it back to USD before saving. See [ADR-0001](docs/adr/0001-display-only-currency.md).
 
 ### Custom KPIs
 
-A KPI is a small formula: **source** (income, expense, balance or category) + **scope** (all / personal / business) + **timeframe** (this month, last month, last 30 days, year to date, all time) + **operation** (sum, percentage or budget remaining). Cards are created, edited and deleted through Server Actions in `app/actions/kpis.ts`.
+A KPI is a small formula: **source** (income, expense, balance or category) + **scope** (all / personal / business) + **timeframe** (this month, last month, last 30 days, year to date, all time) + **operation** (sum, percentage or budget remaining). Cards are created, edited and deleted through authenticated Server Actions in `app/actions/kpis.ts`; rows are scoped to the signed-in user in queries and enforced by Supabase RLS policies (`custom_kpis`). Deployments must ensure those RLS policies remain enabled/effective.
 
 ### Admin area
 
-`/admin` first asks for `ADMIN_PASSWORD` and sets a session cookie. Once unlocked, it uses the Supabase service-role key to list all profiles — something normal users' RLS policies do not allow. Regular users never see the Admin navigation item.
+`/admin` is fail-closed: `ADMIN_PASSWORD` must be configured as a strong server-side secret. Successful unlock issues a signed, expiring session cookie that is verified for both admin navigation visibility and admin data access. Once unlocked, the page uses the Supabase service-role key to list all profiles — something normal users' RLS policies do not allow. Regular users never see the Admin navigation item.
 
 ### Preview captures
 
@@ -312,7 +312,7 @@ lib/
   ...                     Analytics, summaries, categories, rate limiting, data loaders
 supabase/
   apply-all.sql           All migrations concatenated, safe to re-run
-  migrations/             Numbered schema changes (0001–0009)
+  migrations/             Numbered schema changes (0001–0010)
 types/                    Shared TypeScript types
 docs/adr/                 Architecture decision records
 docs/agents/              Contributor guides (issues, labels, evidence, domain)
