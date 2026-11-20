@@ -201,3 +201,12 @@ FROM public.profiles AS p
 WHERE p.id = u.id
   AND p.income_type IS NOT NULL
   AND COALESCE(u.raw_user_meta_data -> 'onboarded', 'false'::jsonb) <> 'true'::jsonb;
+
+-- ===== 0010_currency_rates_rls.sql =====
+ALTER TABLE public.currency_rates ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Anyone can read currency rates" ON public.currency_rates;
+CREATE POLICY "Anyone can read currency rates"
+ON public.currency_rates
+FOR SELECT
+TO anon, authenticated
+USING (true);

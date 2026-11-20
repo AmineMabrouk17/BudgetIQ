@@ -1,9 +1,9 @@
 "use server";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit } from "@/lib/rate-limit";
+import { getClientIpFromHeaders } from "@/lib/client-ip";
 
 export async function signOut() {
   const supabase = await createClient();
@@ -34,12 +34,10 @@ export async function verifyTurnstile(
   }
 
   try {
-    const requestHeaders = await headers();
-    const forwardedFor = requestHeaders.get("x-forwarded-for");
-    const remoteip = forwardedFor?.split(",")[0]?.trim() || undefined;
+    const ip = await getClientIpFromHeaders();
 
     const formBody = new URLSearchParams({ secret, response: token });
-    if (remoteip) formBody.set("remoteip", remoteip);
+    if (ip && ip !== "unknown") formBody.set("remoteip", ip);
 
     const response = await fetch(TURNSTILE_SITEVERIFY_URL, {
       method: "POST",
@@ -64,9 +62,7 @@ export async function verifyTurnstile(
 export async function checkLoginRateLimit(
   email: string
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  const headerStore = await headers();
-  const forwarded = headerStore.get("x-forwarded-for");
-  const ip = forwarded ? forwarded.split(",")[0].trim() : "unknown";
+  const ip = await getClientIpFromHeaders();
 
   const perIp = await rateLimit({
     prefix: "login-ip",

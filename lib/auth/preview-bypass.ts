@@ -64,7 +64,7 @@ export function getPreviewMockSession(
       id: PREVIEW_USER_ID,
       email: PREVIEW_USER_EMAIL,
       name: PREVIEW_USER_NAME,
-      role: "admin",
+      role: "user",
       aud: "authenticated",
       app_metadata: {},
       user_metadata: {

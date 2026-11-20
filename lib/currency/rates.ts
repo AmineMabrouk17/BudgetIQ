@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import {
   CURRENCY_CODES,
   needsRateRefresh,
@@ -23,7 +24,9 @@ async function readStoredRates(): Promise<CurrencyRateRow[]> {
 }
 
 async function upsertStoredRates(rates: CurrencyRates): Promise<void> {
-  const supabase = await createClient();
+  // Persist via the service role so cache refresh works even when the
+  // currency_rates table is read-only to anon/authenticated clients.
+  const supabase = createAdminClient();
   const rows = Object.entries(rates).map(([currency, rate_to_usd]) => ({
     currency,
     rate_to_usd,

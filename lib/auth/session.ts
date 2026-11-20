@@ -84,9 +84,12 @@ export async function readSessionUser(
     try {
       const jwks = await getJwks(env.NEXT_PUBLIC_SUPABASE_URL, header.kid);
       const { data, error } = await supabase.auth.getClaims(token, { jwks });
-      if (!error && data) return toSessionUser(data.claims);
+      if (error || !data) return null;
+      return toSessionUser(data.claims);
     } catch {
-      // Key set unreachable — fall through to the Auth API below.
+      // Key set unreachable or unusable for local verification — fall through to
+      // the Auth API below rather than locking valid users out.
+      void 0;
     }
   }
 

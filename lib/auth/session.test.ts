@@ -142,15 +142,15 @@ describe("readSessionUser", () => {
     expect(getUser).toHaveBeenCalled();
   });
 
-  it("lets the Auth API adjudicate a token that fails local verification", async () => {
+  it("treats a token that fails local verification as invalid without remote downgrade", async () => {
     const { client, getUser } = makeClient({
       session: { access_token: makeToken() },
       claimsError: new Error("Invalid JWT signature"),
-      userError: new Error("invalid claim: missing sub claim"),
+      user: { id: "user-1", email: null, user_metadata: {}, app_metadata: {} },
     });
 
     expect(await readSessionUser(client)).toBeNull();
-    expect(getUser).toHaveBeenCalled();
+    expect(getUser).not.toHaveBeenCalled();
   });
 
   it("falls back to the Auth API when the key set is unreachable", async () => {

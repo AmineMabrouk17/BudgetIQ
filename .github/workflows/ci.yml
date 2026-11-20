@@ -7,11 +7,13 @@ on:
     branches: [main, master]
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
+  pull-requests: read
   deployments: read
   statuses: read
-  id-token: write
+
+# NOTE: jobs that must publish artifacts/comments declare their own minimal
+# write permissions instead of inheriting broad workflow-level access.
 
 jobs:
   checks:
@@ -55,6 +57,10 @@ jobs:
   code-review:
     if: github.event_name == 'pull_request'
     runs-on: [self-hosted, vps-opencode]
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -93,6 +99,9 @@ jobs:
   visual-evidence:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
     env:
       # Placeholders so both branches can build without repository secrets.
       NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
@@ -230,6 +239,11 @@ jobs:
     if: github.event_name == 'pull_request'
     needs: [visual-evidence]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      deployments: read
+      statuses: read
     outputs:
       preview_url: ${{ steps.preview.outputs.url }}
     steps:
@@ -254,6 +268,9 @@ jobs:
     if: always() && github.event_name == 'pull_request'
     needs: [checks, code-review, visual-evidence, preview-and-pr-update]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@v4
 
@@ -314,6 +331,8 @@ jobs:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     needs: [checks]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - name: Deploy production (Vercel / Cloudflare if configured via CLI)

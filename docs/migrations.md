@@ -32,3 +32,11 @@ Confirm the table columns exist, RLS is enabled, the policy is listed, and index
 | `supabase/migrations/0001_transactions.sql` | Yes — applied via SQL Editor | Yes — table, columns, and RLS confirmed via PostgREST |
 | `supabase/migrations/0002_profiles.sql` | | |
 | `supabase/migrations/0003_profiles_sync_update.sql` | | |
+
+| `supabase/migrations/0004_currency_rates.sql` | | |
+| `supabase/migrations/0005_profiles_income_fields.sql` | | |
+| `supabase/migrations/0006_transaction_scope.sql` | | |
+| `supabase/migrations/0007_custom_kpis.sql` | | |
+| `supabase/migrations/0008_salary_budget_plans.sql` | | |
+| `supabase/migrations/0009_onboarded_flag_backfill.sql` | | |
+| `supabase/migrations/0010_currency_rates_rls.sql` | | |
