@@ -18,6 +18,10 @@ on:
         description: GitHub issue number to implement
         required: true
         type: string
+      acknowledge_risk:
+        description: 'Type ACK to confirm you trust the issue content and runner isolation'
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -31,6 +35,13 @@ concurrency:
 
 jobs:
   implement-issue:
+    # Manual fallback only: require explicit acknowledgment and limit to repo
+    # owner/member/collaborator actors. Still executes autonomous tooling on a
+    # self-hosted runner over untrusted issue content; use isolated/ephemeral
+    # runners and require human review before merge/deploy.
+    if: >-
+      github.event.inputs.acknowledge_risk == 'ACK' &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.actor)
     runs-on: [self-hosted, vps-opencode]
     timeout-minutes: 30
 

@@ -1,55 +1,68 @@
 import type { NextRequest } from "next/server";
 import { headers } from "next/headers";
 
+type HeaderReader = {
+  get(name: string): string | null;
+};
+
+function isVercelRuntime(): boolean {
+  return process.env.VERCEL === "1" || Boolean(process.env.VERCEL_ENV);
+}
+
+function firstIp(value: string | null): string | null {
+  if (!value) return null;
+  const first = value.split(",")[0]?.trim();
+  return first || null;
+}
+
+function rightmostIp(value: string | null): string | null {
+  if (!value) return null;
+  const parts = value
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+  return parts.length > 0 ? parts[parts.length - 1]! : null;
+}
+
 /**
- * Best-effort client IP for rate limiting and abuse controls.
+ * Resolve a client IP for rate limiting and abuse controls.
  *
- * Spoofable forwarding headers are common when an app is reached directly, so
- * prefer the platform-populated single-hop headers first. When only
- * X-Forwarded-For is available, use the rightmost value (appended by the first
- * trusted proxy in the chain) rather than the leftmost client-supplied value.
+ * Forwarding headers are attacker-controlled unless the request is guaranteed
+ * to pass through a trusted proxy/CDN that strips and overwrites them. To avoid
+ * trusting spoofable headers by default, we only use platform-guaranteed or
+ * explicitly trusted sources:
+ * - Vercel: x-vercel-forwarded-for (set by Vercel's edge)
+ * - Cloudflare: cf-connecting-ip (set by Cloudflare when proxied)
+ * - Self-hosted behind a trusted proxy: set TRUST_PROXY_HEADERS=true to trust
+ *   x-real-ip and the rightmost X-Forwarded-For hop
+ *
+ * Returns "unknown" when no trusted source is available; callers should treat
+ * that as a shared bucket for throttling rather than a unique client identity.
  */
-export function getClientIpFromRequest(request: NextRequest): string {
-  const realIp = request.headers.get("x-real-ip")?.trim();
-  if (realIp) return realIp;
+export function resolveTrustedClientIp(headerStore: HeaderReader): string {
+  if (isVercelRuntime()) {
+    const vercelForwarded = firstIp(headerStore.get("x-vercel-forwarded-for"));
+    if (vercelForwarded) return vercelForwarded;
+  }
 
-  const vercelForwarded = request.headers.get("x-vercel-forwarded-for")?.trim();
-  if (vercelForwarded) return vercelForwarded.split(",")[0]!.trim();
-
-  const cfConnectingIp = request.headers.get("cf-connecting-ip")?.trim();
+  const cfConnectingIp = headerStore.get("cf-connecting-ip")?.trim();
   if (cfConnectingIp) return cfConnectingIp;
 
-  const forwarded = request.headers.get("x-forwarded-for");
-  if (forwarded) {
-    const parts = forwarded
-      .split(",")
-      .map((part) => part.trim())
-      .filter(Boolean);
-    if (parts.length > 0) return parts[parts.length - 1]!;
+  if (process.env.TRUST_PROXY_HEADERS === "true") {
+    const realIp = headerStore.get("x-real-ip")?.trim();
+    if (realIp) return realIp;
+
+    const forwarded = rightmostIp(headerStore.get("x-forwarded-for"));
+    if (forwarded) return forwarded;
   }
 
   return "unknown";
 }
 
+export function getClientIpFromRequest(request: NextRequest): string {
+  return resolveTrustedClientIp(request.headers);
+}
+
 export async function getClientIpFromHeaders(): Promise<string> {
-  const headerStore = await headers();
-  const realIp = headerStore.get("x-real-ip")?.trim();
-  if (realIp) return realIp;
-
-  const vercelForwarded = headerStore.get("x-vercel-forwarded-for")?.trim();
-  if (vercelForwarded) return vercelForwarded.split(",")[0]!.trim();
-
-  const cfConnectingIp = headerStore.get("cf-connecting-ip")?.trim();
-  if (cfConnectingIp) return cfConnectingIp;
-
-  const forwarded = headerStore.get("x-forwarded-for");
-  if (forwarded) {
-    const parts = forwarded
-      .split(",")
-      .map((part) => part.trim())
-      .filter(Boolean);
-    if (parts.length > 0) return parts[parts.length - 1]!;
-  }
-
-  return "unknown";
+  return resolveTrustedClientIp(await headers());
 }
