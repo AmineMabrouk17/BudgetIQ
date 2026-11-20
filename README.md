@@ -29,6 +29,12 @@ BudgetIQ is a **free, open-source, AI-powered personal finance app**. Track your
   <img src="https://img.shields.io/badge/Vercel-Deployed-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel" />
 </p>
 
+## 🎬 Product demo
+
+<video src="docs/media/budgetiq-product-demo/budgetiq-product-demo-120s.mp4" poster="docs/media/budgetiq-product-demo/budgetiq-product-demo-poster.jpg" controls width="100%"></video>
+
+[Download the 2-minute demo (MP4)](docs/media/budgetiq-product-demo/budgetiq-product-demo-120s.mp4)
+
 ---
 
 ## 📖 Overview
