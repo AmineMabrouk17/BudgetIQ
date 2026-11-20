@@ -14,7 +14,9 @@ describe("ProofSection", () => {
   it("shows the conversational example", () => {
     render(<ProofSection />);
 
-    expect(screen.getByText(/i spent \$45 on groceries today/i)).toBeInTheDocument();
+    expect(
+      screen.getAllByText(/i spent \$45 on groceries today/i).length
+    ).toBeGreaterThan(0);
     expect(screen.getByText(/got it — \$45 expense, groceries/i)).toBeInTheDocument();
     expect(screen.getByText(/log transaction/i)).toBeInTheDocument();
     expect(screen.getByText(/logged\. monthly spending/i)).toBeInTheDocument();

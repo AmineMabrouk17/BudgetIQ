@@ -262,12 +262,16 @@ export async function upsertCustomKPI(
 
   try {
     if (parsed.data.id) {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("custom_kpis")
         .update(row)
         .eq("id", parsed.data.id)
-        .eq("user_id", user.id);
+        .eq("user_id", user.id)
+        .select("id");
       if (error) throw error;
+      if (!data || data.length === 0) {
+        return { ok: false, error: "KPI not found." };
+      }
     } else {
       const { error } = await supabase.from("custom_kpis").insert(row);
       if (error) throw error;

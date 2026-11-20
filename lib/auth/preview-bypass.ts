@@ -20,8 +20,10 @@ type HeaderReader = { get(name: string): string | null };
 export const PREVIEW_USER_ID = "preview-synthetic-user";
 export const PREVIEW_USER_EMAIL = "preview-bot@internal.test";
 export const PREVIEW_USER_NAME = "Preview Test Bot";
-const MAX_TIMESTAMP_DRIFT_MS = 5 * 60 * 1000;
-const SESSION_TTL_MS = 60 * 60 * 1000;
+// Keep replay window short; preview auth is convenience-only and must remain
+// isolated to Vercel preview environments with a configured secret.
+const MAX_TIMESTAMP_DRIFT_MS = 2 * 60 * 1000;
+const SESSION_TTL_MS = 30 * 60 * 1000;
 
 export function getPreviewMockSession(
   headersList: HeaderReader
@@ -39,13 +41,16 @@ export function getPreviewMockSession(
   const timestamp = headersList.get("x-test-auth-timestamp");
   if (!signature || !timestamp) return null;
 
-  // Replay protection: reject signatures older than 5 minutes.
-  const timeDiff = Math.abs(Date.now() - parseInt(timestamp, 10));
-  if (isNaN(timeDiff) || timeDiff > MAX_TIMESTAMP_DRIFT_MS) return null;
+  // Replay protection: reject stale or malformed timestamps.
+  const issuedAt = parseInt(timestamp, 10);
+  const timeDiff = Math.abs(Date.now() - issuedAt);
+  if (!Number.isFinite(issuedAt) || timeDiff > MAX_TIMESTAMP_DRIFT_MS) return null;
 
+  // Signature covers timestamp and a fixed purpose to avoid accidental reuse
+  // with unrelated HMACs over the same secret.
   const expectedSignature = crypto
     .createHmac("sha256", secret)
-    .update(timestamp)
+    .update(`preview-auth:${timestamp}`)
     .digest("hex");
 
   if (
@@ -64,7 +69,7 @@ export function getPreviewMockSession(
       id: PREVIEW_USER_ID,
       email: PREVIEW_USER_EMAIL,
       name: PREVIEW_USER_NAME,
-      role: "admin",
+      role: "user",
       aud: "authenticated",
       app_metadata: {},
       user_metadata: {

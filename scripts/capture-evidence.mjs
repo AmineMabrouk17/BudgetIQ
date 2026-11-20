@@ -195,7 +195,7 @@ function previewAuthHeaders() {
   const timestamp = String(Date.now());
   const signature = crypto
     .createHmac('sha256', previewSecret)
-    .update(timestamp)
+    .update(`preview-auth:${timestamp}`)
     .digest('hex');
   return {
     'x-test-auth-signature': signature,

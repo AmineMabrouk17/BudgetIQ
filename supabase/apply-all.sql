@@ -1,6 +1,6 @@
 -- Combined BudgetIQ migration (run once in Supabase SQL Editor).
 -- Safe to re-run: every statement uses IF NOT EXISTS / DROP IF EXISTS.
--- Apply in order: this file is migrations 0001..0009 concatenated.
+-- Apply in order: this file is migrations 0001..0010 concatenated.
 
 SET search_path = public;
 
@@ -201,3 +201,30 @@ FROM public.profiles AS p
 WHERE p.id = u.id
   AND p.income_type IS NOT NULL
   AND COALESCE(u.raw_user_meta_data -> 'onboarded', 'false'::jsonb) <> 'true'::jsonb;
+
+-- ===== 0010_currency_rates_rls.sql =====
+ALTER TABLE public.currency_rates ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Anyone can read currency rates" ON public.currency_rates;
+CREATE POLICY "Anyone can read currency rates"
+ON public.currency_rates
+FOR SELECT
+TO anon, authenticated
+USING (true);
+REVOKE ALL PRIVILEGES ON TABLE public.currency_rates FROM anon, authenticated;
+GRANT SELECT ON TABLE public.currency_rates TO anon, authenticated;
+
+-- ===== 0011_custom_kpis_grants_hardening.sql =====
+ALTER TABLE public.custom_kpis ENABLE ROW LEVEL SECURITY;
+REVOKE ALL PRIVILEGES ON TABLE public.custom_kpis FROM anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.custom_kpis TO authenticated;
+
+-- ===== 0012_user_table_grants_hardening.sql =====
+ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.salary_budget_plans ENABLE ROW LEVEL SECURITY;
+REVOKE ALL PRIVILEGES ON TABLE public.transactions FROM anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.transactions TO authenticated;
+REVOKE ALL PRIVILEGES ON TABLE public.profiles FROM anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.profiles TO authenticated;
+REVOKE ALL PRIVILEGES ON TABLE public.salary_budget_plans FROM anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.salary_budget_plans TO authenticated;

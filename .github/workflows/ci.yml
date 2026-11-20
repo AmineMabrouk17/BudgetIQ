@@ -7,11 +7,13 @@ on:
     branches: [main, master]
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
+  pull-requests: read
   deployments: read
   statuses: read
-  id-token: write
+
+# NOTE: jobs that must publish artifacts/comments declare their own minimal
+# write permissions instead of inheriting broad workflow-level access.
 
 jobs:
   checks:
@@ -22,6 +24,8 @@ jobs:
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci-placeholder-anon-key
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: pnpm/action-setup@v4
         if: hashFiles('pnpm-lock.yaml') != ''
         with:
@@ -53,12 +57,26 @@ jobs:
           fi
 
   code-review:
-    if: github.event_name == 'pull_request'
+    # Restrict to same-repo PRs and trusted author associations: this job runs
+    # an autonomous agent on a self-hosted runner with write-capable tokens, so
+    # it must not execute for untrusted fork PRs or outside contributors.
+    # Same-repo/collaborator PR content remains prompt-injection-risk input;
+    # require isolated/ephemeral runners, least-privilege credentials, and human
+    # review before merge or deployment.
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.pull_request.author_association)
     runs-on: [self-hosted, vps-opencode]
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Ensure /code-review skill is available to OpenCode
         run: |
@@ -90,21 +108,26 @@ jobs:
             -f "$PROMPT_FILE" \
             "Run the /code-review skill on the diff and post the review as a PR comment."
 
-  visual-evidence:
-    if: github.event_name == 'pull_request'
+  visual-evidence-capture:
+    # Same-repo PRs only: this job executes PR-controlled code/scripts to
+    # capture evidence. It has read-only repository permissions and must not be
+    # given write credentials. Publishing happens in a separate trusted job.
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     env:
       # Placeholders so both branches can build without repository secrets.
       NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci-placeholder-anon-key
-    outputs:
-      evidence_markdown: ${{ steps.commit-assets.outputs.evidence_markdown }}
     steps:
       - name: Checkout PR branch
         uses: actions/checkout@v4
         with:
           path: pr-branch
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Checkout Base branch (Before state)
         uses: actions/checkout@v4
@@ -112,6 +135,7 @@ jobs:
           ref: ${{ github.base_ref }}
           path: base-branch
           fetch-depth: 1
+          persist-credentials: false
 
       - uses: actions/setup-node@v4
         with:
@@ -159,6 +183,24 @@ jobs:
         with:
           name: playwright-evidence-pr-${{ github.event.pull_request.number }}
           path: evidence-out/
+
+  visual-evidence:
+    # Trusted publish job: never checks out or executes PR-controlled code. It
+    # only downloads the capture artifact produced by visual-evidence-capture.
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    needs: [visual-evidence-capture]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+    outputs:
+      evidence_markdown: ${{ steps.commit-assets.outputs.evidence_markdown }}
+    steps:
+      - name: Download evidence artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: playwright-evidence-pr-${{ github.event.pull_request.number }}
+          path: evidence-out
 
       - name: Publish evidence to orphan factory-assets branch & build Markdown
         id: commit-assets
@@ -227,13 +269,23 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
   preview-and-pr-update:
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
     needs: [visual-evidence]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      deployments: read
+      statuses: read
     outputs:
       preview_url: ${{ steps.preview.outputs.url }}
     steps:
+      # Run the trusted base-branch script with PR-write permissions; do not
+      # execute scripts from the untrusted PR checkout in this job.
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -249,46 +301,17 @@ jobs:
         run: |
           node scripts/extract-preview-url.mjs
 
-  # Integrates an existing ci-telegram, with a built-in fallback if none is present
+  # PR notifications must never execute PR-controlled code with Telegram
+  # secrets. Use only trusted event payload data and the built-in sender.
   notify-telegram:
-    if: always() && github.event_name == 'pull_request'
+    if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
     needs: [checks, code-review, visual-evidence, preview-and-pr-update]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
-      - uses: actions/checkout@v4
-
-      # Option A: If your repo has .github/actions/ci-telegram/action.yml (composite action)
-      - name: Run existing ci-telegram action
-        if: hashFiles('.github/actions/ci-telegram/action.yml') != ''
-        uses: ./.github/actions/ci-telegram
-        with:
-          status: ${{ needs.checks.result }}
-          pr_url: ${{ github.event.pull_request.html_url }}
-          preview_url: ${{ needs.preview-and-pr-update.outputs.preview_url }}
-
-      # Option B: If your repo has a ci-telegram script (e.g., scripts/ci-telegram.sh or .github/scripts/ci-telegram.sh)
-      - name: Run existing ci-telegram script
-        if: hashFiles('.github/actions/ci-telegram/action.yml') == '' && (hashFiles('scripts/ci-telegram.sh') != '' || hashFiles('scripts/ci-telegram.mjs') != '' || hashFiles('.github/scripts/ci-telegram.sh') != '')
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          CI_STATUS: ${{ needs.checks.result }}
-          REVIEW_STATUS: ${{ needs.code-review.result }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          PR_TITLE: ${{ github.event.pull_request.title }}
-          PREVIEW_URL: ${{ needs.preview-and-pr-update.outputs.preview_url }}
-        run: |
-          if [ -x "./scripts/ci-telegram.sh" ]; then
-            ./scripts/ci-telegram.sh
-          elif [ -f "./scripts/ci-telegram.mjs" ]; then
-            node ./scripts/ci-telegram.mjs
-          elif [ -x "./.github/scripts/ci-telegram.sh" ]; then
-            ./.github/scripts/ci-telegram.sh
-          fi
-
-      # Fallback: send the notification directly when no ci-telegram action/script exists
-      - name: Built-in Telegram notification
-        if: hashFiles('.github/actions/ci-telegram/action.yml') == '' && hashFiles('scripts/ci-telegram.sh') == '' && hashFiles('scripts/ci-telegram.mjs') == '' && hashFiles('.github/scripts/ci-telegram.sh') == ''
+      - name: Telegram notification (trusted context only)
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -314,17 +337,24 @@ jobs:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     needs: [checks]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Deploy production (Vercel / Cloudflare if configured via CLI)
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
+          # Pin CLIs to reduce supply-chain risk in privileged deploy jobs.
+          VERCEL_CLI_VERSION="66.5.0"
+          WRANGLER_CLI_VERSION="4.165.0"
           if [ -n "$VERCEL_TOKEN" ]; then
-            npx --yes vercel deploy --prod --token="$VERCEL_TOKEN" --yes
+            npx --yes "vercel@${VERCEL_CLI_VERSION}" deploy --prod --token="$VERCEL_TOKEN" --yes
           elif [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -f "wrangler.toml" -o -f "wrangler.jsonc" ]; then
-            npx --yes wrangler deploy
+            npx --yes "wrangler@${WRANGLER_CLI_VERSION}" deploy
           else
             echo "Production deploy handled automatically by connected Vercel/Cloudflare Git integration."
           fi
