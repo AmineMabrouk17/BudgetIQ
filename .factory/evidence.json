@@ -80,7 +80,7 @@
       "viewport": "desktop",
       "theme": "light",
       "actions": [{ "scrollTo": "#proof" }],
-      "expect": "Users can manage their own transactions"
+      "expect": "Log a transaction the way you say it."
     },
     {
       "label": "landing-proof-mobile",
@@ -88,7 +88,7 @@
       "viewport": "mobile",
       "theme": "light",
       "actions": [{ "scrollTo": "#proof" }],
-      "expect": "Users can manage their own transactions"
+      "expect": "Log a transaction the way you say it."
     },
     {
       "label": "landing-proof-dark",
@@ -96,7 +96,7 @@
       "viewport": "desktop",
       "theme": "dark",
       "actions": [{ "scrollTo": "#proof" }],
-      "expect": "Users can manage their own transactions"
+      "expect": "Log a transaction the way you say it."
     },
     {
       "label": "landing-faq-mobile",
