@@ -2,9 +2,15 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
 
-afterEach(() => {
-  cleanup();
-});
+// Most suites run in jsdom, but a few exercise Node-only request parsing with
+// `// @vitest-environment node`; their environment has no window to patch.
+const hasDom = typeof window !== "undefined" && typeof document !== "undefined";
+
+if (hasDom) {
+  afterEach(() => {
+    cleanup();
+  });
+}
 
 export function createMatchMedia(queries: Record<string, boolean> = {}) {
   return (query: string) => ({
@@ -19,10 +25,12 @@ export function createMatchMedia(queries: Record<string, boolean> = {}) {
   });
 }
 
-Object.defineProperty(window, "matchMedia", {
-  writable: true,
-  value: createMatchMedia(),
-});
+if (hasDom) {
+  Object.defineProperty(window, "matchMedia", {
+    writable: true,
+    value: createMatchMedia(),
+  });
+}
 
 vi.mock("next/image", () => ({
   default: ({

@@ -9,6 +9,19 @@
       "expect": "Preview demo purchase"
     },
     {
+      "label": "chat-voice-recording",
+      "path": "/dashboard",
+      "viewport": "desktop",
+      "theme": "light",
+      "auth": true,
+      "actions": [
+        { "click": "[aria-label=\"Open AI assistant\"]" },
+        { "click": "[aria-label=\"Record voice message\"]" },
+        { "wait": 1500 }
+      ],
+      "expect": "Listening"
+    },
+    {
       "label": "navbar-user-menu",
       "path": "/dashboard",
       "viewport": "desktop",

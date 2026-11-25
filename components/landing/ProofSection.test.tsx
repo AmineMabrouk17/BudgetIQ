@@ -14,7 +14,11 @@ describe("ProofSection", () => {
   it("shows the conversational example", () => {
     render(<ProofSection />);
 
-    expect(screen.getByText(/i spent \$45 on groceries today/i)).toBeInTheDocument();
+    // The phrase appears twice by design: once in the intro copy, once in the
+    // chat mock. Scope the assertion to "it is rendered" rather than "once".
+    expect(
+      screen.getAllByText(/i spent \$45 on groceries today/i).length
+    ).toBeGreaterThan(0);
     expect(screen.getByText(/got it — \$45 expense, groceries/i)).toBeInTheDocument();
     expect(screen.getByText(/log transaction/i)).toBeInTheDocument();
     expect(screen.getByText(/logged\. monthly spending/i)).toBeInTheDocument();

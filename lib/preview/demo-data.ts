@@ -116,12 +116,48 @@ export async function isPreviewDemoRequest(): Promise<boolean> {
   }
 }
 
+/**
+ * Transactions a signed preview session added during this server process.
+ *
+ * The fixture above is read-only, so a QA click on "Add" would otherwise try to
+ * insert into a Supabase project where the synthetic user does not exist and
+ * fail. Storing writes in process memory lets authenticated preview flows —
+ * capture-evidence and the voice-note e2e — exercise the real create path
+ * without a database. The store is only reachable through a signed preview
+ * request and never exists in production.
+ */
+const PREVIEW_WRITES_KEY = "__budgetiqPreviewTransactionWrites";
+
+function previewWriteStore(): Transaction[] {
+  const holder = globalThis as typeof globalThis & {
+    [PREVIEW_WRITES_KEY]?: Transaction[];
+  };
+  holder[PREVIEW_WRITES_KEY] ??= [];
+  return holder[PREVIEW_WRITES_KEY];
+}
+
+/** Adds a tile the preview dashboard should render after revalidation. */
+export function addPreviewDemoTransaction(transaction: Transaction): void {
+  previewWriteStore().unshift(transaction);
+}
+
+/** Removes one preview-session write, for tests and cleanup. */
+export function removePreviewDemoTransaction(id: string): void {
+  const store = previewWriteStore();
+  const index = store.findIndex((transaction) => transaction.id === id);
+  if (index !== -1) store.splice(index, 1);
+}
+
+function previewRows(): Transaction[] {
+  return [...previewWriteStore(), ...DEMO_TRANSACTIONS];
+}
+
 export async function previewDemoTransactions(
   scope: Transaction["scope"] | null = null
 ): Promise<Transaction[]> {
   const rows = scope
-    ? DEMO_TRANSACTIONS.filter((transaction) => transaction.scope === scope)
-    : DEMO_TRANSACTIONS;
+    ? previewRows().filter((transaction) => transaction.scope === scope)
+    : previewRows();
   return rows.map((row) => ({ ...row }));
 }
 
@@ -130,7 +166,7 @@ export async function previewDemoTransactionsBetween(
   endISO: string,
   limit = 500
 ): Promise<Transaction[]> {
-  const rows = DEMO_TRANSACTIONS.filter(
+  const rows = previewRows().filter(
     (transaction) =>
       transaction.created_at >= startISO && transaction.created_at < endISO
   );
