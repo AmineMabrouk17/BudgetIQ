@@ -331,15 +331,9 @@ async function captureFromDir(dir, label, record = false) {
       fail(`Server did not respond at ${appUrl} for ${label}.`);
     }
 
-    const browser = await chromium.launch({
-      // A mic button is part of the product now: headless Chromium needs a
-      // fake capture device or getUserMedia rejects and the recording state
-      // this PR adds can never be captured.
-      args: [
-        '--use-fake-ui-for-media-stream',
-        '--use-fake-device-for-media-stream',
-      ],
-    });
+    // The default headless shell does not apply clicks to the hydrated React
+    // tree reliably; the full Chromium build does.
+    const browser = await chromium.launch({ channel: 'chromium' });
     try {
       for (const route of routes) {
         const videoDir = path.join(outDir, `tmp-video-${route.label}`);
