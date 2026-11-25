@@ -1,0 +1,87 @@
+{
+  "measuredAt": "2026-11-25T22:55:44.469Z",
+  "samples": [
+    {
+      "path": "text",
+      "ms": 682,
+      "status": 200,
+      "serverMs": 650,
+      "ok": true
+    },
+    {
+      "path": "text",
+      "ms": 2096,
+      "status": 200,
+      "serverMs": 2065,
+      "ok": true
+    },
+    {
+      "path": "voice-transcript",
+      "ms": 7763,
+      "status": 200,
+      "serverMs": 5856,
+      "ok": true
+    },
+    {
+      "path": "voice-chat",
+      "ms": 11460,
+      "status": 200,
+      "serverMs": 11345,
+      "ok": true
+    },
+    {
+      "path": "voice-total",
+      "ms": 19223,
+      "status": 200,
+      "serverMs": 17201,
+      "ok": true
+    },
+    {
+      "path": "voice-transcript",
+      "ms": 4757,
+      "status": 200,
+      "serverMs": 4701,
+      "ok": true
+    },
+    {
+      "path": "voice-chat",
+      "ms": 5703,
+      "status": 200,
+      "serverMs": 5637,
+      "ok": true
+    },
+    {
+      "path": "voice-total",
+      "ms": 10460,
+      "status": 200,
+      "serverMs": 10338,
+      "ok": true
+    }
+  ],
+  "summary": {
+    "text": {
+      "runs": 2,
+      "medianMs": 1389,
+      "minMs": 682,
+      "maxMs": 2096
+    },
+    "voice-transcript": {
+      "runs": 2,
+      "medianMs": 6260,
+      "minMs": 4757,
+      "maxMs": 7763
+    },
+    "voice-chat": {
+      "runs": 2,
+      "medianMs": 8582,
+      "minMs": 5703,
+      "maxMs": 11460
+    },
+    "voice-total": {
+      "runs": 2,
+      "medianMs": 14842,
+      "minMs": 10460,
+      "maxMs": 19223
+    }
+  }
+}

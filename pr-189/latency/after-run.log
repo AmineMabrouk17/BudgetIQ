@@ -1,0 +1,14 @@
+
+Running 2 tests using 1 worker
+
+text #1: 682ms (200)
+ttext #2: 14854ms (200)
+  ✓  1 [chromium] › e2e/assistant-latency.spec.ts:116:5 › typed transaction latency (38.4voice-transcript #1: 7763ms (200)
+voice-total #1: 19223ms (200)
+voice-transcript #2: 4757ms (200)
+voice-total #2: 10460ms (200)
+  ✓  2 [chromium] › e2e/assistant-latency.spec.ts:143:5 › voice note latency (transcription + reply) (29.8s)
+
+  2 passed (42.9s)
+EXIT=0
+EXIT=0
