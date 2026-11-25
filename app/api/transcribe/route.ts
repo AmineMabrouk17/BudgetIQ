@@ -66,7 +66,16 @@ function isAudioBlob(value: unknown): value is Blob {
   );
 }
 
+function timingHeaders(startedAt: number) {
+  const durationMs = Math.max(0, Math.round(performance.now() - startedAt));
+  return {
+    "Server-Timing": `transcribe;dur=${durationMs}`,
+    "X-Transcribe-Ms": String(durationMs),
+  };
+}
+
 export async function POST(request: NextRequest) {
+  const startedAt = performance.now();
   const user = await getUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -139,7 +148,10 @@ export async function POST(request: NextRequest) {
   try {
     const data = new Uint8Array(await audio.arrayBuffer());
     const { text } = await transcribeAudio({ data, mimeType });
-    return NextResponse.json({ transcript: text });
+    return NextResponse.json(
+      { transcript: text },
+      { headers: timingHeaders(startedAt) }
+    );
   } catch (error) {
     if (error instanceof TranscriptionError) {
       console.error(
@@ -149,7 +161,7 @@ export async function POST(request: NextRequest) {
       );
       return NextResponse.json(
         { error: messageFor(error) },
-        { status: statusFor(error) }
+        { status: statusFor(error), headers: timingHeaders(startedAt) }
       );
     }
     console.error("Voice transcription failed:", error);

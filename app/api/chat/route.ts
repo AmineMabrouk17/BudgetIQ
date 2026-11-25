@@ -10,7 +10,16 @@ const CHAT_RATE_WINDOW = 60;
 
 const MAX_MESSAGE_LENGTH = 1000;
 
+function timingHeaders(name: string, startedAt: number) {
+  const durationMs = Math.max(0, Math.round(performance.now() - startedAt));
+  return {
+    "Server-Timing": `${name};dur=${durationMs}`,
+    [`X-${name}-Ms`]: String(durationMs),
+  };
+}
+
 export async function POST(request: NextRequest) {
+  const startedAt = performance.now();
   const user = await getUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -55,12 +64,17 @@ export async function POST(request: NextRequest) {
 
   try {
     const response = await askGemini(message);
-    return NextResponse.json(response);
+    return NextResponse.json(response, {
+      headers: timingHeaders("Chat", startedAt),
+    });
   } catch (error) {
     console.error("Gemini chat failed:", error);
-    return NextResponse.json({
-      message: "Sorry, I couldn't process that. Please try again.",
-      hasAction: false,
-    });
+    return NextResponse.json(
+      {
+        message: "Sorry, I couldn't process that. Please try again.",
+        hasAction: false,
+      },
+      { headers: timingHeaders("Chat", startedAt) }
+    );
   }
 }

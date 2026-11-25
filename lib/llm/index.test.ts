@@ -112,8 +112,9 @@ describe("completeJson provider order", () => {
     const result = await completeJson(request);
 
     expect(result.provider).toBe("openrouter");
-    // 1 initial attempt + 2 retries, then it gives up and moves on.
-    expect(geminiComplete).toHaveBeenCalledTimes(3);
+    // One retry, then it gives up and moves on: a saturated provider must not
+    // hold the whole answer for tens of seconds.
+    expect(geminiComplete).toHaveBeenCalledTimes(2);
   }, 20000);
 
   it("skips gemini entirely when it has no api key", async () => {
