@@ -76,7 +76,7 @@ describe("VoiceRecorderButton", () => {
 
     const { onTranscript, onError } = renderRecorder();
 
-    fireEvent.click(screen.getByRole("button", { name: "Record voice message" }));
+    fireEvent.click(screen.getByRole("button", { name: "Record voice note" }));
 
     const stopButton = await screen.findByRole("button", {
       name: "Stop recording",
@@ -105,7 +105,7 @@ describe("VoiceRecorderButton", () => {
     vi.stubGlobal("fetch", fetchMock);
     renderRecorder();
 
-    fireEvent.click(screen.getByRole("button", { name: "Record voice message" }));
+    fireEvent.click(screen.getByRole("button", { name: "Record voice note" }));
 
     expect(
       await screen.findByRole("button", { name: "Stop recording" })
@@ -126,7 +126,7 @@ describe("VoiceRecorderButton", () => {
 
     const { onTranscript, onError } = renderRecorder();
 
-    fireEvent.click(screen.getByRole("button", { name: "Record voice message" }));
+    fireEvent.click(screen.getByRole("button", { name: "Record voice note" }));
     fireEvent.click(
       await screen.findByRole("button", { name: "Stop recording" })
     );
@@ -152,7 +152,7 @@ describe("VoiceRecorderButton", () => {
 
     const { onError } = renderRecorder();
 
-    fireEvent.click(screen.getByRole("button", { name: "Record voice message" }));
+    fireEvent.click(screen.getByRole("button", { name: "Record voice note" }));
     fireEvent.click(
       await screen.findByRole("button", { name: "Stop recording" })
     );
@@ -167,7 +167,7 @@ describe("VoiceRecorderButton", () => {
 
     const { onError } = renderRecorder();
 
-    fireEvent.click(screen.getByRole("button", { name: "Record voice message" }));
+    fireEvent.click(screen.getByRole("button", { name: "Record voice note" }));
 
     await waitFor(() =>
       expect(onError).toHaveBeenCalledWith(

@@ -49,7 +49,7 @@ async function openAssistant(page: Page) {
 }
 
 async function recordVoiceNote(page: Page, dialog: ReturnType<Page["getByRole"]>) {
-  await dialog.getByRole("button", { name: "Record voice message" }).click();
+  await dialog.getByRole("button", { name: "Record voice note" }).click();
   await expect(dialog.getByText("Listening…")).toBeVisible();
   // Let the fake microphone deliver a few seconds of the spoken sample.
   await page.waitForTimeout(3_300);
@@ -91,7 +91,7 @@ test("a signed-in user records a voice note and logs the transaction", async ({
 
   const dialog = await openAssistant(page);
 
-  await dialog.getByRole("button", { name: "Record voice message" }).click();
+  await dialog.getByRole("button", { name: "Record voice note" }).click();
   await expect(dialog.getByText("Listening…")).toBeVisible();
   await screenshot(page, "01-recording.png");
   await page.waitForTimeout(3_300);
@@ -154,8 +154,7 @@ test.describe("live transcription", () => {
       .getByRole("cell", { name: /coffee/i })
       .count();
 
-    // Real Gemini transcript and real chat parse: both must agree that this is
-    // a coffee expense before the card is worth trusting.
+    // Real Gemini transcription; the chat reply is the stubbed answer above.
     await expect(dialog.getByText(/coffee/i).first()).toBeVisible({
       timeout: 45_000,
     });

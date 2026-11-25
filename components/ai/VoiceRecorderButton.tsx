@@ -176,6 +176,8 @@ export default function VoiceRecorderButton({
   async function startRecording() {
     if (disabled || status !== "idle") return;
 
+    // A fresh attempt is live again even if a previous close cancelled one.
+    cancelledRef.current = false;
     updateStatus("requesting");
     try {
       if (
@@ -191,6 +193,8 @@ export default function VoiceRecorderButton({
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       if (cancelledRef.current) {
         stream.getTracks().forEach((track) => track.stop());
+        releaseStream();
+        updateStatus("idle");
         return;
       }
       streamRef.current = stream;
@@ -263,10 +267,17 @@ export default function VoiceRecorderButton({
   // leaving the microphone open is both a privacy and a battery problem.
   useEffect(() => {
     if (!disabled) return;
-    if (status === "recording" || status === "requesting") {
+    if (status === "recording") {
       stopRecording(true);
+      return;
     }
-  }, [disabled, status, stopRecording]);
+    if (status === "requesting") {
+      // No recorder exists yet: mark the pending getUserMedia as abandoned so
+      // it cannot start a microphone after the drawer closed.
+      cancelledRef.current = true;
+      updateStatus("idle");
+    }
+  }, [disabled, status, stopRecording, updateStatus]);
 
   useEffect(() => {
     // React (StrictMode in development) mounts, cleans up and mounts again.
@@ -319,8 +330,8 @@ export default function VoiceRecorderButton({
       disabled={disabled || busy}
       aria-label={
         status === "transcribing"
-          ? "Transcribing voice message"
-          : "Record voice message"
+          ? "Transcribing voice note"
+          : "Record voice note"
       }
       title="Record a voice note"
     >

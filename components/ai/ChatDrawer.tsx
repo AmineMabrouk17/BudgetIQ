@@ -109,7 +109,16 @@ export default function ChatDrawer({
 
   async function sendMessage(rawText: string, options: { viaVoice?: boolean } = {}) {
     const text = rawText.trim();
-    if (!text || isPending) return;
+    if (!text) return;
+    if (isPending) {
+      // A transcript that lands while the previous answer is in flight must
+      // not vanish: put it back in the composer and say why.
+      if (options.viaVoice) setInput(text);
+      addAssistantError(
+        "I'm still thinking about the previous message. Send this one again in a moment."
+      );
+      return;
+    }
     if (text.length > MAX_MESSAGE_LENGTH) {
       addAssistantError("That message is too long. Keep it under 1000 characters.");
       return;
