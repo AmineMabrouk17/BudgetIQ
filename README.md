@@ -36,7 +36,7 @@ The source code is public on GitHub, there is a free hosted demo, there are no a
 
 [![Watch the 60-second launch film](docs/brag/preview-en.gif)](docs/brag/launch-film-en.mp4)
 
-▶ **[Full 60s MP4](docs/brag/launch-film-en.mp4)** · English · [Arabic version](docs/brag/launch-film-ar.mp4)
+▶ **[Full 60s MP4](docs/brag/launch-film-en.mp4)** · English
 
 ## Product demo
 
