@@ -273,9 +273,9 @@ export default function VoiceRecorderButton({
     }
     if (status === "requesting") {
       // No recorder exists yet: mark the pending getUserMedia as abandoned so
-      // it cannot start a microphone after the drawer closed.
+      // it cannot start a microphone after the drawer closed. The unresolved
+      // promise sets the status back to idle when it settles.
       cancelledRef.current = true;
-      updateStatus("idle");
     }
   }, [disabled, status, stopRecording, updateStatus]);
 
