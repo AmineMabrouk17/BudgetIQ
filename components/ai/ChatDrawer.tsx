@@ -4,6 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { Bot, Loader2, Send, X } from "lucide-react";
 import type { ChatActionResponse, ParsedTransactionAction } from "@/lib/gemini";
 import MessageBubble from "@/components/ai/MessageBubble";
+import VoiceRecorderButton, {
+  type VoiceRecorderStatus,
+} from "@/components/ai/VoiceRecorderButton";
 
 type ChatMessage = {
   id: string;
@@ -11,7 +14,11 @@ type ChatMessage = {
   text: string;
   action?: ParsedTransactionAction;
   error?: boolean;
+  /** The message was spoken; the bubble shows the transcript and a note badge. */
+  viaVoice?: boolean;
 };
+
+const MAX_MESSAGE_LENGTH = 1000;
 
 export default function ChatDrawer({
   children,
@@ -22,6 +29,7 @@ export default function ChatDrawer({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isPending, setIsPending] = useState(false);
+  const [voiceStatus, setVoiceStatus] = useState<VoiceRecorderStatus>("idle");
 
   const listRef = useRef<HTMLDivElement>(null);
   const openButtonRef = useRef<HTMLButtonElement>(null);
@@ -33,7 +41,7 @@ export default function ChatDrawer({
       top: listRef.current.scrollHeight,
       behavior: "smooth",
     });
-  }, [messages, isPending]);
+  }, [messages, isPending, voiceStatus]);
 
   function closeDrawer() {
     setIsOpen(false);
@@ -92,14 +100,39 @@ export default function ChatDrawer({
     };
   }, [isOpen]);
 
-  async function handleSend() {
-    const text = input.trim();
-    if (!text || isPending) return;
+  function addAssistantError(text: string) {
+    setMessages((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), role: "assistant", text, error: true },
+    ]);
+  }
+
+  async function sendMessage(rawText: string, options: { viaVoice?: boolean } = {}) {
+    const text = rawText.trim();
+    if (!text) return;
+    if (isPending) {
+      // A transcript that lands while the previous answer is in flight must
+      // not vanish: put it back in the composer and say why.
+      if (options.viaVoice) setInput(text);
+      addAssistantError(
+        "I'm still thinking about the previous message. Send this one again in a moment."
+      );
+      return;
+    }
+    if (text.length > MAX_MESSAGE_LENGTH) {
+      addAssistantError("That message is too long. Keep it under 1000 characters.");
+      return;
+    }
 
     setInput("");
     setMessages((prev) => [
       ...prev,
-      { id: crypto.randomUUID(), role: "user", text },
+      {
+        id: crypto.randomUUID(),
+        role: "user",
+        text,
+        ...(options.viaVoice ? { viaVoice: true } : {}),
+      },
     ]);
     setIsPending(true);
 
@@ -129,22 +162,24 @@ export default function ChatDrawer({
         },
       ]);
     } catch (error) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          text:
-            error instanceof Error
-              ? error.message
-              : "Something went wrong. Please try again.",
-          error: true,
-        },
-      ]);
+      addAssistantError(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong. Please try again."
+      );
     } finally {
       setIsPending(false);
     }
   }
+
+  function handleVoiceTranscript(transcript: string) {
+    void sendMessage(transcript, { viaVoice: true });
+  }
+
+  const isVoiceBusy =
+    voiceStatus === "requesting" ||
+    voiceStatus === "recording" ||
+    voiceStatus === "transcribing";
 
   return (
     <div className="drawer drawer-end">
@@ -205,6 +240,8 @@ export default function ChatDrawer({
                 Ask me anything about your finances.
                 <br />
                 Try: &ldquo;I spent $15 on coffee&rdquo;
+                <br />
+                or tap the mic and say it.
               </p>
             )}
             {messages.map((m) => (
@@ -214,8 +251,28 @@ export default function ChatDrawer({
                 text={m.text}
                 action={m.action}
                 error={m.error}
+                viaVoice={m.viaVoice}
               />
             ))}
+            {voiceStatus === "recording" && (
+              <div className="chat chat-end" role="status">
+                <div className="chat-bubble chat-bubble-primary flex items-center gap-2">
+                  <span
+                    className="inline-block h-2 w-2 animate-pulse rounded-full bg-error"
+                    aria-hidden="true"
+                  />
+                  Listening… tap stop to send
+                </div>
+              </div>
+            )}
+            {voiceStatus === "transcribing" && (
+              <div className="chat chat-end" role="status">
+                <div className="chat-bubble chat-bubble-primary">
+                  <Loader2 className="mr-1 inline h-4 w-4 animate-spin" />
+                  Transcribing your voice note…
+                </div>
+              </div>
+            )}
             {isPending && (
               <div className="chat chat-start">
                 <div className="chat-bubble chat-bubble-secondary">
@@ -230,22 +287,30 @@ export default function ChatDrawer({
             className="flex gap-2 border-t border-base-200 p-3"
             onSubmit={(event) => {
               event.preventDefault();
-              handleSend();
+              void sendMessage(input);
             }}
           >
+            <VoiceRecorderButton
+              disabled={!isOpen || isPending}
+              onTranscript={handleVoiceTranscript}
+              onError={addAssistantError}
+              onStatusChange={setVoiceStatus}
+            />
             <input
               ref={inputRef}
               className="input input-bordered flex-1"
               value={input}
               onChange={(event) => setInput(event.target.value)}
-              placeholder="Ask your assistant…"
+              placeholder="Ask or speak your transaction…"
               aria-label="Chat message"
-              disabled={isPending}
+              disabled={isPending || isVoiceBusy}
             />
             <button
               className="btn btn-primary"
               type="submit"
-              disabled={isPending || input.trim().length === 0}
+              disabled={
+                isPending || isVoiceBusy || input.trim().length === 0
+              }
               aria-label="Send message"
             >
               {isPending ? <Loader2 className="animate-spin" /> : <Send />}

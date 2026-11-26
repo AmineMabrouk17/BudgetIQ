@@ -8,6 +8,10 @@ BudgetIQ is an AI-powered personal finance app: track income, expenses, and asse
 The built-in chat feature that parses natural language and offers to log income, expenses, or assets. Not marketed as a generic "chatbot".
 _Avoid_: chatbot, bot
 
+**Voice note**:
+A spoken message recorded in the AI assistant. It is transcribed before the assistant reads it, and the transcript takes the place of a typed message; the user still confirms or declines the transaction it proposes.
+_Avoid_: voice message, audio message, dictation
+
 **Income**:
 Money coming in (salary, freelance, gifts) that a user tracks.
 _Avoid_: revenue

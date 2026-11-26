@@ -1,6 +1,8 @@
 import { cache } from "react";
+import { randomUUID } from "node:crypto";
 import { createClient, getUser } from "@/lib/supabase/server";
 import {
+  addPreviewDemoTransaction,
   isPreviewDemoRequest,
   previewDemoTransactions,
   previewDemoTransactionsBetween,
@@ -192,6 +194,24 @@ export async function insertTransaction(
   input: CreateTransactionInput
 ): Promise<Transaction> {
   const userId = await requireUserId();
+
+  // Signed preview sessions have no Supabase identity to write as, so their
+  // QA writes land in the in-memory fixture store instead. Reads already use
+  // that fixture (see `isPreviewDemoRequest`).
+  if (await isPreviewDemoRequest()) {
+    const transaction: Transaction = {
+      id: randomUUID(),
+      user_id: userId,
+      type: input.type,
+      title: input.title,
+      amount: input.amount,
+      category: input.category ?? "General",
+      created_at: new Date().toISOString(),
+      scope: input.scope ?? "personal",
+    };
+    addPreviewDemoTransaction(transaction);
+    return transaction;
+  }
 
   const supabase = await createClient();
   const row = {

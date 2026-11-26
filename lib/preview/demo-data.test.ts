@@ -4,10 +4,13 @@ import {
   DEMO_PROFILE,
   DEMO_TRANSACTIONS,
   DEMO_USER_ID,
+  addPreviewDemoTransaction,
   previewDemoTransactions,
   previewDemoTransactionsBetween,
+  removePreviewDemoTransaction,
 } from "@/lib/preview/demo-data";
 import { DEFAULT_KPIS } from "@/lib/kpi-defaults";
+import type { Transaction } from "@/types/transaction";
 
 describe("preview demo fixture", () => {
   it("gives the demo user a complete profile", () => {
@@ -43,6 +46,35 @@ describe("preview demo fixture", () => {
     );
     expect(DEMO_KPIS.map((kpi) => kpi.operation)).toEqual(
       DEFAULT_KPIS.map((kpi) => kpi.operation)
+    );
+  });
+
+  it("serves transactions written by a signed preview session", async () => {
+    const row: Transaction = {
+      id: "demo-write-1",
+      user_id: DEMO_USER_ID,
+      type: "expense",
+      title: "Voice note coffee",
+      amount: 15,
+      category: "Food",
+      created_at: new Date().toISOString(),
+      scope: "personal",
+    };
+
+    addPreviewDemoTransaction(row);
+
+    const rows = await previewDemoTransactions();
+    expect(rows[0]).toMatchObject({ id: row.id, title: row.title });
+    expect(
+      await previewDemoTransactionsBetween(
+        new Date(Date.now() - 60_000).toISOString(),
+        new Date(Date.now() + 60_000).toISOString()
+      )
+    ).toEqual(expect.arrayContaining([expect.objectContaining({ id: row.id })]));
+
+    removePreviewDemoTransaction(row.id);
+    expect((await previewDemoTransactions()).some((t) => t.id === row.id)).toBe(
+      false
     );
   });
 });
