@@ -46,3 +46,21 @@ create path end-to-end.
 **Alternative considered:** Creating a real Supabase account for tests —
 rejected because the project rejects test email domains and confirming an
 account would put credentials and cleanup in CI.
+
+## 2026-11-25 — Assistant chat runs on `generateContent` with a lite model
+
+**Decision:** The Gemini provider calls `generateContent` with
+`gemini-3.5-flash-lite` by default, asks for schema-constrained JSON, caps the
+reply at 512 tokens, and aborts each attempt after 15 seconds. The router tries
+a saturated provider twice, not three times, and waits at most 2 s between
+attempts.
+
+**Why:** The previous `interactions` call to `gemini-3.6-flash` stalled with
+zero bytes past 40 s, while the same key answered `gemini-3.5-flash-lite`
+through `generateContent` in 0.7–2 s. Three attempts with an 8 s backoff turned
+one congested model into a minute-long "Thinking…" spinner. A short timeout and
+one retry move the user to an answer or a clear failure quickly.
+
+**Alternative considered:** Streaming partial tokens — rejected because the
+assistant's reply is a small JSON envelope whose transaction card cannot render
+until the object is complete.

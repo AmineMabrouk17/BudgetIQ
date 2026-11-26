@@ -14,9 +14,9 @@ import {
  */
 const PROVIDERS: LlmProvider[] = [geminiProvider, openRouterProvider];
 
-const MAX_ATTEMPTS_PER_PROVIDER = 3;
-const BASE_RETRY_DELAY_MS = 750;
-const MAX_RETRY_DELAY_MS = 8000;
+const MAX_ATTEMPTS_PER_PROVIDER = 2;
+const BASE_RETRY_DELAY_MS = 400;
+const MAX_RETRY_DELAY_MS = 2000;
 
 /**
  * Retrying only helps a transient failure. A daily quota cap or a rejected

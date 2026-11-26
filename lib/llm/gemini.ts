@@ -1,9 +1,25 @@
 import { LlmError, type LlmProvider, type LlmRequest } from "./types";
 
-const INTERACTIONS_ENDPOINT =
-  "https://generativelanguage.googleapis.com/v1beta/interactions";
+/**
+ * `generateContent` is the stable, schema-enforcing endpoint. The previous
+ * `interactions` endpoint with `gemini-3.6-flash` stalled for tens of seconds
+ * without a byte (and the model was congested), which is the latency this
+ * provider is now built to avoid.
+ */
+const ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models";
 
-const MODEL = process.env.GEMINI_MODEL ?? "gemini-3.6-flash";
+/**
+ * `gemini-3.5-flash-lite` answered a transaction turn in under a second when
+ * measured, while the larger flash model timed out. Override with
+ * `GEMINI_MODEL` when a different model is preferred.
+ */
+const MODEL = process.env.GEMINI_MODEL ?? "gemini-3.5-flash-lite";
+
+/** A single turn must not hold the request open for half a minute. */
+const REQUEST_TIMEOUT_MS = 15_000;
+
+/** Enough for the envelope; a longer reply is wasted latency. */
+const MAX_OUTPUT_TOKENS = 512;
 
 function extractText(payload: unknown): string {
   if (typeof payload !== "object" || payload === null) {
@@ -12,23 +28,35 @@ function extractText(payload: unknown): string {
       kind: "invalid",
     });
   }
-  const steps = (payload as Record<string, unknown>).steps;
-  if (!Array.isArray(steps)) {
-    throw new LlmError("Gemini response is missing steps", {
+
+  const candidates = (payload as Record<string, unknown>).candidates;
+  if (!Array.isArray(candidates) || candidates.length === 0) {
+    throw new LlmError("Gemini response is missing candidates", {
       provider: "gemini",
       kind: "invalid",
     });
   }
-  for (const step of steps) {
-    if (typeof step !== "object" || step === null) continue;
-    const content = (step as Record<string, unknown>).content;
-    if (!Array.isArray(content)) continue;
-    for (const part of content) {
-      if (typeof part !== "object" || part === null) continue;
-      const text = (part as Record<string, unknown>).text;
-      if (typeof text === "string" && text.trim().length > 0) return text;
-    }
+
+  const content = (candidates[0] as { content?: unknown } | null)?.content;
+  const parts =
+    typeof content === "object" && content !== null
+      ? (content as { parts?: unknown }).parts
+      : undefined;
+  if (!Array.isArray(parts)) {
+    throw new LlmError("Gemini response contains no text", {
+      provider: "gemini",
+      kind: "invalid",
+    });
   }
+
+  for (const part of parts) {
+    if (typeof part !== "object" || part === null) continue;
+    const record = part as Record<string, unknown>;
+    if (record.thought === true) continue;
+    const text = record.text;
+    if (typeof text === "string" && text.trim().length > 0) return text;
+  }
+
   throw new LlmError("Gemini response contains no text", {
     provider: "gemini",
     kind: "invalid",
@@ -94,23 +122,42 @@ export const geminiProvider: LlmProvider = {
       });
     }
 
-    const response = await fetch(INTERACTIONS_ENDPOINT, {
-      method: "POST",
-      headers: {
-        "x-goog-api-key": apiKey,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        input: prompt,
-        system_instruction: systemInstruction,
-        response_format: {
-          type: "text",
-          mime_type: "application/json",
-          schema,
-        },
-      }),
-    });
+    let response: Response;
+    try {
+      response = await fetch(
+        `${ENDPOINT}/${encodeURIComponent(MODEL)}:generateContent`,
+        {
+          method: "POST",
+          headers: {
+            "x-goog-api-key": apiKey,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: systemInstruction }] },
+            contents: [{ role: "user", parts: [{ text: prompt }] }],
+            generationConfig: {
+              temperature: 0,
+              maxOutputTokens: MAX_OUTPUT_TOKENS,
+              responseMimeType: "application/json",
+              ...(schema ? { responseSchema: schema } : {}),
+            },
+          }),
+          signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        }
+      );
+    } catch (error) {
+      const timedOut =
+        error instanceof Error &&
+        (error.name === "TimeoutError" || error.name === "AbortError");
+      throw new LlmError(
+        timedOut ? "Gemini request timed out" : "Could not reach Gemini",
+        {
+          provider: "gemini",
+          kind: "overloaded",
+          detail: error instanceof Error ? error.message : undefined,
+        }
+      );
+    }
 
     if (!response.ok) {
       throw await toLlmError(response);
