@@ -1,4 +1,4 @@
-name: CI - Review, Visual Evidence, Preview & Telegram
+name: CI - Review, Visual Evidence & Preview
 
 on:
   pull_request:
@@ -248,67 +248,6 @@ jobs:
           EVIDENCE_MD: ${{ needs.visual-evidence.outputs.evidence_markdown }}
         run: |
           node scripts/extract-preview-url.mjs
-
-  # Integrates an existing ci-telegram, with a built-in fallback if none is present
-  notify-telegram:
-    if: always() && github.event_name == 'pull_request'
-    needs: [checks, code-review, visual-evidence, preview-and-pr-update]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      # Option A: If your repo has .github/actions/ci-telegram/action.yml (composite action)
-      - name: Run existing ci-telegram action
-        if: hashFiles('.github/actions/ci-telegram/action.yml') != ''
-        uses: ./.github/actions/ci-telegram
-        with:
-          status: ${{ needs.checks.result }}
-          pr_url: ${{ github.event.pull_request.html_url }}
-          preview_url: ${{ needs.preview-and-pr-update.outputs.preview_url }}
-
-      # Option B: If your repo has a ci-telegram script (e.g., scripts/ci-telegram.sh or .github/scripts/ci-telegram.sh)
-      - name: Run existing ci-telegram script
-        if: hashFiles('.github/actions/ci-telegram/action.yml') == '' && (hashFiles('scripts/ci-telegram.sh') != '' || hashFiles('scripts/ci-telegram.mjs') != '' || hashFiles('.github/scripts/ci-telegram.sh') != '')
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          CI_STATUS: ${{ needs.checks.result }}
-          REVIEW_STATUS: ${{ needs.code-review.result }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          PR_TITLE: ${{ github.event.pull_request.title }}
-          PREVIEW_URL: ${{ needs.preview-and-pr-update.outputs.preview_url }}
-        run: |
-          if [ -x "./scripts/ci-telegram.sh" ]; then
-            ./scripts/ci-telegram.sh
-          elif [ -f "./scripts/ci-telegram.mjs" ]; then
-            node ./scripts/ci-telegram.mjs
-          elif [ -x "./.github/scripts/ci-telegram.sh" ]; then
-            ./.github/scripts/ci-telegram.sh
-          fi
-
-      # Fallback: send the notification directly when no ci-telegram action/script exists
-      - name: Built-in Telegram notification
-        if: hashFiles('.github/actions/ci-telegram/action.yml') == '' && hashFiles('scripts/ci-telegram.sh') == '' && hashFiles('scripts/ci-telegram.mjs') == '' && hashFiles('.github/scripts/ci-telegram.sh') == ''
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          CI_STATUS: ${{ needs.checks.result }}
-          REVIEW_STATUS: ${{ needs.code-review.result }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          PR_TITLE: ${{ github.event.pull_request.title }}
-          PREVIEW_URL: ${{ needs.preview-and-pr-update.outputs.preview_url }}
-        run: |
-          if [ -z "${TELEGRAM_BOT_TOKEN:-}" ] || [ -z "${TELEGRAM_CHAT_ID:-}" ]; then
-            echo "Telegram secrets not set; skipping notification."
-            exit 0
-          fi
-          TEXT="$(printf 'Software Factory PR: %s\nCI: %s | Review: %s\nPR: %s' "$PR_TITLE" "$CI_STATUS" "$REVIEW_STATUS" "$PR_URL")"
-          if [ -n "${PREVIEW_URL:-}" ]; then
-            TEXT="$(printf '%s\nPreview: %s' "$TEXT" "$PREVIEW_URL")"
-          fi
-          curl -sS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
-            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
-            --data-urlencode "text=${TEXT}" || echo "Telegram notification failed."
 
   deploy-on-merge:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
